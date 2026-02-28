@@ -24,16 +24,16 @@ export function AuditPage() {
         description="Review a local trail of acknowledgements, escalations, and export-related actions."
       />
 
-      <Card className="overflow-hidden bg-panel">
-        <CardHeader className="border-b border-border">
+      <Card className="overflow-hidden bg-primaryDeep">
+        <CardHeader className="border-b border-surfaceMuted/20">
           <CardTitle>Recent activity</CardTitle>
           <CardDescription>Latest operator and simulator actions relevant to campus operations.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-background/90">
-                <tr className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+              <thead className="bg-primaryDark/90">
+                <tr className="text-[11px] uppercase tracking-[0.22em] text-textSecondary">
                   <th className="px-4 py-3 font-semibold">Action</th>
                   <th className="px-4 py-3 font-semibold">Entity</th>
                   <th className="px-4 py-3 font-semibold">Actor</th>
@@ -42,11 +42,11 @@ export function AuditPage() {
               </thead>
               <tbody>
                 {data.items.map((item, index) => (
-                  <tr key={item.id} className={index % 2 === 0 ? 'border-t border-border bg-background/45' : 'border-t border-border'}>
+                  <tr key={item.id} className={index % 2 === 0 ? 'border-t border-surfaceMuted/20 bg-primaryDark/45' : 'border-t border-surfaceMuted/20'}>
                     <td className="px-4 py-3.5">{item.action}</td>
-                    <td className="px-4 py-3.5 text-muted-foreground">{item.entityType} · {item.entityId}</td>
-                    <td className="px-4 py-3.5 text-muted-foreground">{item.actor}</td>
-                    <td className="px-4 py-3.5 text-muted-foreground">{formatDateTime(item.timestamp)}</td>
+                    <td className="px-4 py-3.5 text-textSecondary">{item.entityType} · {item.entityId}</td>
+                    <td className="px-4 py-3.5 text-textSecondary">{item.actor}</td>
+                    <td className="px-4 py-3.5 text-textSecondary">{formatDateTime(item.timestamp)}</td>
                   </tr>
                 ))}
               </tbody>

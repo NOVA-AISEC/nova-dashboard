@@ -15,6 +15,8 @@ import { useAsyncData } from '@/hooks/use-async-data'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
 
+const complianceChips = ['Biometrics disabled', 'Snapshots', 'Metadata only'] as const
+
 function countByStatus(values: string[], status: string) {
   return values.filter((value) => value === status).length
 }
@@ -79,10 +81,10 @@ export function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-primaryDark text-surfaceLight">
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/45 transition-opacity lg:hidden',
+          'fixed inset-0 z-40 bg-primaryDark/70 transition-opacity lg:hidden',
           isNavOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={() => setIsNavOpen(false)}
@@ -90,31 +92,31 @@ export function AppShell() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-sidebar-border bg-sidebar-bg text-sidebar-foreground transition-transform lg:translate-x-0',
+          'sidebar-shell fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-surfaceMuted/20 bg-primaryDark text-surfaceLight transition-transform lg:translate-x-0',
           isNavOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="border-b border-sidebar-border px-6 py-6">
+        <div className="border-b border-surfaceMuted/20 px-6 py-6">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center border border-brand-gold/35 bg-sidebar-active text-sidebar-primary">
+                <div className="sidebar-logo-mark flex h-11 w-11 items-center justify-center border">
                   <Command className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="font-display text-lg font-bold uppercase tracking-[0.18em]">
+                  <div className="sidebar-title font-display text-lg font-bold uppercase tracking-[0.18em]">
                     NOVA
                   </div>
-                  <div className="text-xs uppercase tracking-[0.22em] text-sidebar-foreground/60">
+                  <div className="sidebar-subtitle text-xs uppercase tracking-[0.22em]">
                     Strathmore Security Operations
                   </div>
-                  <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-sidebar-foreground/42">
+                  <div className="sidebar-attribution mt-1 text-[10px] uppercase tracking-[0.22em]">
                     by DAMA LTD
                   </div>
                 </div>
               </div>
-              <p className="max-w-xs text-sm leading-relaxed text-sidebar-foreground/70">
-                NOVA AI coordinates triage queue, guard dispatch, incident desk review,
+              <p className="sidebar-copy max-w-xs text-sm leading-relaxed">
+                NOVA coordinates triage queue, guard dispatch, incident desk review,
                 traffic response, and evidence exports for Strathmore teams.
               </p>
             </div>
@@ -133,8 +135,8 @@ export function AppShell() {
         <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
           {navGroups.map((group) => (
             <section key={group.label} className="space-y-2.5">
-              <div className="border-b border-sidebar-border/75 pb-2">
-                <p className="eyebrow text-sidebar-foreground/45">{group.label}</p>
+              <div className="sidebar-section-heading border-b pb-2">
+                <p className="eyebrow">{group.label}</p>
               </div>
               <nav className="space-y-1.5">
                 {group.items.map((item) => {
@@ -145,10 +147,8 @@ export function AppShell() {
                       key={item.to}
                       className={({ isActive }) =>
                         cn(
-                          'group relative flex items-start gap-3 border border-transparent px-4 py-3 transition-colors',
-                          isActive
-                            ? 'border-sidebar-border bg-sidebar-active text-sidebar-active-foreground'
-                            : 'text-sidebar-foreground/72 hover:border-sidebar-border hover:bg-sidebar-accent/72',
+                          'sidebar-link group relative flex items-start gap-3 border px-4 py-3 transition-colors',
+                          isActive && 'sidebar-link-active',
                         )
                       }
                       onClick={() => setIsNavOpen(false)}
@@ -158,23 +158,23 @@ export function AppShell() {
                         <>
                           <span
                             className={cn(
-                              'absolute bottom-0 left-0 top-0 w-1 bg-sidebar-primary transition-opacity',
+                              'sidebar-link-indicator absolute bottom-0 left-0 top-0 w-1 transition-opacity',
                               isActive ? 'opacity-100' : 'opacity-0',
                             )}
                           />
-                          <Icon className="mt-0.5 h-5 w-5 shrink-0 text-sidebar-primary" />
+                          <Icon className="sidebar-link-icon mt-0.5 h-5 w-5 shrink-0" />
                           <div className="min-w-0 flex-1 space-y-1">
                             <div className="flex items-center justify-between gap-3">
                               <div className="font-display text-sm font-bold uppercase tracking-[0.16em]">
                                 {item.label}
                               </div>
                               {navBadges[item.id] ? (
-                                <span className="border border-brand-gold/25 bg-sidebar-badge px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-primary">
+                                <span className="sidebar-link-badge border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]">
                                   {navBadges[item.id]}
                                 </span>
                               ) : null}
                             </div>
-                            <div className="text-sm leading-relaxed text-sidebar-foreground/60">
+                            <div className="sidebar-link-copy text-sm leading-relaxed">
                               {item.description}
                             </div>
                           </div>
@@ -187,33 +187,40 @@ export function AppShell() {
             </section>
           ))}
 
-          <div className="space-y-3 border border-sidebar-border bg-sidebar-accent p-4">
-            <p className="eyebrow text-sidebar-foreground/50">Compliance Guardrails</p>
-            <div className="space-y-3 text-sm text-sidebar-foreground/78">
+          <div className="sidebar-panel space-y-3 border p-4">
+            <p className="eyebrow text-textSecondary">Compliance Guardrails</p>
+            <div className="flex flex-wrap gap-2">
+              {complianceChips.map((label) => (
+                <Badge key={label} className="chip-compliance-inverse">
+                  {label}
+                </Badge>
+              ))}
+            </div>
+            <div className="space-y-3 text-sm text-surfaceMuted">
               <div className="flex items-start gap-3">
-                <ShieldBan className="mt-0.5 h-4 w-4 text-sidebar-primary" />
-                <span>Biometrics disabled. No facial recognition and no identity inference.</span>
+                <ShieldBan className="mt-0.5 h-4 w-4 text-accentGlow" />
+                <span>No facial recognition or identity inference.</span>
               </div>
               <div className="flex items-start gap-3">
-                <FolderOpenDot className="mt-0.5 h-4 w-4 text-sidebar-primary" />
-                <span>Snapshots + metadata only. Human validation is required before action.</span>
+                <FolderOpenDot className="mt-0.5 h-4 w-4 text-accentGlow" />
+                <span>Human validation is required before action.</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-sidebar-border px-6 py-4">
-          <div className="text-xs uppercase tracking-[0.2em] text-sidebar-foreground/55">
+        <div className="border-t border-surfaceMuted/20 px-6 py-4">
+          <div className="text-xs uppercase tracking-[0.2em] text-textSecondary">
             {session.name} / {roleLabels[session.role]}
           </div>
-          <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-sidebar-foreground/40">
+          <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-textSecondary">
             DAMA LTD
           </div>
         </div>
       </aside>
 
       <div className="lg:pl-80">
-        <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-primaryDark/95 backdrop-blur">
           <div className="flex min-h-[92px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
             <div className="flex min-w-0 items-center gap-4">
               <Button
@@ -226,13 +233,20 @@ export function AppShell() {
               </Button>
 
               <div className="min-w-0">
-                <p className="eyebrow">NOVA AI / Strathmore Security Operations</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                <p className="eyebrow">NOVA / Strathmore Security Operations</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.22em] text-textSecondary">
                   {handle?.eyebrow ?? 'Operations'}
                 </p>
                 <h2 className="truncate font-display text-2xl font-bold tracking-[-0.04em]">
                   {handle?.title ?? 'Operations'}
                 </h2>
+                <div className="mt-3 flex flex-wrap gap-2 md:hidden">
+                  {complianceChips.map((label) => (
+                    <Badge key={label} className="chip-compliance">
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -240,8 +254,11 @@ export function AppShell() {
               <Badge className="badge-panel">
                 {roleLabels[session.role]} / {session.shift}
               </Badge>
-              <Badge className="badge-compliance">Biometrics disabled</Badge>
-              <Badge className="badge-compliance">Snapshots + metadata only</Badge>
+              {complianceChips.map((label) => (
+                <Badge key={label} className="chip-compliance">
+                  {label}
+                </Badge>
+              ))}
               {canAccessRoute(session.role, quickAction.id) ? (
                 <Link
                   className={buttonVariants({ variant: 'outline', size: 'default' })}
@@ -260,8 +277,8 @@ export function AppShell() {
 
         <main className="px-4 pb-10 pt-6 sm:px-6 lg:px-10">
           <Outlet />
-          <footer className="mt-10 border-t border-border pt-4 text-sm text-muted-foreground">
-            DAMA LTD / Powered by NOVA AI. Campus evidence remains limited to snapshots
+          <footer className="mt-10 border-t border-surfaceMuted/20 pt-4 text-sm text-textSecondary">
+            DAMA LTD / Powered by NOVA. Campus evidence remains limited to snapshots
             plus metadata, and operational action requires human validation.
           </footer>
         </main>

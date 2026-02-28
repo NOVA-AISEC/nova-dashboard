@@ -22,17 +22,17 @@ export function TrafficPage() {
 
       <div className="grid gap-5 xl:grid-cols-3">
         {trafficAdvisories.map((item) => (
-          <Card key={item.id} className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card key={item.id} className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle>{item.zone}</CardTitle>
                   <CardDescription>{formatDateTime(item.updatedAt)}</CardDescription>
                 </div>
-                <Badge className="border-border bg-background text-foreground">{item.status}</Badge>
+                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{item.status}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="pt-5 text-sm text-muted-foreground">{item.summary}</CardContent>
+            <CardContent className="pt-5 text-sm text-textSecondary">{item.summary}</CardContent>
           </Card>
         ))}
       </div>

@@ -49,20 +49,20 @@ export function QueuePage() {
         />
 
         <div className="space-y-6">
-          <Card className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <CardTitle>Dispatch board</CardTitle>
               <CardDescription>Current desk assignments and next recommended action.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               {openAlerts.slice(0, 4).map((alert) => (
-                <div key={alert.id} className="space-y-2 border border-border bg-background p-4">
+                <div key={alert.id} className="space-y-2 border border-surfaceMuted/20 bg-primaryDark p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-display text-lg font-bold">{alert.zone}</div>
                     <Badge className="badge-panel">{alert.assignee}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{alert.summary}</p>
-                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="text-sm text-textSecondary">{alert.summary}</p>
+                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-textSecondary">
                     <span>{alert.category.replaceAll('-', ' ')}</span>
                     <span>{formatDateTime(alert.updatedAt)}</span>
                   </div>
@@ -72,20 +72,20 @@ export function QueuePage() {
           </Card>
 
           <Card className="surface-command">
-            <CardHeader className="border-b border-white/10">
-              <CardTitle className="text-panel-dark-foreground">Incident desk watch</CardTitle>
-              <CardDescription className="text-white/72">
+            <CardHeader className="surface-command-divider border-b">
+              <CardTitle className="text-surfaceLight">Incident desk watch</CardTitle>
+              <CardDescription className="surface-command-copy">
                 Cases needing the next supervisor or admin decision.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               {latestCases.map((caseItem) => (
-                <Link key={caseItem.id} to={`/cases/${caseItem.id}`} className="flex items-start gap-3 border border-white/10 p-4 transition-colors hover:bg-white/5">
-                  <Users className="mt-0.5 h-4 w-4 text-brand-gold" />
+                <Link key={caseItem.id} to={`/cases/${caseItem.id}`} className="surface-command-row flex items-start gap-3 border p-4 transition-colors hover:bg-primaryDeep">
+                  <Users className="mt-0.5 h-4 w-4 text-accentGlow" />
                   <div className="space-y-1">
                     <div className="font-display text-lg font-bold">{caseItem.title}</div>
-                    <div className="text-sm text-white/72">{caseItem.location}</div>
-                    <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/55">
+                    <div className="surface-command-copy text-sm">{caseItem.location}</div>
+                    <div className="surface-command-copy flex items-center gap-2 text-xs uppercase tracking-[0.18em]">
                       <Radio className="h-3.5 w-3.5" />
                       <span>{caseItem.status}</span>
                     </div>

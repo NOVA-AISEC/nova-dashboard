@@ -24,8 +24,8 @@ export function SettingsPage() {
         description="Operator defaults stored in localStorage only. Compliance controls stay enforced and cannot be disabled here."
       />
 
-      <Card className="bg-panel">
-        <CardHeader className="border-b border-border">
+      <Card className="bg-primaryDeep">
+        <CardHeader className="border-b border-surfaceMuted/20">
           <CardTitle>Workspace defaults</CardTitle>
           <CardDescription>These settings tune the local view without changing policy guardrails.</CardDescription>
         </CardHeader>
@@ -40,11 +40,11 @@ export function SettingsPage() {
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <button className="flex items-center justify-between border border-border bg-background px-4 py-3 text-left" onClick={() => update('autoPrintShiftBrief', !preferences.autoPrintShiftBrief)}>
+            <button className="flex items-center justify-between border border-surfaceMuted/20 bg-primaryDark px-4 py-3 text-left" onClick={() => update('autoPrintShiftBrief', !preferences.autoPrintShiftBrief)}>
               <span>Auto-open shift brief after export</span>
               <Badge className="badge-panel">{preferences.autoPrintShiftBrief ? 'On' : 'Off'}</Badge>
             </button>
-            <button className="flex items-center justify-between border border-border bg-background px-4 py-3 text-left" onClick={() => update('compactTables', !preferences.compactTables)}>
+            <button className="flex items-center justify-between border border-surfaceMuted/20 bg-primaryDark px-4 py-3 text-left" onClick={() => update('compactTables', !preferences.compactTables)}>
               <span>Compact table density</span>
               <Badge className="badge-panel">{preferences.compactTables ? 'On' : 'Off'}</Badge>
             </button>

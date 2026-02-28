@@ -15,8 +15,8 @@ export function EventsPage() {
 
       <div className="grid gap-5 xl:grid-cols-3">
         {campusEvents.map((eventItem) => (
-          <Card key={eventItem.id} className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card key={eventItem.id} className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-4">
                   <CardTitle>{eventItem.title}</CardTitle>
@@ -26,10 +26,10 @@ export function EventsPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <div className="text-sm text-muted-foreground">{eventItem.detail}</div>
+              <div className="text-sm text-textSecondary">{eventItem.detail}</div>
               <div className="flex items-center justify-between gap-3">
                 <Badge className="badge-high">{eventItem.crowdLevel} crowd</Badge>
-                <div className="text-sm text-muted-foreground">{formatDateTime(eventItem.startsAt)}</div>
+                <div className="text-sm text-textSecondary">{formatDateTime(eventItem.startsAt)}</div>
               </div>
             </CardContent>
           </Card>

@@ -132,8 +132,8 @@ export function SearchPage() {
         }
       />
 
-      <Card className="bg-panel">
-        <CardHeader className="border-b border-border">
+      <Card className="bg-primaryDeep">
+        <CardHeader className="border-b border-surfaceMuted/20">
           <CardTitle>Search results</CardTitle>
           <CardDescription>
             {data.evidence.length} snapshot{data.evidence.length === 1 ? '' : 's'},{' '}
@@ -158,22 +158,22 @@ export function SearchPage() {
               {data.evidence.map((snapshot) => (
                 <article
                   key={snapshot.id}
-                  className="overflow-hidden border border-border bg-background"
+                  className="overflow-hidden border border-surfaceMuted/20 bg-primaryDark"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden border-b border-border">
+                  <div className="relative aspect-[16/10] overflow-hidden border-b border-surfaceMuted/20">
                     <img
                       alt={snapshot.title}
                       className="h-full w-full object-cover"
                       src={snapshot.snapshotUrl}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.22em] text-white/70">
+                    <div className="absolute inset-0 bg-gradient-to-t from-primaryDark to-transparent" />
+                    <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.22em] text-surfaceMuted">
                       <span>{snapshot.metadata.cameraId}</span>
                       <span>{snapshot.id}</span>
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 space-y-2 p-4 text-white">
+                    <div className="absolute inset-x-0 bottom-0 space-y-2 p-4 text-surfaceLight">
                       <h3 className="font-display text-2xl font-bold">{snapshot.title}</h3>
-                      <p className="max-w-md text-sm text-white/75">
+                      <p className="max-w-md text-sm text-surfaceMuted">
                         {snapshot.analyticsSummary}
                       </p>
                     </div>
@@ -187,12 +187,12 @@ export function SearchPage() {
                         </Badge>
                       ))}
                     </div>
-                    <p className="text-sm text-muted-foreground">{snapshot.summary}</p>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <p className="text-sm text-textSecondary">{snapshot.summary}</p>
+                    <div className="flex items-center justify-between text-sm text-textSecondary">
                       <span>{snapshot.metadata.zone}</span>
                       <span>{formatDateTime(snapshot.metadata.ts)}</span>
                     </div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <p className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                       Biometrics disabled: {String(snapshot.metadata.biometricsDisabled)} / human validation required
                     </p>
                     <Link className="brand-link" to={`/cases/${snapshot.relatedCaseId}`}>
@@ -204,7 +204,7 @@ export function SearchPage() {
               ))}
             </div>
           ) : (
-            <div className="border border-dashed border-border bg-background p-10 text-center text-muted-foreground">
+            <div className="border border-dashed border-surfaceMuted/20 bg-primaryDark p-10 text-center text-textSecondary">
               No snapshots matched. Broaden the query or clear the active filters.
             </div>
           )}

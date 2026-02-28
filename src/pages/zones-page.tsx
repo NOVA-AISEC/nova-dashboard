@@ -15,24 +15,24 @@ export function ZonesPage() {
 
       <div className="grid gap-5 xl:grid-cols-2">
         {campusZones.map((zone) => (
-          <Card key={zone.id} className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card key={zone.id} className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle>{zone.name}</CardTitle>
                   <CardDescription>{zone.cameraId}</CardDescription>
                 </div>
-                <Badge className="border-border bg-background text-foreground">{zone.status}</Badge>
+                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{zone.status}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <div className="text-sm text-muted-foreground">{zone.coverage}</div>
+              <div className="text-sm text-textSecondary">{zone.coverage}</div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="border border-border bg-background p-3">
+                <div className="border border-surfaceMuted/20 bg-primaryDark p-3">
                   <div className="eyebrow text-[10px]">Open alerts</div>
                   <div className="mt-1 font-display text-2xl font-bold">{zone.alertCount}</div>
                 </div>
-                <div className="border border-border bg-background p-3">
+                <div className="border border-surfaceMuted/20 bg-primaryDark p-3">
                   <div className="eyebrow text-[10px]">Last checked</div>
                   <div className="mt-1 text-sm">{formatDateTime(zone.lastCheckedAt)}</div>
                 </div>

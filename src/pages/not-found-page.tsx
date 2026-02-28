@@ -11,7 +11,7 @@ import {
 export function NotFoundPage() {
   return (
     <div className="grid min-h-[60vh] place-items-center">
-      <Card className="max-w-xl bg-panel">
+      <Card className="max-w-xl bg-primaryDeep">
         <CardHeader>
           <p className="eyebrow">404</p>
           <CardTitle className="text-3xl">Requested surface is unavailable</CardTitle>

@@ -119,8 +119,9 @@ export function OpsPage() {
         description="Run Strathmore-facing campus security operations across gates, hostels, library, parking, perimeter, and event flow. Work stays evidence-first with snapshots plus metadata only, biometrics disabled, and human validation required."
         actions={
           <>
-            <Badge className="badge-compliance">Biometrics disabled</Badge>
-            <Badge className="badge-compliance">Snapshots + metadata only</Badge>
+            <Badge className="chip-compliance">Biometrics disabled</Badge>
+            <Badge className="chip-compliance">Snapshots</Badge>
+            <Badge className="chip-compliance">Metadata only</Badge>
             <Link className={buttonVariants({ variant: 'outline' })} to="/queue">
               Open live queue
             </Link>
@@ -148,8 +149,8 @@ export function OpsPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,1fr)]">
-        <Card className="overflow-hidden bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="overflow-hidden bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Campus context</CardTitle>
             <CardDescription>
               Surfaces currently reflected in the command center without exposing sensitive campus detail.
@@ -157,26 +158,26 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="grid gap-3 pt-5 sm:grid-cols-2 xl:grid-cols-3">
             {campusContextAreas.map((area) => (
-              <div key={area.name} className="border border-border bg-background p-4">
+              <div key={area.name} className="border border-surfaceMuted/20 bg-primaryDark p-4">
                 <div className="font-display text-lg font-bold">{area.name}</div>
-                <div className="mt-2 text-sm text-muted-foreground">{area.detail}</div>
+                <div className="mt-2 text-sm text-textSecondary">{area.detail}</div>
               </div>
             ))}
           </CardContent>
         </Card>
 
         <Card className="surface-command">
-          <CardHeader className="border-b border-white/10">
-            <CardTitle className="text-panel-dark-foreground">Operational guardrails</CardTitle>
-            <CardDescription className="text-white/72">
+          <CardHeader className="surface-command-divider border-b">
+            <CardTitle className="text-surfaceLight">Operational guardrails</CardTitle>
+            <CardDescription className="surface-command-copy">
               Compliance posture for every campus workflow in this shift.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {complianceNotices.map((notice) => (
-              <div key={notice} className="flex gap-3 border border-white/10 p-3">
-                <ShieldBan className="mt-0.5 h-4 w-4 text-brand-gold" />
-                <p className="text-sm text-white/82">{notice}</p>
+              <div key={notice} className="surface-command-row flex gap-3 border p-3">
+                <ShieldBan className="mt-0.5 h-4 w-4 text-accentGlow" />
+                <p className="surface-command-copy text-sm">{notice}</p>
               </div>
             ))}
           </CardContent>
@@ -191,8 +192,8 @@ export function OpsPage() {
         />
 
         <div className="space-y-6">
-          <Card className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <CardTitle>Active cases</CardTitle>
               <CardDescription>
                 Cases with pending human validation, admin review, or supervisor escalation.
@@ -200,7 +201,7 @@ export function OpsPage() {
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               {activeCases.map((caseItem) => (
-                <div key={caseItem.id} className="space-y-3 border border-border bg-background p-4">
+                <div key={caseItem.id} className="space-y-3 border border-surfaceMuted/20 bg-primaryDark p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="eyebrow text-[10px]">{caseItem.id}</p>
@@ -210,8 +211,8 @@ export function OpsPage() {
                       {titleCase(caseItem.priority)}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{caseItem.summary}</p>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <p className="text-sm text-textSecondary">{caseItem.summary}</p>
+                  <div className="flex items-center justify-between text-sm text-textSecondary">
                     <span>{caseItem.location}</span>
                     <span>{formatRelativeHours(caseItem.updatedAt)}</span>
                   </div>
@@ -224,8 +225,8 @@ export function OpsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <CardTitle>Shift handover notes</CardTitle>
               <CardDescription>
                 Save notes locally, then export a printable brief from the current queue and cases.
@@ -237,7 +238,7 @@ export function OpsPage() {
                 placeholder="Capture dispatch updates, unresolved library or hostel exceptions, parking bottlenecks, and who needs the next handoff."
                 onChange={(event) => setShiftNotes(event.target.value)}
               />
-              <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between gap-4 text-sm text-textSecondary">
                 <span>Saved locally for this operator.</span>
                 <span>{shiftNotes.trim() ? `${shiftNotes.trim().split(/\s+/).length} words` : 'No notes yet'}</span>
               </div>
@@ -247,8 +248,8 @@ export function OpsPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Card className="bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Campus safety posture snapshot</CardTitle>
             <CardDescription>
               Where alert density is highest right now and which surfaces are driving response load.
@@ -256,10 +257,10 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {zoneSummary.map(([zone, count]) => (
-              <div key={zone} className="flex items-center justify-between gap-4 border border-border bg-background p-4">
+              <div key={zone} className="flex items-center justify-between gap-4 border border-surfaceMuted/20 bg-primaryDark p-4">
                 <div className="space-y-1">
                   <div className="font-display text-lg font-bold">{zone}</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-textSecondary">
                     {count} alert{count === 1 ? '' : 's'} currently open
                   </div>
                 </div>
@@ -267,7 +268,7 @@ export function OpsPage() {
                   <div className="font-display text-2xl font-bold">
                     {count === zoneSummary[0]?.[1] ? 'Peak' : `#${count}`}
                   </div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                     Zone load
                   </div>
                 </div>
@@ -276,8 +277,8 @@ export function OpsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Bottlenecks solved</CardTitle>
             <CardDescription>
               How the product reduces campus security and operations friction during a live shift.
@@ -285,9 +286,9 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
             {bottleneckSolutions.map((item) => (
-              <div key={item.title} className="border border-border bg-background p-4">
+              <div key={item.title} className="border border-surfaceMuted/20 bg-primaryDark p-4">
                 <div className="font-display text-lg font-bold">{item.title}</div>
-                <div className="mt-2 text-sm text-muted-foreground">{item.detail}</div>
+                <div className="mt-2 text-sm text-textSecondary">{item.detail}</div>
               </div>
             ))}
           </CardContent>
@@ -295,14 +296,14 @@ export function OpsPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Card className="bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Open alerts by zone</CardTitle>
             <CardDescription>Useful for perimeter patrol, parking response, and event crowd control handoff.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {zoneSummary.map(([zone, count]) => (
-              <div key={zone} className="flex items-center justify-between border border-border bg-background px-4 py-3">
+              <div key={zone} className="flex items-center justify-between border border-surfaceMuted/20 bg-primaryDark px-4 py-3">
                 <span className="font-medium">{zone}</span>
                 <Badge className="badge-panel">{count} open</Badge>
               </div>
@@ -310,20 +311,20 @@ export function OpsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Latest analyst actions</CardTitle>
             <CardDescription>Recent case updates for the incident desk and supervisor handoff.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {activeCases.map((caseItem) => (
-              <div key={caseItem.id} className="flex flex-col gap-2 border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div key={caseItem.id} className="flex flex-col gap-2 border border-surfaceMuted/20 bg-primaryDark p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="eyebrow text-[10px]">{caseItem.leadAnalyst}</p>
                   <div className="font-display text-lg font-bold">{caseItem.title}</div>
-                  <div className="text-sm text-muted-foreground">{caseItem.protocol}</div>
+                  <div className="text-sm text-textSecondary">{caseItem.protocol}</div>
                 </div>
-                <div className="text-sm text-muted-foreground">{formatDateTime(caseItem.updatedAt)}</div>
+                <div className="text-sm text-textSecondary">{formatDateTime(caseItem.updatedAt)}</div>
               </div>
             ))}
           </CardContent>

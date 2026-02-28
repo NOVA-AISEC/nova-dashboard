@@ -15,17 +15,17 @@ export function ExportsPage() {
 
       <div className="grid gap-5 xl:grid-cols-3">
         {evidenceExports.map((item) => (
-          <Card key={item.id} className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card key={item.id} className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle>{item.packageType}</CardTitle>
                   <CardDescription>{item.destination}</CardDescription>
                 </div>
-                <Badge className="border-border bg-background text-foreground">{item.status}</Badge>
+                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{item.status}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3 pt-5 text-sm text-muted-foreground">
+            <CardContent className="space-y-3 pt-5 text-sm text-textSecondary">
               <div>Case: {item.caseId}</div>
               <div>Requested by: {item.requestedBy}</div>
               <div>Requested at: {formatDateTime(item.requestedAt)}</div>

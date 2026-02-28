@@ -31,8 +31,8 @@ export function CasesPage() {
 
       <div className="grid gap-5 xl:grid-cols-2">
         {caseList.map((caseItem) => (
-          <Card key={caseItem.id} className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card key={caseItem.id} className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle>{caseItem.title}</CardTitle>
@@ -44,13 +44,13 @@ export function CasesPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <p className="text-sm text-muted-foreground">{caseItem.summary}</p>
+              <p className="text-sm text-textSecondary">{caseItem.summary}</p>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="border border-border bg-background p-3">
+                <div className="border border-surfaceMuted/20 bg-primaryDark p-3">
                   <div className="eyebrow text-[10px]">Lead analyst</div>
                   <div className="mt-1 text-sm">{caseItem.leadAnalyst}</div>
                 </div>
-                <div className="border border-border bg-background p-3">
+                <div className="border border-surfaceMuted/20 bg-primaryDark p-3">
                   <div className="eyebrow text-[10px]">Updated</div>
                   <div className="mt-1 text-sm">{formatDateTime(caseItem.updatedAt)}</div>
                 </div>

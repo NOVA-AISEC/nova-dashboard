@@ -45,11 +45,11 @@ export function FiltersBar({
   className,
 }: FiltersBarProps) {
   return (
-    <Card className={cn('bg-panel', className)}>
+    <Card className={cn('bg-primaryDeep', className)}>
       <CardContent className="space-y-5 pt-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <label className="relative block flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-textSecondary" />
             <Input
               className="pl-10"
               value={searchValue}
@@ -64,7 +64,7 @@ export function FiltersBar({
           {groups.map((group) => (
             <div
               key={group.id}
-              className="flex flex-wrap items-center gap-2 border border-border bg-background px-3 py-2"
+              className="flex flex-wrap items-center gap-2 border border-surfaceMuted/20 bg-primaryDark px-3 py-2"
             >
               <span className="eyebrow text-[10px]">{group.label}</span>
               {group.options.map((option) => (
@@ -72,12 +72,7 @@ export function FiltersBar({
                   key={option.value}
                   size="sm"
                   variant={group.value === option.value ? 'default' : 'ghost'}
-                  className={cn(
-                    'h-8 px-2.5',
-                    group.value === option.value
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-transparent bg-transparent',
-                  )}
+                  className="h-8 px-2.5"
                   onClick={() => onGroupChange(group.id, option.value)}
                 >
                   {option.label}
@@ -87,7 +82,7 @@ export function FiltersBar({
           ))}
 
           {onDateFromChange ? (
-            <div className="flex items-center gap-2 border border-border bg-background px-3 py-2">
+            <div className="flex items-center gap-2 border border-surfaceMuted/20 bg-primaryDark px-3 py-2">
               <span className="eyebrow text-[10px]">From</span>
               <Input
                 type="date"
@@ -98,7 +93,7 @@ export function FiltersBar({
           ) : null}
 
           {onDateToChange ? (
-            <div className="flex items-center gap-2 border border-border bg-background px-3 py-2">
+            <div className="flex items-center gap-2 border border-surfaceMuted/20 bg-primaryDark px-3 py-2">
               <span className="eyebrow text-[10px]">To</span>
               <Input
                 type="date"

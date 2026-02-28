@@ -44,16 +44,16 @@ export function AlertTable({
   busyAlertId,
 }: AlertTableProps) {
   return (
-    <Card className="overflow-hidden bg-panel">
-      <CardHeader className="border-b border-border">
+    <Card className="overflow-hidden bg-primaryDeep">
+      <CardHeader className="border-b border-surfaceMuted/20">
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="sticky top-0 z-10 bg-background/95 backdrop-blur">
-              <tr className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            <thead className="sticky top-0 z-10 bg-primaryDark/95 backdrop-blur">
+              <tr className="text-[11px] uppercase tracking-[0.22em] text-textSecondary">
                 <th className="px-4 py-3 font-semibold">Alert</th>
                 <th className="px-4 py-3 font-semibold">Category</th>
                 <th className="px-4 py-3 font-semibold">Severity</th>
@@ -70,8 +70,8 @@ export function AlertTable({
                 <tr
                   key={alert.id}
                   className={cn(
-                    'border-t border-border align-top',
-                    index % 2 === 0 ? 'bg-background/45' : 'bg-transparent',
+                    'border-t border-surfaceMuted/20 align-top',
+                    index % 2 === 0 ? 'bg-primaryDark/45' : 'bg-transparent',
                   )}
                 >
                   <td className="px-4 py-3.5">
@@ -80,10 +80,10 @@ export function AlertTable({
                         <span className="font-display text-base font-bold tracking-[-0.02em]">
                           {alert.title}
                         </span>
-                        <span className="text-xs text-muted-foreground">{alert.id}</span>
+                        <span className="text-xs text-textSecondary">{alert.id}</span>
                       </div>
-                      <p className="max-w-lg text-muted-foreground">{alert.summary}</p>
-                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      <p className="max-w-lg text-textSecondary">{alert.summary}</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                         {alert.rule}
                       </p>
                     </div>
@@ -103,15 +103,15 @@ export function AlertTable({
                       {alert.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3.5 text-muted-foreground">
+                  <td className="px-4 py-3.5 text-textSecondary">
                     <div>{alert.zone}</div>
                     <div className="text-xs uppercase tracking-[0.18em]">{alert.cameraId}</div>
                   </td>
-                  <td className="px-4 py-3.5 text-muted-foreground">
+                  <td className="px-4 py-3.5 text-textSecondary">
                     {alert.evidenceIds.length} snapshot
                     {alert.evidenceIds.length > 1 ? 's' : ''}
                   </td>
-                  <td className="px-4 py-3.5 text-muted-foreground">
+                  <td className="px-4 py-3.5 text-textSecondary">
                     <div>{formatDateTime(alert.updatedAt)}</div>
                     <div className="text-xs uppercase tracking-[0.18em]">
                       {alert.assignee}
@@ -119,7 +119,7 @@ export function AlertTable({
                   </td>
                   <td className="px-4 py-3.5">
                     <Link
-                      className="brand-link underline decoration-brand-gold/35 underline-offset-4"
+                      className="brand-link underline"
                       to={`/cases/${alert.caseId}`}
                     >
                       Open case
@@ -141,7 +141,7 @@ export function AlertTable({
                         {busyAlertId === alert.id ? 'Saving...' : 'Acknowledge'}
                       </Button>
                     ) : (
-                      <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      <span className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                         Human review
                       </span>
                     )}
@@ -150,7 +150,7 @@ export function AlertTable({
               ))}
               {!alerts.length ? (
                 <tr>
-                  <td className="px-5 py-10 text-center text-muted-foreground" colSpan={9}>
+                  <td className="px-5 py-10 text-center text-textSecondary" colSpan={9}>
                     No alerts match the current filter set.
                   </td>
                 </tr>

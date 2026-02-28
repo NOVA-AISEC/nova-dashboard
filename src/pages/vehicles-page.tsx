@@ -34,7 +34,7 @@ export function VehiclesPage() {
         description="Search vehicle sightings by time, zone, color, type, and directional attributes. No biometrics, no facial recognition, and no plate OCR are used."
       />
 
-      <Card className="bg-panel">
+      <Card className="bg-primaryDeep">
         <CardContent className="grid gap-4 pt-6 md:grid-cols-3">
           <label className="space-y-2">
             <span className="eyebrow text-[10px]">Zone</span>
@@ -63,24 +63,24 @@ export function VehiclesPage() {
 
       <div className="grid gap-5 xl:grid-cols-2">
         {filtered.map((item) => (
-          <Card key={item.id} className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card key={item.id} className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle>{item.color} {item.type}</CardTitle>
                   <CardDescription>{item.zone}</CardDescription>
                 </div>
-                <Badge className="border-border bg-background text-foreground">{item.direction}</Badge>
+                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{item.direction}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <div className="text-sm text-muted-foreground">{formatDateTime(item.timestamp)}</div>
+              <div className="text-sm text-textSecondary">{formatDateTime(item.timestamp)}</div>
               <div className="flex flex-wrap gap-2">
                 {item.attributes.map((attribute) => (
-                  <Badge key={attribute} className="border-border bg-background text-foreground">{attribute}</Badge>
+                  <Badge key={attribute} className="border-surfaceMuted bg-primaryDark text-surfaceLight">{attribute}</Badge>
                 ))}
               </div>
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                 Human validation required · {item.linkedAlertId ? `linked alert ${item.linkedAlertId}` : 'no linked alert'}
               </div>
             </CardContent>

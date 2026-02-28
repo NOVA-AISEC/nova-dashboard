@@ -39,7 +39,7 @@ export function CaseDetailPage() {
 
   if (error || !caseRecord) {
     return (
-      <Card className="bg-panel">
+      <Card className="bg-primaryDeep">
         <CardHeader>
           <CardTitle>Case not found</CardTitle>
           <CardDescription>
@@ -99,15 +99,15 @@ export function CaseDetailPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
-        <Card className="bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Case overview</CardTitle>
             <CardDescription>
               Response summary and review protocol for this campus incident workspace.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-5 pt-5 sm:grid-cols-2">
-            <div className="space-y-4 border border-border bg-background p-4">
+            <div className="space-y-4 border border-surfaceMuted/20 bg-primaryDark p-4">
               <div className="space-y-1">
                 <p className="eyebrow text-[10px]">Lead analyst</p>
                 <p className="font-display text-xl font-bold">{caseRecord.leadAnalyst}</p>
@@ -122,10 +122,10 @@ export function CaseDetailPage() {
               </div>
             </div>
 
-            <div className="space-y-4 border border-border bg-background p-4">
+            <div className="space-y-4 border border-surfaceMuted/20 bg-primaryDark p-4">
               <div className="space-y-1">
                 <p className="eyebrow text-[10px]">Protocol</p>
-                <p className="text-sm text-muted-foreground">{caseRecord.protocol}</p>
+                <p className="text-sm text-textSecondary">{caseRecord.protocol}</p>
               </div>
               <div className="notice-panel flex gap-3 border border-dashed p-3 text-sm">
                 <ShieldBan className="mt-0.5 h-4 w-4 shrink-0" />

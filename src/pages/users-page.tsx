@@ -14,8 +14,8 @@ export function UsersPage() {
 
       <div className="grid gap-5 xl:grid-cols-2">
         {campusUsers.map((user) => (
-          <Card key={user.id} className="bg-panel">
-            <CardHeader className="border-b border-border">
+          <Card key={user.id} className="bg-primaryDeep">
+            <CardHeader className="border-b border-surfaceMuted/20">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle>{user.name}</CardTitle>
@@ -24,7 +24,7 @@ export function UsersPage() {
                 <Badge className="badge-high">{user.role}</Badge>
               </div>
             </CardHeader>
-            <CardContent className="pt-5 text-sm text-muted-foreground">{user.accessScope}</CardContent>
+            <CardContent className="pt-5 text-sm text-textSecondary">{user.accessScope}</CardContent>
           </Card>
         ))}
       </div>

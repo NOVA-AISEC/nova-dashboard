@@ -54,8 +54,8 @@ export function ReportsPage() {
       />
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]">
-        <Card className="bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Create manual report</CardTitle>
             <CardDescription>
               Use this when a guard, hostel desk, or library desk needs to log an
@@ -121,8 +121,8 @@ export function ReportsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel">
-          <CardHeader className="border-b border-border">
+        <Card className="bg-primaryDeep">
+          <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Recent reports</CardTitle>
             <CardDescription>
               Locally stored manual submissions for the current operator session.
@@ -131,22 +131,22 @@ export function ReportsPage() {
           <CardContent className="space-y-4 pt-5">
             {reports.length ? (
               reports.map((report) => (
-                <div key={report.id} className="space-y-2 border border-border bg-background p-4">
+                <div key={report.id} className="space-y-2 border border-surfaceMuted/20 bg-primaryDark p-4">
                   <div className="flex items-center justify-between gap-3">
                     <Badge className="badge-high">{report.priority}</Badge>
-                    <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <span className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                       {formatDateTime(report.createdAt)}
                     </span>
                   </div>
                   <div className="font-display text-lg font-bold">{report.zone}</div>
-                  <div className="text-sm text-muted-foreground">{report.summary}</div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <div className="text-sm text-textSecondary">{report.summary}</div>
+                  <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                     {report.category.replaceAll('-', ' ')} / {report.reporter}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="border border-dashed border-border bg-background p-8 text-center text-sm text-muted-foreground">
+              <div className="border border-dashed border-surfaceMuted/20 bg-primaryDark p-8 text-center text-sm text-textSecondary">
                 No manual reports yet.
               </div>
             )}

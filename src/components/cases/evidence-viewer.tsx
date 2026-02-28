@@ -26,7 +26,7 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
 
   if (!selected) {
     return (
-      <Card className="bg-panel">
+      <Card className="bg-primaryDeep">
         <CardHeader>
           <CardTitle>Evidence viewer</CardTitle>
           <CardDescription>No evidence linked to this case.</CardDescription>
@@ -36,8 +36,8 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
   }
 
   return (
-    <Card className="overflow-hidden bg-panel">
-      <CardHeader className="border-b border-border">
+    <Card className="overflow-hidden bg-primaryDeep">
+      <CardHeader className="border-b border-surfaceMuted/20">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <p className="eyebrow">Evidence Viewer</p>
@@ -52,29 +52,29 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
       </CardHeader>
       <CardContent className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1.5fr)_22rem]">
         <div className="space-y-4">
-          <div className="relative aspect-[16/9] overflow-hidden border border-border bg-panel-dark">
+          <div className="relative aspect-[16/9] overflow-hidden border border-surfaceMuted/20 bg-primaryDark">
             <img
               alt={selected.title}
               className="h-full w-full object-cover"
               src={selected.snapshotUrl}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between border-b border-white/15 px-4 py-3 text-[11px] uppercase tracking-[0.24em] text-white/70">
+            <div className="absolute inset-0 bg-gradient-to-t from-primaryDark via-primaryDeep to-transparent" />
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between border-b border-surfaceMuted/20 px-4 py-3 text-[11px] uppercase tracking-[0.24em] text-surfaceMuted">
               <span>{selected.metadata.cameraId}</span>
               <span>{selected.metadata.zone}</span>
             </div>
-            <div className="absolute inset-x-0 bottom-0 space-y-3 border-t border-white/15 bg-black/35 p-4 text-white">
+            <div className="absolute inset-x-0 bottom-0 space-y-3 border-t border-surfaceMuted/20 bg-primaryDark/85 p-4 text-surfaceLight">
               <div className="flex flex-wrap gap-2">
                 {selected.metadata.classes.map((tag) => (
                   <span
                     key={tag}
-                    className="border border-white/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70"
+                    className="border border-surfaceMuted/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-surfaceMuted"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
-              <p className="max-w-2xl text-sm text-white/80">{selected.analyticsSummary}</p>
+              <p className="max-w-2xl text-sm text-surfaceMuted">{selected.analyticsSummary}</p>
             </div>
           </div>
 
@@ -84,8 +84,8 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
                 key={snapshot.id}
                 className={`group border p-0 text-left transition-colors ${
                   snapshot.id === selected.id
-                    ? 'border-brand-gold bg-severity-high-bg'
-                    : 'border-border bg-background hover:border-foreground'
+                    ? 'snapshot-thumb-active'
+                    : 'snapshot-thumb'
                 }`}
                 onClick={() => setSelectedId(snapshot.id)}
                 type="button"
@@ -97,7 +97,7 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
                   />
                   <div className="space-y-1 p-3">
                     <div className="font-display text-sm font-bold">{snapshot.title}</div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                       {snapshot.metadata.cameraId}
                     </div>
                   </div>
@@ -106,10 +106,10 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
           </div>
         </div>
 
-        <div className="space-y-4 border border-border bg-background p-4">
+        <div className="space-y-4 border border-surfaceMuted/20 bg-primaryDark p-4">
           <div className="space-y-1">
             <p className="eyebrow text-[10px]">Snapshot metadata</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-textSecondary">
               {formatLongDateTime(selected.metadata.ts)}
             </p>
           </div>
