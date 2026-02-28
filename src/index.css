@@ -1,0 +1,164 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --radius: 0rem;
+  --background: #f5f3ef;
+  --foreground: #171717;
+  --card: #ece7de;
+  --card-foreground: #171717;
+  --popover: #ece7de;
+  --popover-foreground: #171717;
+  --primary: #171717;
+  --primary-foreground: #f5f3ef;
+  --secondary: #ddd6c7;
+  --secondary-foreground: #171717;
+  --muted: #e6e0d4;
+  --muted-foreground: #5d554c;
+  --accent: #c05a3c;
+  --accent-foreground: #fff7f1;
+  --destructive: #b54a4a;
+  --border: #d0c7b8;
+  --input: #d6cdbf;
+  --ring: #c05a3c;
+  --chart-1: #c05a3c;
+  --chart-2: #4a7c59;
+  --chart-3: #5c7c8a;
+  --chart-4: #8e7142;
+  --chart-5: #8c5345;
+  --sidebar: #171717;
+  --sidebar-foreground: #f5f3ef;
+  --sidebar-primary: #c05a3c;
+  --sidebar-primary-foreground: #fff7f1;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #f5f3ef;
+  --sidebar-border: #33302b;
+  --sidebar-ring: #c05a3c;
+  --panel: #e8e4dc;
+  --panel-strong: #d8d0c2;
+  --panel-dark: #23211d;
+  --signal-critical: #a6403b;
+  --signal-high: #c05a3c;
+  --signal-medium: #8a6f43;
+  --signal-low: #4a7c59;
+}
+
+@theme inline {
+  --radius-sm: 0rem;
+  --radius-md: 0rem;
+  --radius-lg: var(--radius);
+  --radius-xl: 0rem;
+  --radius-2xl: 0rem;
+  --radius-3xl: 0rem;
+  --radius-4xl: 0rem;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-panel: var(--panel);
+  --color-panel-strong: var(--panel-strong);
+  --color-panel-dark: var(--panel-dark);
+  --color-signal-critical: var(--signal-critical);
+  --color-signal-high: var(--signal-high);
+  --color-signal-medium: var(--signal-medium);
+  --color-signal-low: var(--signal-low);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+    font-family: "IBM Plex Sans", sans-serif;
+    background-image:
+      linear-gradient(rgba(192, 90, 60, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(192, 90, 60, 0.06) 1px, transparent 1px),
+      radial-gradient(circle at top right, rgba(192, 90, 60, 0.14), transparent 22rem);
+    background-position: top left;
+    background-size: 36px 36px, 36px 36px, auto;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .font-display {
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  ::selection {
+    background: rgba(192, 90, 60, 0.2);
+  }
+}
+
+@layer components {
+  .eyebrow {
+    font-family: "Space Grotesk", sans-serif;
+    @apply text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground;
+  }
+
+  .panel-grid {
+    background-image:
+      linear-gradient(rgba(23, 23, 23, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(23, 23, 23, 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
