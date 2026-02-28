@@ -16,7 +16,7 @@ export function LoginPage() {
   const location = useLocation()
   const { signIn } = useAuth()
   const [email, setEmail] = useState('supervisor@strathmore.local')
-  const [password, setPassword] = useState('sentinel')
+  const [password, setPassword] = useState('nova123')
   const [role, setRole] = useState<UserRole>('supervisor')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -29,7 +29,9 @@ export function LoginPage() {
     try {
       const session = await signIn({ email, password, role })
       const from = typeof location.state === 'object' ? location.state?.from : undefined
-      navigate(typeof from === 'string' ? from : getDefaultRoute(session.role), { replace: true })
+      navigate(typeof from === 'string' ? from : getDefaultRoute(session.role), {
+        replace: true,
+      })
     } catch (signInError) {
       setError(signInError instanceof Error ? signInError.message : 'Unable to sign in.')
     } finally {
@@ -40,21 +42,24 @@ export function LoginPage() {
   return (
     <div className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-stretch gap-6 lg:grid-cols-[minmax(0,1.15fr)_28rem]">
-        <section className="relative overflow-hidden border border-border bg-panel-dark p-8 text-[#f5f3ef] sm:p-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(192,90,60,0.28),transparent_24rem),linear-gradient(135deg,rgba(255,255,255,0.02),transparent_50%)]" />
+        <section className="relative overflow-hidden border border-border bg-panel-dark p-8 text-panel-dark-foreground sm:p-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(203,160,82,0.22),transparent_24rem),radial-gradient(circle_at_bottom_left,rgba(58,93,174,0.32),transparent_22rem),linear-gradient(135deg,rgba(255,255,255,0.03),transparent_50%)]" />
           <div className="relative flex h-full flex-col justify-between gap-8">
             <div className="space-y-5">
-              <Badge className="border-white/15 bg-white/8 text-white">
+              <Badge className="border-brand-blue/35 bg-brand-blue/12 text-white">
                 <LockKeyhole className="h-3.5 w-3.5" />
-                DAMA Sentinel for Strathmore University
+                NOVA AI / Strathmore University
               </Badge>
               <div className="space-y-4">
-                <p className="eyebrow text-white/65">Campus Security Operations</p>
+                <p className="eyebrow text-white/65">Strathmore Security Operations by DAMA LTD</p>
                 <h1 className="max-w-2xl font-display text-4xl font-bold tracking-[-0.05em] sm:text-5xl">
-                  Evidence-first campus triage for gates, hostels, lecture blocks, and perimeter patrol.
+                  NOVA keeps Strathmore security operations evidence-first across gates,
+                  hostels, lecture blocks, and perimeter patrol.
                 </h1>
                 <p className="max-w-2xl text-base text-white/72">
-                  Login is local-only for now. The workspace preserves snapshots plus metadata, disables biometrics, and keeps every escalation human-validated.
+                  Login is local-only for now. NOVA preserves snapshots plus metadata,
+                  keeps biometrics disabled, and requires human-in-the-loop validation
+                  before action.
                 </p>
               </div>
             </div>
@@ -72,7 +77,7 @@ export function LoginPage() {
                 <p className="eyebrow text-white/55">Compliance</p>
                 <div className="mt-3 space-y-2 text-sm text-white/72">
                   <div className="flex items-start gap-2">
-                    <ShieldBan className="mt-0.5 h-4 w-4 text-[#f0b49f]" />
+                    <ShieldBan className="mt-0.5 h-4 w-4 text-brand-gold" />
                     <span>Biometrics disabled, no facial recognition, no identity inference.</span>
                   </div>
                   <div>Snapshots + metadata only, human validation required.</div>
@@ -86,7 +91,8 @@ export function LoginPage() {
           <CardHeader className="border-b border-border">
             <CardTitle>Sign in</CardTitle>
             <CardDescription>
-              Use a local operator account. Role selection is shown in development mode only.
+              Use a local NOVA operator account. Role selection is shown in development
+              mode only.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 pt-6">
@@ -115,7 +121,10 @@ export function LoginPage() {
               {import.meta.env.DEV ? (
                 <label className="block space-y-2">
                   <span className="eyebrow text-[10px]">Role</span>
-                  <Select value={role} onChange={(event) => setRole(event.target.value as UserRole)}>
+                  <Select
+                    value={role}
+                    onChange={(event) => setRole(event.target.value as UserRole)}
+                  >
                     {roleOptions.map((roleOption) => (
                       <option key={roleOption} value={roleOption}>
                         {roleLabels[roleOption]}
@@ -125,10 +134,14 @@ export function LoginPage() {
                 </label>
               ) : null}
 
-              {error ? <div className="border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">{error}</div> : null}
+              {error ? (
+                <div className="border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+                  {error}
+                </div>
+              ) : null}
 
               <Button className="w-full" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing in...' : 'Open command center'}
+                {isSubmitting ? 'Signing in...' : 'Open NOVA workspace'}
               </Button>
             </form>
 

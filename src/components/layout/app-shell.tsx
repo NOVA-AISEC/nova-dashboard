@@ -49,13 +49,28 @@ export function AppShell() {
     navData.data?.searchResults.cases.filter((caseItem) => caseItem.status !== 'closed') ?? []
   const navBadges: Record<string, string | undefined> = {
     queue: openAlerts.length ? String(openAlerts.length) : undefined,
-    alerts: countByStatus(openAlerts.map((alert) => alert.severity), 'critical') ? `${countByStatus(openAlerts.map((alert) => alert.severity), 'critical')} hot` : undefined,
-    cases: openCases.length ? String(openCases.length) : undefined,
-    vehicles: navData.data?.searchResults.evidence.filter((item) => item.metadata.classes.includes('vehicle')).length
-      ? String(navData.data.searchResults.evidence.filter((item) => item.metadata.classes.includes('vehicle')).length)
+    alerts: countByStatus(
+      openAlerts.map((alert) => alert.severity),
+      'critical',
+    )
+      ? `${countByStatus(openAlerts.map((alert) => alert.severity), 'critical')} hot`
       : undefined,
-    exports: openCases.filter((item) => item.humanValidationRequired).length ? `${openCases.filter((item) => item.humanValidationRequired).length} pending` : undefined,
-    audit: navData.data?.auditResults.total ? String(navData.data.auditResults.total) : undefined,
+    cases: openCases.length ? String(openCases.length) : undefined,
+    vehicles: navData.data?.searchResults.evidence.filter((item) =>
+      item.metadata.classes.includes('vehicle'),
+    ).length
+      ? String(
+          navData.data.searchResults.evidence.filter((item) =>
+            item.metadata.classes.includes('vehicle'),
+          ).length,
+        )
+      : undefined,
+    exports: openCases.filter((item) => item.humanValidationRequired).length
+      ? `${openCases.filter((item) => item.humanValidationRequired).length} pending`
+      : undefined,
+    audit: navData.data?.auditResults.total
+      ? String(navData.data.auditResults.total)
+      : undefined,
     users: role === 'admin' ? 'RBAC' : undefined,
   }
 
@@ -75,7 +90,7 @@ export function AppShell() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-sidebar-border bg-sidebar-bg text-sidebar-foreground transition-transform lg:translate-x-0',
           isNavOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -83,24 +98,33 @@ export function AppShell() {
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center border border-sidebar-primary bg-sidebar-primary text-sidebar-primary-foreground">
+                <div className="flex h-11 w-11 items-center justify-center border border-brand-gold/35 bg-sidebar-active text-sidebar-primary">
                   <Command className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="font-display text-lg font-bold uppercase tracking-[0.18em]">
-                    DAMA Sentinel
+                    NOVA
                   </div>
-                  <div className="text-xs uppercase tracking-[0.22em] text-sidebar-foreground/55">
-                    Strathmore University
+                  <div className="text-xs uppercase tracking-[0.22em] text-sidebar-foreground/60">
+                    Strathmore Security Operations
+                  </div>
+                  <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-sidebar-foreground/42">
+                    by DAMA LTD
                   </div>
                 </div>
               </div>
               <p className="max-w-xs text-sm leading-relaxed text-sidebar-foreground/70">
-                Campus command center for triage queue, guard dispatch, incident desk, traffic, and evidence exports.
+                NOVA AI coordinates triage queue, guard dispatch, incident desk review,
+                traffic response, and evidence exports for Strathmore teams.
               </p>
             </div>
 
-            <Button className="lg:hidden" variant="ghost" size="icon" onClick={() => setIsNavOpen(false)}>
+            <Button
+              className="lg:hidden"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsNavOpen(false)}
+            >
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -123,8 +147,8 @@ export function AppShell() {
                         cn(
                           'group relative flex items-start gap-3 border border-transparent px-4 py-3 transition-colors',
                           isActive
-                            ? 'bg-sidebar-accent text-sidebar-foreground'
-                            : 'text-sidebar-foreground/72 hover:border-sidebar-border hover:bg-sidebar-accent/60',
+                            ? 'border-sidebar-border bg-sidebar-active text-sidebar-active-foreground'
+                            : 'text-sidebar-foreground/72 hover:border-sidebar-border hover:bg-sidebar-accent/72',
                         )
                       }
                       onClick={() => setIsNavOpen(false)}
@@ -145,7 +169,7 @@ export function AppShell() {
                                 {item.label}
                               </div>
                               {navBadges[item.id] ? (
-                                <span className="border border-sidebar-border bg-black/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-foreground/72">
+                                <span className="border border-brand-gold/25 bg-sidebar-badge px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-sidebar-primary">
                                   {navBadges[item.id]}
                                 </span>
                               ) : null}
@@ -180,7 +204,10 @@ export function AppShell() {
 
         <div className="border-t border-sidebar-border px-6 py-4">
           <div className="text-xs uppercase tracking-[0.2em] text-sidebar-foreground/55">
-            {session.name} · {roleLabels[session.role]}
+            {session.name} / {roleLabels[session.role]}
+          </div>
+          <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-sidebar-foreground/40">
+            DAMA LTD
           </div>
         </div>
       </aside>
@@ -189,12 +216,17 @@ export function AppShell() {
         <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
           <div className="flex min-h-[92px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
             <div className="flex min-w-0 items-center gap-4">
-              <Button className="lg:hidden" variant="outline" size="icon" onClick={() => setIsNavOpen(true)}>
+              <Button
+                className="lg:hidden"
+                variant="outline"
+                size="icon"
+                onClick={() => setIsNavOpen(true)}
+              >
                 <Menu className="h-5 w-5" />
               </Button>
 
               <div className="min-w-0">
-                <p className="eyebrow">DAMA Sentinel for Strathmore University</p>
+                <p className="eyebrow">NOVA AI / Strathmore Security Operations</p>
                 <p className="mt-1 text-xs uppercase tracking-[0.22em] text-muted-foreground">
                   {handle?.eyebrow ?? 'Operations'}
                 </p>
@@ -205,13 +237,16 @@ export function AppShell() {
             </div>
 
             <div className="hidden flex-wrap items-center justify-end gap-3 md:flex">
-              <Badge className="border-border bg-panel text-foreground">
-                {roleLabels[session.role]} · {session.shift}
+              <Badge className="badge-panel">
+                {roleLabels[session.role]} / {session.shift}
               </Badge>
-              <Badge className="border-border bg-panel text-foreground">Biometrics disabled</Badge>
-              <Badge className="border-border bg-panel text-foreground">Snapshots + metadata only</Badge>
+              <Badge className="badge-compliance">Biometrics disabled</Badge>
+              <Badge className="badge-compliance">Snapshots + metadata only</Badge>
               {canAccessRoute(session.role, quickAction.id) ? (
-                <Link className={buttonVariants({ variant: 'outline', size: 'default' })} to={quickAction.to}>
+                <Link
+                  className={buttonVariants({ variant: 'outline', size: 'default' })}
+                  to={quickAction.to}
+                >
                   {quickAction.label}
                 </Link>
               ) : null}
@@ -226,7 +261,8 @@ export function AppShell() {
         <main className="px-4 pb-10 pt-6 sm:px-6 lg:px-10">
           <Outlet />
           <footer className="mt-10 border-t border-border pt-4 text-sm text-muted-foreground">
-            DAMA Sentinel keeps campus evidence limited to snapshots and metadata. Operational action requires human validation.
+            DAMA LTD / Powered by NOVA AI. Campus evidence remains limited to snapshots
+            plus metadata, and operational action requires human validation.
           </footer>
         </main>
       </div>

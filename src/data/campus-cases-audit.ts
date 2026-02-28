@@ -15,7 +15,7 @@ export const cases: Case[] = [
     alertIds: ['alt-701'],
     evidenceIds: ['ev-701'],
     timeline: [
-      { id: 'gate-evt-1', kind: 'alert', timestamp: '2026-02-28T06:12:00Z', title: 'Gate watch opened', detail: 'Lane dwell threshold triggered on Main Gate Lane 1.', operator: 'DAMA Sentinel' },
+      { id: 'gate-evt-1', kind: 'alert', timestamp: '2026-02-28T06:12:00Z', title: 'Gate watch opened', detail: 'Lane dwell threshold triggered on Main Gate Lane 1.', operator: 'NOVA AI' },
       { id: 'gate-evt-2', kind: 'triage', timestamp: '2026-02-28T06:20:00Z', title: 'Dispatch radio check', detail: 'Guard dispatch confirmed the driver was still in manual screening.', operator: 'A. Njeri' },
       { id: 'gate-evt-3', kind: 'handoff', timestamp: '2026-02-28T06:24:00Z', title: 'Shift handoff note added', detail: 'Carry the lane watch into the next brief if dwell recurs after 07:00.', operator: 'Incident Desk' },
     ],
@@ -35,7 +35,7 @@ export const cases: Case[] = [
     alertIds: ['alt-702', 'alt-707'],
     evidenceIds: ['ev-702', 'ev-707'],
     timeline: [
-      { id: 'library-evt-1', kind: 'alert', timestamp: '2026-02-28T07:05:00Z', title: 'Unattended item alert created', detail: 'Library entrance item timer exceeded policy threshold.', operator: 'DAMA Sentinel' },
+      { id: 'library-evt-1', kind: 'alert', timestamp: '2026-02-28T07:05:00Z', title: 'Unattended item alert created', detail: 'Library entrance item timer exceeded policy threshold.', operator: 'NOVA AI' },
       { id: 'library-evt-2', kind: 'triage', timestamp: '2026-02-28T07:12:00Z', title: 'Desk triage opened', detail: 'Guard and library staff requested manual ownership verification.', operator: 'P. Wambui' },
       { id: 'library-evt-3', kind: 'note', timestamp: '2026-02-28T09:25:00Z', title: 'Lost property linked', detail: 'Lecture Block C desk intake attached for admin review.', operator: 'Incident Desk' },
     ],
@@ -55,7 +55,7 @@ export const cases: Case[] = [
     alertIds: ['alt-703', 'alt-705'],
     evidenceIds: ['ev-703'],
     timeline: [
-      { id: 'hostel-evt-1', kind: 'alert', timestamp: '2026-02-28T05:44:00Z', title: 'Hostel exception opened', detail: 'Tailgating pattern detected at Residence Block B lobby.', operator: 'DAMA Sentinel' },
+      { id: 'hostel-evt-1', kind: 'alert', timestamp: '2026-02-28T05:44:00Z', title: 'Hostel exception opened', detail: 'Tailgating pattern detected at Residence Block B lobby.', operator: 'NOVA AI' },
       { id: 'hostel-evt-2', kind: 'triage', timestamp: '2026-02-28T05:57:00Z', title: 'Hostel desk review', detail: 'Desk operator opened a manual resident cross-check.', operator: 'R. Otieno' },
       { id: 'hostel-evt-3', kind: 'handoff', timestamp: '2026-02-28T08:31:00Z', title: 'Supervisor escalation', detail: 'Case moved to security supervisor pending Student Affairs coordination if needed.', operator: 'Incident Desk' },
     ],
@@ -75,7 +75,7 @@ export const cases: Case[] = [
     alertIds: ['alt-704', 'alt-706'],
     evidenceIds: ['ev-704', 'ev-706'],
     timeline: [
-      { id: 'traffic-evt-1', kind: 'alert', timestamp: '2026-02-28T08:10:00Z', title: 'Parking incident opened', detail: 'Parking A East exit queue exceeded the operating threshold.', operator: 'DAMA Sentinel' },
+      { id: 'traffic-evt-1', kind: 'alert', timestamp: '2026-02-28T08:10:00Z', title: 'Parking incident opened', detail: 'Parking A East exit queue exceeded the operating threshold.', operator: 'NOVA AI' },
       { id: 'traffic-evt-2', kind: 'note', timestamp: '2026-02-28T08:16:00Z', title: 'Traffic control acknowledged', detail: 'Attendants re-routed exiting vehicles while the lane was cleared.', operator: 'Traffic Control' },
       { id: 'traffic-evt-3', kind: 'closure', timestamp: '2026-02-28T11:55:00Z', title: 'Crowd surge contained', detail: 'Lunch crowd was redirected with no further escalation required.', operator: 'L. Achieng' },
     ],
@@ -95,7 +95,7 @@ export const cases: Case[] = [
     alertIds: ['alt-708'],
     evidenceIds: ['ev-705'],
     timeline: [
-      { id: 'perimeter-evt-1', kind: 'alert', timestamp: '2026-02-28T04:16:00Z', title: 'Perimeter intrusion alert', detail: 'Thermal vector crossed the north fence exclusion lane.', operator: 'DAMA Sentinel' },
+      { id: 'perimeter-evt-1', kind: 'alert', timestamp: '2026-02-28T04:16:00Z', title: 'Perimeter intrusion alert', detail: 'Thermal vector crossed the north fence exclusion lane.', operator: 'NOVA AI' },
       { id: 'perimeter-evt-2', kind: 'handoff', timestamp: '2026-02-28T04:22:00Z', title: 'Patrol dispatch', detail: 'Perimeter patrol received snapshots and metadata for manual confirmation.', operator: 'Perimeter Patrol' },
       { id: 'perimeter-evt-3', kind: 'triage', timestamp: '2026-02-28T04:29:00Z', title: 'Supervisor hold', detail: 'Incident remains on watch pending the next fence-line sweep.', operator: 'M. Kamau' },
     ],

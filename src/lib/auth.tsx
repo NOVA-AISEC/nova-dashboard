@@ -14,7 +14,7 @@ import {
   type UserRole,
 } from '@/app/access'
 
-const SESSION_STORAGE_KEY = 'dama-sentinel.session'
+const SESSION_STORAGE_KEY = 'nova.session'
 
 export interface SessionUser {
   token: string

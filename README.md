@@ -1,6 +1,6 @@
-# DAMA LTD Dashboard
+# NOVA Dashboard
 
-Vite, React, TypeScript, and Tailwind v4 for the DAMA LTD operations dashboard.
+Vite, React, TypeScript, and Tailwind v4 for NOVA, the Strathmore-facing operations dashboard by DAMA LTD.
 
 ## Overview
 
@@ -43,16 +43,11 @@ docs/
   api/contracts.md  API endpoint and payload contract
 ```
 
-## Folder Rename
+## Branding
 
-The repo directory should be renamed from `nova-dashboard` to `dama-dashboard`.
-
-Because Windows shells can hold locks on the current working directory, the rename is handled by helper scripts:
-
-- PowerShell: `./scripts/rename-to-dama.ps1`
-- Bash: `./scripts/rename-to-dama.sh`
-
-Default behavior is dry-run only. Each script prints the filesystem and git remote commands it would run. Re-run with `-Apply` or `--apply` to execute after confirmation prompts.
+- Product name: `NOVA` or `NOVA AI`
+- Company attribution: `DAMA LTD`
+- Strathmore-facing UI copy should read as Strathmore Security Operations by DAMA LTD
 
 ## Development
 
