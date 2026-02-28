@@ -1,49 +1,58 @@
-# NOVA Sentinel Dashboard
+# DAMA LTD Dashboard
 
-React, TypeScript, Tailwind v4, and shadcn-compatible UI for the NOVA Sentinel operations dashboard.
+Vite, React, TypeScript, and Tailwind v4 for the DAMA LTD operations dashboard.
 
 ## Overview
 
-This project implements an evidence-first security operations interface with:
+This repo now ships with a lightweight local end-to-end setup:
 
-- App shell with sidebar and topbar
-- `/ops` operations overview
-- `/alerts` alert review queue
-- `/cases/:id` case workspace
-- `/search` snapshot and metadata search
-- Reusable components for alert review, evidence viewing, timelines, and filters
+- React dashboard for `/ops`, `/alerts`, `/cases/:id`, and `/search`
+- Local Express API under `/api`
+- JSON-backed storage with first-run seeding from `server/data/seed.json`
+- Ingestion simulator that rotates alert inserts from `server/data/mock-events.ndjson`
+- Evidence constrained to still snapshots plus metadata only
 
-The UI is intentionally constrained to snapshots and metadata only.
-Biometric identification, face matching, and identity inference are not part of the product surface.
+Compliance guardrails are enforced throughout the UI and simulator:
 
-## Stack
-
-- React 19
-- TypeScript
-- Vite
-- Tailwind CSS v4
-- shadcn-compatible component patterns
-- Lucide React
-- React Router
+- No raw video is stored or returned
+- Biometrics are disabled
+- Facial recognition and identity inference are not implemented
+- Human analyst validation remains required
 
 ## Project Structure
 
 ```text
 src/
+  api/              Typed frontend API clients and mock fallback
   app/              Router setup
   components/       Layout, shared, domain, and UI components
-  data/             Mock dashboard data
-  lib/              Utilities and formatters
+  data/             Mock fallback dataset when VITE_USE_MOCK=true
+  hooks/            Async data hooks
+  lib/              Utilities and compliance copy
   pages/            Route-level pages
-  types/            Domain types
+  types/            Shared domain types
+server/
+  data/             Seed data and simulator event feed
+  db.js             JSON-backed storage layer
+  index.js          Local API server
+  simulator.js      Rotating ingestion simulator
+scripts/
+  dev.mjs           Cross-platform dev runner for web + API
+  rename-to-dama.*  Safe repo rename helpers
+docs/
+  api/contracts.md  API endpoint and payload contract
 ```
 
-## Reusable Components
+## Folder Rename
 
-- `AlertTable`
-- `EvidenceViewer`
-- `CaseTimeline`
-- `FiltersBar`
+The repo directory should be renamed from `nova-dashboard` to `dama-dashboard`.
+
+Because Windows shells can hold locks on the current working directory, the rename is handled by helper scripts:
+
+- PowerShell: `./scripts/rename-to-dama.ps1`
+- Bash: `./scripts/rename-to-dama.sh`
+
+Default behavior is dry-run only. Each script prints the filesystem and git remote commands it would run. Re-run with `-Apply` or `--apply` to execute after confirmation prompts.
 
 ## Development
 
@@ -53,10 +62,22 @@ Install dependencies:
 npm install
 ```
 
-Start the dev server:
+Start the web app and local API together:
 
 ```bash
 npm run dev
+```
+
+Run the API only:
+
+```bash
+npm run dev:server
+```
+
+Run the web app only:
+
+```bash
+npm run dev:web
 ```
 
 Run lint:
@@ -71,8 +92,42 @@ Create a production build:
 npm run build
 ```
 
+## Environment Variables
+
+- `VITE_USE_MOCK=true`
+  Uses the in-browser fallback dataset in `src/data/mock-data.ts` instead of the local API.
+- `DAMA_API_PORT=8787`
+  Overrides the local API port. Vite proxying follows the same value in development.
+- `SIMULATOR_INTERVAL_MS=8000`
+  Controls how often the ingestion simulator inserts a new alert.
+- `SIMULATOR_ENABLED=false`
+  Disables the rotating simulator while leaving the API available.
+
+## Evidence Model
+
+Evidence is represented as:
+
+```ts
+{
+  snapshotUrl: string
+  metadata: {
+    cameraId: string
+    zone: string
+    ts: string
+    bboxList: BoundingBox[]
+    classes: string[]
+    confidence: number
+    biometricsDisabled: true
+    humanValidationRequired: true
+    source: 'snapshot'
+  }
+}
+```
+
+Raw video is intentionally excluded.
+
 ## Notes
 
-- Routing is browser-based via `react-router-dom`.
-- The current implementation uses mock data under `src/data/mock-data.ts`.
-- Styling is tuned for a command-center layout with a dark sidebar and warm analytical workspace.
+- Placeholder snapshots are stored under `public/evidence/`.
+- Runtime API state is written to `server/data/db.json` and is not committed.
+- The repository package name is `dama-dashboard`.
