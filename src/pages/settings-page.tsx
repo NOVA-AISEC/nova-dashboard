@@ -1,0 +1,61 @@
+import { useState } from 'react'
+import { campusZones } from '@/data/mock-data'
+import { SectionHeader } from '@/components/shared/section-header'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select } from '@/components/ui/select'
+import { readOperatorPreferences, writeOperatorPreferences } from '@/lib/operator-storage'
+
+export function SettingsPage() {
+  const [preferences, setPreferences] = useState(() => readOperatorPreferences())
+
+  function update<K extends keyof typeof preferences>(key: K, value: (typeof preferences)[K]) {
+    const nextPreferences = { ...preferences, [key]: value }
+    setPreferences(nextPreferences)
+    writeOperatorPreferences(nextPreferences)
+  }
+
+  return (
+    <div className="space-y-8">
+      <SectionHeader
+        eyebrow="Local Preferences"
+        title="Preferences"
+        description="Operator defaults stored in localStorage only. Compliance controls stay enforced and cannot be disabled here."
+      />
+
+      <Card className="bg-panel">
+        <CardHeader className="border-b border-border">
+          <CardTitle>Workspace defaults</CardTitle>
+          <CardDescription>These settings tune the local view without changing policy guardrails.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5 pt-5">
+          <label className="block space-y-2">
+            <span className="eyebrow text-[10px]">Default zone</span>
+            <Select value={preferences.defaultZone} onChange={(event) => update('defaultZone', event.target.value)}>
+              {campusZones.map((zone) => (
+                <option key={zone.id} value={zone.name}>{zone.name}</option>
+              ))}
+            </Select>
+          </label>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <button className="flex items-center justify-between border border-border bg-background px-4 py-3 text-left" onClick={() => update('autoPrintShiftBrief', !preferences.autoPrintShiftBrief)}>
+              <span>Auto-open shift brief after export</span>
+              <Badge className="border-border bg-panel text-foreground">{preferences.autoPrintShiftBrief ? 'On' : 'Off'}</Badge>
+            </button>
+            <button className="flex items-center justify-between border border-border bg-background px-4 py-3 text-left" onClick={() => update('compactTables', !preferences.compactTables)}>
+              <span>Compact table density</span>
+              <Badge className="border-border bg-panel text-foreground">{preferences.compactTables ? 'On' : 'Off'}</Badge>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 border border-dashed border-accent bg-[#f8ece6] p-4 text-sm text-[#7d381f]">
+            <span>Biometrics disabled and snapshots + metadata only remain locked by policy.</span>
+            <Button variant="outline">Local only</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

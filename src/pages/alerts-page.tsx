@@ -71,9 +71,9 @@ export function AlertsPage() {
   return (
     <div className="space-y-8">
       <SectionHeader
-        eyebrow="Event queue"
-        title="Alert review queue"
-        description="Filter by severity, state, camera, date range, and free-text query. Acknowledgement keeps the workflow evidence-first and still requires human validation."
+        eyebrow="Incident Desk"
+        title="Campus alert queue"
+        description="Filter the triage queue by severity, state, camera, date range, and free-text query. Acknowledgement supports guard dispatch and still requires human validation."
         actions={<Button variant="outline">Shift handoff notes</Button>}
       />
 
@@ -170,7 +170,7 @@ export function AlertsPage() {
           busyAlertId={busyAlertId}
           onAcknowledge={(alert) => void handleAcknowledge(alert.id)}
           title="Filtered queue"
-          description="Open a case to inspect snapshots, metadata, audit, and validation history."
+          description="Open a case to inspect snapshots, metadata, audit, and human-validation history."
         />
       )}
     </div>

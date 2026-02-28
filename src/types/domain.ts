@@ -2,6 +2,15 @@ export type AlertSeverity = 'critical' | 'high' | 'medium' | 'low'
 export type AlertStatus = 'new' | 'acknowledged' | 'triaging' | 'contained' | 'closed'
 export type CasePriority = 'priority-1' | 'priority-2' | 'priority-3'
 export type CaseStatus = 'active' | 'monitoring' | 'escalated' | 'closed'
+export type AlertCategory =
+  | 'unattended-item'
+  | 'perimeter-intrusion'
+  | 'tailgating'
+  | 'crowd-surge'
+  | 'restricted-access-exception'
+  | 'parking-incident'
+  | 'lost-property-intake'
+  | 'vehicle-interest'
 export type TimelineEventKind =
   | 'alert'
   | 'triage'
@@ -53,6 +62,7 @@ export interface Evidence {
 export interface Alert {
   id: string
   title: string
+  category: AlertCategory
   severity: AlertSeverity
   status: AlertStatus
   zone: string
@@ -160,4 +170,72 @@ export interface OpsMetric {
   value: string
   delta: string
   tone: 'accent' | 'ink' | 'success' | 'warning'
+}
+
+export interface CampusContextArea {
+  name: string
+  detail: string
+}
+
+export interface BottleneckSolution {
+  title: string
+  detail: string
+}
+
+export interface CampusZoneStatus {
+  id: string
+  name: string
+  cameraId: string
+  status: 'healthy' | 'watch' | 'maintenance'
+  coverage: string
+  lastCheckedAt: string
+  alertCount: number
+}
+
+export interface VehicleSighting {
+  id: string
+  zone: string
+  timestamp: string
+  color: string
+  type: string
+  direction: string
+  attributes: string[]
+  linkedAlertId?: string
+  humanValidationRequired: true
+}
+
+export interface CampusEvent {
+  id: string
+  title: string
+  zone: string
+  startsAt: string
+  status: 'scheduled' | 'live' | 'monitoring'
+  crowdLevel: 'low' | 'moderate' | 'high'
+  detail: string
+}
+
+export interface EvidenceExportRecord {
+  id: string
+  caseId: string
+  requestedBy: string
+  requestedAt: string
+  destination: string
+  status: 'pending-review' | 'ready' | 'released'
+  packageType: string
+}
+
+export interface TrafficAdvisory {
+  id: string
+  zone: string
+  status: 'watch' | 'stable' | 'action'
+  summary: string
+  updatedAt: string
+}
+
+export interface CampusUserRecord {
+  id: string
+  name: string
+  role: string
+  team: string
+  accessScope: string
 }

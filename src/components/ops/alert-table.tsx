@@ -52,9 +52,10 @@ export function AlertTable({
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="bg-background/90">
+            <thead className="sticky top-0 z-10 bg-background/95 backdrop-blur">
               <tr className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                 <th className="px-4 py-3 font-semibold">Alert</th>
+                <th className="px-4 py-3 font-semibold">Category</th>
                 <th className="px-4 py-3 font-semibold">Severity</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">Zone</th>
@@ -65,8 +66,14 @@ export function AlertTable({
               </tr>
             </thead>
             <tbody>
-              {alerts.map((alert) => (
-                <tr key={alert.id} className="border-t border-border align-top">
+              {alerts.map((alert, index) => (
+                <tr
+                  key={alert.id}
+                  className={cn(
+                    'border-t border-border align-top',
+                    index % 2 === 0 ? 'bg-background/45' : 'bg-transparent',
+                  )}
+                >
                   <td className="px-4 py-3.5">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
@@ -80,6 +87,11 @@ export function AlertTable({
                         {alert.rule}
                       </p>
                     </div>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <Badge className="border-border bg-background text-foreground">
+                      {alert.category.replaceAll('-', ' ')}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3.5">
                     <Badge className={cn(severityClasses[alert.severity])}>
@@ -138,7 +150,7 @@ export function AlertTable({
               ))}
               {!alerts.length ? (
                 <tr>
-                  <td className="px-5 py-10 text-center text-muted-foreground" colSpan={8}>
+                  <td className="px-5 py-10 text-center text-muted-foreground" colSpan={9}>
                     No alerts match the current filter set.
                   </td>
                 </tr>

@@ -57,7 +57,7 @@ export function SearchPage() {
       <SectionHeader
         eyebrow="Snapshot index"
         title="Search evidence metadata"
-        description="Search titles, zones, camera IDs, classes, timestamps, and linked alerts. The index stores still images plus metadata only and keeps biometric functions disabled."
+        description="Search zones, camera IDs, object classes, timestamps, and linked alerts for campus review. The index stores still images plus metadata only and keeps biometric functions disabled."
       />
 
       <FiltersBar
@@ -139,7 +139,7 @@ export function SearchPage() {
             {data.evidence.length} snapshot{data.evidence.length === 1 ? '' : 's'},{' '}
             {data.alerts.length} alert{data.alerts.length === 1 ? '' : 's'}, and{' '}
             {data.cases.length} case{data.cases.length === 1 ? '' : 's'} matched the current
-            query.
+            query across gates, hostels, parking, and perimeter watch.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-5">
@@ -193,8 +193,7 @@ export function SearchPage() {
                       <span>{formatDateTime(snapshot.metadata.ts)}</span>
                     </div>
                     <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Biometrics disabled: {String(snapshot.metadata.biometricsDisabled)} /
-                      human validation required
+                      Biometrics disabled: {String(snapshot.metadata.biometricsDisabled)} / human validation required
                     </p>
                     <Link
                       className="inline-flex items-center gap-2 font-semibold text-accent"

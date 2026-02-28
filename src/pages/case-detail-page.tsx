@@ -103,7 +103,7 @@ export function CaseDetailPage() {
           <CardHeader className="border-b border-border">
             <CardTitle>Case overview</CardTitle>
             <CardDescription>
-              Response summary and review protocol for this workspace.
+              Response summary and review protocol for this campus incident workspace.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-5 pt-5 sm:grid-cols-2">
