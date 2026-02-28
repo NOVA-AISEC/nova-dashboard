@@ -42,15 +42,15 @@ export function SettingsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <button className="flex items-center justify-between border border-border bg-background px-4 py-3 text-left" onClick={() => update('autoPrintShiftBrief', !preferences.autoPrintShiftBrief)}>
               <span>Auto-open shift brief after export</span>
-              <Badge className="border-border bg-panel text-foreground">{preferences.autoPrintShiftBrief ? 'On' : 'Off'}</Badge>
+              <Badge className="badge-panel">{preferences.autoPrintShiftBrief ? 'On' : 'Off'}</Badge>
             </button>
             <button className="flex items-center justify-between border border-border bg-background px-4 py-3 text-left" onClick={() => update('compactTables', !preferences.compactTables)}>
               <span>Compact table density</span>
-              <Badge className="border-border bg-panel text-foreground">{preferences.compactTables ? 'On' : 'Off'}</Badge>
+              <Badge className="badge-panel">{preferences.compactTables ? 'On' : 'Off'}</Badge>
             </button>
           </div>
 
-          <div className="flex items-center justify-between gap-4 border border-dashed border-accent bg-[#f8ece6] p-4 text-sm text-[#7d381f]">
+          <div className="notice-panel flex items-center justify-between gap-4 border border-dashed p-4 text-sm">
             <span>Biometrics disabled and snapshots + metadata only remain locked by policy.</span>
             <Button variant="outline">Local only</Button>
           </div>

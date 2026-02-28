@@ -125,7 +125,7 @@ export function SearchPage() {
           }
         }}
         rightSlot={
-          <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">
+          <Badge className="badge-compliance">
             <ShieldBan className="h-3.5 w-3.5" />
             biometrics disabled
           </Badge>
@@ -146,7 +146,7 @@ export function SearchPage() {
           {data.alerts.length ? (
             <div className="flex flex-wrap gap-3">
               {data.alerts.slice(0, 4).map((alert) => (
-                <Badge key={alert.id} className="border-border bg-background text-foreground">
+                <Badge key={alert.id} className="badge-neutral">
                   {alert.severity} / {alert.zone}
                 </Badge>
               ))}
@@ -182,7 +182,7 @@ export function SearchPage() {
                   <div className="space-y-4 p-4">
                     <div className="flex flex-wrap gap-2">
                       {snapshot.metadata.classes.map((tag) => (
-                        <Badge key={tag} className="border-border bg-panel text-foreground">
+                        <Badge key={tag} className="badge-panel">
                           {tag}
                         </Badge>
                       ))}
@@ -195,10 +195,7 @@ export function SearchPage() {
                     <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Biometrics disabled: {String(snapshot.metadata.biometricsDisabled)} / human validation required
                     </p>
-                    <Link
-                      className="inline-flex items-center gap-2 font-semibold text-accent"
-                      to={`/cases/${snapshot.relatedCaseId}`}
-                    >
+                    <Link className="brand-link" to={`/cases/${snapshot.relatedCaseId}`}>
                       Open linked case
                       <ArrowUpRight className="h-4 w-4" />
                     </Link>

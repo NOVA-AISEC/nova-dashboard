@@ -22,18 +22,18 @@ interface AlertTableProps {
 }
 
 const severityClasses: Record<AlertSeverity, string> = {
-  critical: 'border-signal-critical bg-[#f3d7d3] text-[#6a211e]',
-  high: 'border-signal-high bg-[#f7e1d8] text-[#7e3c22]',
-  medium: 'border-signal-medium bg-[#f0e7d1] text-[#5c4a29]',
-  low: 'border-signal-low bg-[#dde7db] text-[#244430]',
+  critical: 'badge-critical',
+  high: 'badge-high',
+  medium: 'badge-medium',
+  low: 'badge-low',
 }
 
 const statusClasses: Record<AlertStatus, string> = {
-  new: 'border-[#5c7c8a] bg-[#dde8ed] text-[#224b5e]',
-  acknowledged: 'border-[#7a6e58] bg-[#ece2d4] text-[#5b4932]',
-  triaging: 'border-accent bg-[#f6e1d8] text-[#7d381f]',
-  contained: 'border-signal-low bg-[#dde8e0] text-[#274734]',
-  closed: 'border-border bg-muted text-muted-foreground',
+  new: 'badge-status-info',
+  acknowledged: 'badge-status-muted',
+  triaging: 'badge-high',
+  contained: 'badge-status-success',
+  closed: 'badge-neutral',
 }
 
 export function AlertTable({
@@ -89,7 +89,7 @@ export function AlertTable({
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
-                    <Badge className="border-border bg-background text-foreground">
+                    <Badge className="badge-neutral">
                       {alert.category.replaceAll('-', ' ')}
                     </Badge>
                   </td>
@@ -119,7 +119,7 @@ export function AlertTable({
                   </td>
                   <td className="px-4 py-3.5">
                     <Link
-                      className="inline-flex items-center gap-2 font-semibold text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-accent"
+                      className="brand-link underline decoration-brand-gold/35 underline-offset-4"
                       to={`/cases/${alert.caseId}`}
                     >
                       Open case

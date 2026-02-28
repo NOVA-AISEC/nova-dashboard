@@ -70,7 +70,7 @@ export function CaseDetailPage() {
               <ArrowLeft className="h-4 w-4" />
               Back to queue
             </Link>
-            <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">
+            <Badge className="badge-high">
               {titleCase(caseRecord.priority)}
             </Badge>
           </>
@@ -127,7 +127,7 @@ export function CaseDetailPage() {
                 <p className="eyebrow text-[10px]">Protocol</p>
                 <p className="text-sm text-muted-foreground">{caseRecord.protocol}</p>
               </div>
-              <div className="flex gap-3 border border-dashed border-accent bg-[#f8ece6] p-3 text-sm text-[#7d381f]">
+              <div className="notice-panel flex gap-3 border border-dashed p-3 text-sm">
                 <ShieldBan className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>
                   Evidence review is limited to snapshots and metadata. Biometrics are
@@ -135,7 +135,7 @@ export function CaseDetailPage() {
                 </span>
               </div>
               <Link
-                className="inline-flex items-center gap-2 font-semibold text-accent"
+                className="brand-link"
                 to="/search"
               >
                 Continue in snapshot search

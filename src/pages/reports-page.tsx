@@ -8,13 +8,17 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDateTime } from '@/lib/formatters'
-import { readIncidentReports, writeIncidentReports, type IncidentReportRecord } from '@/lib/operator-storage'
+import {
+  readIncidentReports,
+  writeIncidentReports,
+  type IncidentReportRecord,
+} from '@/lib/operator-storage'
 import { useAuth } from '@/lib/auth'
 
 export function ReportsPage() {
   const { session } = useAuth()
   const [category, setCategory] = useState<string>(campusAlertCategories[0])
-  const [zone, setZone] = useState(campusZones[0]?.name ?? 'Main Gate  Lane 1')
+  const [zone, setZone] = useState<string>(campusZones[0]?.name ?? 'Main Gate  Lane 1')
   const [priority, setPriority] = useState('medium')
   const [summary, setSummary] = useState('')
   const [reports, setReports] = useState<IncidentReportRecord[]>(() => readIncidentReports())
@@ -53,7 +57,10 @@ export function ReportsPage() {
         <Card className="bg-panel">
           <CardHeader className="border-b border-border">
             <CardTitle>Create manual report</CardTitle>
-            <CardDescription>Use this when a guard, hostel desk, or library desk needs to log an incident outside the automated queue.</CardDescription>
+            <CardDescription>
+              Use this when a guard, hostel desk, or library desk needs to log an
+              incident outside the automated queue.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-5">
             <form className="space-y-4" onSubmit={handleSubmit}>
@@ -62,7 +69,9 @@ export function ReportsPage() {
                   <span className="eyebrow text-[10px]">Category</span>
                   <Select value={category} onChange={(event) => setCategory(event.target.value)}>
                     {campusAlertCategories.map((item) => (
-                      <option key={item} value={item}>{item.replaceAll('-', ' ')}</option>
+                      <option key={item} value={item}>
+                        {item.replaceAll('-', ' ')}
+                      </option>
                     ))}
                   </Select>
                 </label>
@@ -70,7 +79,9 @@ export function ReportsPage() {
                   <span className="eyebrow text-[10px]">Zone</span>
                   <Select value={zone} onChange={(event) => setZone(event.target.value)}>
                     {campusZones.map((item) => (
-                      <option key={item.id} value={item.name}>{item.name}</option>
+                      <option key={item.id} value={item.name}>
+                        {item.name}
+                      </option>
                     ))}
                   </Select>
                 </label>
@@ -101,7 +112,9 @@ export function ReportsPage() {
               </label>
 
               <div className="flex items-center justify-between gap-4">
-                <Badge className="border-border bg-background text-foreground">Human-in-the-loop validation required</Badge>
+                <Badge className="badge-compliance">
+                  Human-in-the-loop validation required
+                </Badge>
                 <Button type="submit">Save report</Button>
               </div>
             </form>
@@ -111,22 +124,28 @@ export function ReportsPage() {
         <Card className="bg-panel">
           <CardHeader className="border-b border-border">
             <CardTitle>Recent reports</CardTitle>
-            <CardDescription>Locally stored manual submissions for the current operator session.</CardDescription>
+            <CardDescription>
+              Locally stored manual submissions for the current operator session.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
-            {reports.length ? reports.map((report) => (
-              <div key={report.id} className="space-y-2 border border-border bg-background p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">{report.priority}</Badge>
-                  <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{formatDateTime(report.createdAt)}</span>
+            {reports.length ? (
+              reports.map((report) => (
+                <div key={report.id} className="space-y-2 border border-border bg-background p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <Badge className="badge-high">{report.priority}</Badge>
+                    <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      {formatDateTime(report.createdAt)}
+                    </span>
+                  </div>
+                  <div className="font-display text-lg font-bold">{report.zone}</div>
+                  <div className="text-sm text-muted-foreground">{report.summary}</div>
+                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    {report.category.replaceAll('-', ' ')} / {report.reporter}
+                  </div>
                 </div>
-                <div className="font-display text-lg font-bold">{report.zone}</div>
-                <div className="text-sm text-muted-foreground">{report.summary}</div>
-                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  {report.category.replaceAll('-', ' ')} · {report.reporter}
-                </div>
-              </div>
-            )) : (
+              ))
+            ) : (
               <div className="border border-dashed border-border bg-background p-8 text-center text-sm text-muted-foreground">
                 No manual reports yet.
               </div>

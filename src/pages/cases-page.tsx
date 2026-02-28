@@ -38,7 +38,7 @@ export function CasesPage() {
                   <CardTitle>{caseItem.title}</CardTitle>
                   <CardDescription>{caseItem.location}</CardDescription>
                 </div>
-                <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">
+                <Badge className="badge-high">
                   {titleCase(caseItem.priority)}
                 </Badge>
               </div>
@@ -56,8 +56,8 @@ export function CasesPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <Badge className="border-border bg-background text-foreground">{caseItem.status}</Badge>
-                <Link to={`/cases/${caseItem.id}`} className="inline-flex items-center gap-2 font-semibold text-accent">
+                <Badge className="badge-neutral">{caseItem.status}</Badge>
+                <Link to={`/cases/${caseItem.id}`} className="brand-link">
                   Open case
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>

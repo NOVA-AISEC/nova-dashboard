@@ -21,7 +21,7 @@ export function UsersPage() {
                   <CardTitle>{user.name}</CardTitle>
                   <CardDescription>{user.team}</CardDescription>
                 </div>
-                <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">{user.role}</Badge>
+                <Badge className="badge-high">{user.role}</Badge>
               </div>
             </CardHeader>
             <CardContent className="pt-5 text-sm text-muted-foreground">{user.accessScope}</CardContent>

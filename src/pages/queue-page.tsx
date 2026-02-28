@@ -59,7 +59,7 @@ export function QueuePage() {
                 <div key={alert.id} className="space-y-2 border border-border bg-background p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-display text-lg font-bold">{alert.zone}</div>
-                    <Badge className="border-border bg-panel text-foreground">{alert.assignee}</Badge>
+                    <Badge className="badge-panel">{alert.assignee}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">{alert.summary}</p>
                   <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-muted-foreground">
@@ -71,20 +71,20 @@ export function QueuePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1d1c19] text-[#f5f3ef]">
+          <Card className="surface-command">
             <CardHeader className="border-b border-white/10">
-              <CardTitle className="text-[#f5f3ef]">Incident desk watch</CardTitle>
-              <CardDescription className="text-[#d6cfc1]">
+              <CardTitle className="text-panel-dark-foreground">Incident desk watch</CardTitle>
+              <CardDescription className="text-white/72">
                 Cases needing the next supervisor or admin decision.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               {latestCases.map((caseItem) => (
                 <Link key={caseItem.id} to={`/cases/${caseItem.id}`} className="flex items-start gap-3 border border-white/10 p-4 transition-colors hover:bg-white/5">
-                  <Users className="mt-0.5 h-4 w-4 text-accent" />
+                  <Users className="mt-0.5 h-4 w-4 text-brand-gold" />
                   <div className="space-y-1">
                     <div className="font-display text-lg font-bold">{caseItem.title}</div>
-                    <div className="text-sm text-[#d6cfc1]">{caseItem.location}</div>
+                    <div className="text-sm text-white/72">{caseItem.location}</div>
                     <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/55">
                       <Radio className="h-3.5 w-3.5" />
                       <span>{caseItem.status}</span>

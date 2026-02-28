@@ -44,7 +44,7 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
             <CardTitle className="text-2xl">{selected.title}</CardTitle>
             <CardDescription>{selected.summary}</CardDescription>
           </div>
-          <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">
+          <Badge className="badge-compliance">
             <ShieldBan className="h-3.5 w-3.5" />
             biometric identification disabled
           </Badge>
@@ -52,7 +52,7 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
       </CardHeader>
       <CardContent className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1.5fr)_22rem]">
         <div className="space-y-4">
-          <div className="relative aspect-[16/9] overflow-hidden border border-border bg-[#1d1c1a]">
+          <div className="relative aspect-[16/9] overflow-hidden border border-border bg-panel-dark">
             <img
               alt={selected.title}
               className="h-full w-full object-cover"
@@ -79,17 +79,17 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {snapshots.map((snapshot) => (
-                <button
-                  key={snapshot.id}
+            {snapshots.map((snapshot) => (
+              <button
+                key={snapshot.id}
                 className={`group border p-0 text-left transition-colors ${
                   snapshot.id === selected.id
-                    ? 'border-accent bg-[#f8ece6]'
+                    ? 'border-brand-gold bg-severity-high-bg'
                     : 'border-border bg-background hover:border-foreground'
                 }`}
                 onClick={() => setSelectedId(snapshot.id)}
                 type="button"
-                >
+              >
                   <img
                     alt={snapshot.title}
                     className="h-24 w-full object-cover"
@@ -101,7 +101,7 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
                       {snapshot.metadata.cameraId}
                     </div>
                   </div>
-                </button>
+              </button>
             ))}
           </div>
         </div>
@@ -144,7 +144,7 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
               <dt className="eyebrow text-[10px]">Linked case</dt>
               <dd>
                 <Link
-                  className="inline-flex items-center gap-2 font-semibold text-accent"
+                  className="brand-link"
                   to={`/cases/${selected.relatedCaseId}`}
                 >
                   {selected.relatedCaseId}

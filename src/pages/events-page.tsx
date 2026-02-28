@@ -20,7 +20,7 @@ export function EventsPage() {
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-4">
                   <CardTitle>{eventItem.title}</CardTitle>
-                  <Badge className="border-border bg-background text-foreground">{eventItem.status}</Badge>
+                  <Badge className="badge-neutral">{eventItem.status}</Badge>
                 </div>
                 <CardDescription>{eventItem.zone}</CardDescription>
               </div>
@@ -28,7 +28,7 @@ export function EventsPage() {
             <CardContent className="space-y-4 pt-5">
               <div className="text-sm text-muted-foreground">{eventItem.detail}</div>
               <div className="flex items-center justify-between gap-3">
-                <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">{eventItem.crowdLevel} crowd</Badge>
+                <Badge className="badge-high">{eventItem.crowdLevel} crowd</Badge>
                 <div className="text-sm text-muted-foreground">{formatDateTime(eventItem.startsAt)}</div>
               </div>
             </CardContent>

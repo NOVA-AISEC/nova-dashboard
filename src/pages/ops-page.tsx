@@ -119,8 +119,8 @@ export function OpsPage() {
         description="Run Strathmore-facing campus security operations across gates, hostels, library, parking, perimeter, and event flow. Work stays evidence-first with snapshots plus metadata only, biometrics disabled, and human validation required."
         actions={
           <>
-            <Badge className="border-border bg-panel text-foreground">Biometrics disabled</Badge>
-            <Badge className="border-border bg-panel text-foreground">Snapshots + metadata only</Badge>
+            <Badge className="badge-compliance">Biometrics disabled</Badge>
+            <Badge className="badge-compliance">Snapshots + metadata only</Badge>
             <Link className={buttonVariants({ variant: 'outline' })} to="/queue">
               Open live queue
             </Link>
@@ -165,18 +165,18 @@ export function OpsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#1d1c19] text-[#f5f3ef]">
+        <Card className="surface-command">
           <CardHeader className="border-b border-white/10">
-            <CardTitle className="text-[#f5f3ef]">Operational guardrails</CardTitle>
-            <CardDescription className="text-[#d6cfc1]">
+            <CardTitle className="text-panel-dark-foreground">Operational guardrails</CardTitle>
+            <CardDescription className="text-white/72">
               Compliance posture for every campus workflow in this shift.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {complianceNotices.map((notice) => (
               <div key={notice} className="flex gap-3 border border-white/10 p-3">
-                <ShieldBan className="mt-0.5 h-4 w-4 text-accent" />
-                <p className="text-sm text-[#e7dfd2]">{notice}</p>
+                <ShieldBan className="mt-0.5 h-4 w-4 text-brand-gold" />
+                <p className="text-sm text-white/82">{notice}</p>
               </div>
             ))}
           </CardContent>
@@ -206,7 +206,7 @@ export function OpsPage() {
                       <p className="eyebrow text-[10px]">{caseItem.id}</p>
                       <h3 className="font-display text-lg font-bold">{caseItem.title}</h3>
                     </div>
-                    <Badge className="border-accent bg-[#f6e1d8] text-[#7d381f]">
+                    <Badge className="badge-high">
                       {titleCase(caseItem.priority)}
                     </Badge>
                   </div>
@@ -215,7 +215,7 @@ export function OpsPage() {
                     <span>{caseItem.location}</span>
                     <span>{formatRelativeHours(caseItem.updatedAt)}</span>
                   </div>
-                  <Link className="inline-flex items-center gap-2 font-semibold text-accent" to={`/cases/${caseItem.id}`}>
+                  <Link className="brand-link" to={`/cases/${caseItem.id}`}>
                     Open workspace
                     <ArrowUpRight className="h-4 w-4" />
                   </Link>
@@ -304,7 +304,7 @@ export function OpsPage() {
             {zoneSummary.map(([zone, count]) => (
               <div key={zone} className="flex items-center justify-between border border-border bg-background px-4 py-3">
                 <span className="font-medium">{zone}</span>
-                <Badge className="border-border bg-panel text-foreground">{count} open</Badge>
+                <Badge className="badge-panel">{count} open</Badge>
               </div>
             ))}
           </CardContent>
