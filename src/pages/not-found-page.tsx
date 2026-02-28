@@ -16,7 +16,7 @@ export function NotFoundPage() {
           <p className="eyebrow">404</p>
           <CardTitle className="text-3xl">Requested surface is unavailable</CardTitle>
           <CardDescription>
-            The route does not map to a NOVA Sentinel workspace.
+            The route does not map to a DAMA LTD workspace.
           </CardDescription>
         </CardHeader>
         <CardContent>

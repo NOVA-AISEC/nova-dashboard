@@ -10,17 +10,10 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { formatLongDateTime } from '@/lib/formatters'
-import type { EvidenceSnapshot, SnapshotPalette } from '@/types/domain'
+import type { Evidence } from '@/types/domain'
 
 interface EvidenceViewerProps {
-  snapshots: EvidenceSnapshot[]
-}
-
-const paletteClasses: Record<SnapshotPalette, string> = {
-  amber: 'from-[#8a4a28] via-[#33241d] to-[#171717]',
-  teal: 'from-[#4e7567] via-[#243630] to-[#171717]',
-  slate: 'from-[#5f6774] via-[#2c2e35] to-[#171717]',
-  crimson: 'from-[#8f3d3d] via-[#331f22] to-[#171717]',
+  snapshots: Evidence[]
 }
 
 export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
@@ -59,17 +52,20 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
       </CardHeader>
       <CardContent className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1.5fr)_22rem]">
         <div className="space-y-4">
-          <div
-            className={`panel-grid relative aspect-[16/9] overflow-hidden border border-border bg-gradient-to-br ${paletteClasses[selected.palette]}`}
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] bg-[size:32px_32px]" />
+          <div className="relative aspect-[16/9] overflow-hidden border border-border bg-[#1d1c1a]">
+            <img
+              alt={selected.title}
+              className="h-full w-full object-cover"
+              src={selected.snapshotUrl}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute inset-x-0 top-0 flex items-center justify-between border-b border-white/15 px-4 py-3 text-[11px] uppercase tracking-[0.24em] text-white/70">
-              <span>{selected.cameraId}</span>
-              <span>{selected.location}</span>
+              <span>{selected.metadata.cameraId}</span>
+              <span>{selected.metadata.zone}</span>
             </div>
             <div className="absolute inset-x-0 bottom-0 space-y-3 border-t border-white/15 bg-black/35 p-4 text-white">
               <div className="flex flex-wrap gap-2">
-                {selected.tags.map((tag) => (
+                {selected.metadata.classes.map((tag) => (
                   <span
                     key={tag}
                     className="border border-white/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70"
@@ -83,9 +79,9 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {snapshots.map((snapshot) => (
-              <button
-                key={snapshot.id}
+              {snapshots.map((snapshot) => (
+                <button
+                  key={snapshot.id}
                 className={`group border p-0 text-left transition-colors ${
                   snapshot.id === selected.id
                     ? 'border-accent bg-[#f8ece6]'
@@ -93,17 +89,19 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
                 }`}
                 onClick={() => setSelectedId(snapshot.id)}
                 type="button"
-              >
-                <div
-                  className={`h-24 bg-gradient-to-br ${paletteClasses[snapshot.palette]}`}
-                />
-                <div className="space-y-1 p-3">
-                  <div className="font-display text-sm font-bold">{snapshot.title}</div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    {snapshot.cameraId}
+                >
+                  <img
+                    alt={snapshot.title}
+                    className="h-24 w-full object-cover"
+                    src={snapshot.snapshotUrl}
+                  />
+                  <div className="space-y-1 p-3">
+                    <div className="font-display text-sm font-bold">{snapshot.title}</div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      {snapshot.metadata.cameraId}
+                    </div>
                   </div>
-                </div>
-              </button>
+                </button>
             ))}
           </div>
         </div>
@@ -112,11 +110,17 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
           <div className="space-y-1">
             <p className="eyebrow text-[10px]">Snapshot metadata</p>
             <p className="text-sm text-muted-foreground">
-              {formatLongDateTime(selected.capturedAt)}
+              {formatLongDateTime(selected.metadata.ts)}
             </p>
           </div>
 
           <dl className="space-y-4 text-sm">
+            <div className="space-y-1">
+              <dt className="eyebrow text-[10px]">Camera / zone</dt>
+              <dd>
+                {selected.metadata.cameraId} / {selected.metadata.zone}
+              </dd>
+            </div>
             <div className="space-y-1">
               <dt className="eyebrow text-[10px]">Retention</dt>
               <dd>{selected.retention}</dd>
@@ -130,6 +134,13 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
               <dd>{selected.redactions}</dd>
             </div>
             <div className="space-y-1">
+              <dt className="eyebrow text-[10px]">Detections</dt>
+              <dd>
+                {selected.metadata.classes.join(', ')} at{' '}
+                {Math.round(selected.metadata.confidence * 100)}% confidence
+              </dd>
+            </div>
+            <div className="space-y-1">
               <dt className="eyebrow text-[10px]">Linked case</dt>
               <dd>
                 <Link
@@ -139,6 +150,13 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
                   {selected.relatedCaseId}
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>
+              </dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="eyebrow text-[10px]">Compliance</dt>
+              <dd>
+                Biometrics disabled: {String(selected.metadata.biometricsDisabled)}. Human
+                validation required: {String(selected.metadata.humanValidationRequired)}.
               </dd>
             </div>
           </dl>

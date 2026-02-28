@@ -1,8 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowUpRight, ShieldBan } from 'lucide-react'
+import { api } from '@/api'
 import { CaseTimeline } from '@/components/cases/case-timeline'
 import { EvidenceViewer } from '@/components/cases/evidence-viewer'
 import { AlertTable } from '@/components/ops/alert-table'
+import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
 import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
@@ -14,20 +16,34 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { getAlertsForCase, getCaseById, getEvidenceForCase } from '@/data/mock-data'
+import { useAsyncData } from '@/hooks/use-async-data'
 import { formatLongDateTime, titleCase } from '@/lib/formatters'
 
 export function CaseDetailPage() {
   const { id = '' } = useParams()
-  const caseRecord = getCaseById(id)
+  const { data: caseRecord, error, isLoading } = useAsyncData(() => api.getCase(id), [id])
 
-  if (!caseRecord) {
+  if (isLoading && !caseRecord) {
+    return (
+      <div className="space-y-6">
+        <LoadingPanel lines={4} />
+        <section className="grid gap-4 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <LoadingPanel key={index} lines={3} />
+          ))}
+        </section>
+        <LoadingPanel lines={10} />
+      </div>
+    )
+  }
+
+  if (error || !caseRecord) {
     return (
       <Card className="bg-panel">
         <CardHeader>
           <CardTitle>Case not found</CardTitle>
           <CardDescription>
-            The requested case workspace is unavailable or was archived.
+            {error ?? 'The requested case workspace is unavailable or was archived.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -39,8 +55,8 @@ export function CaseDetailPage() {
     )
   }
 
-  const caseEvidence = getEvidenceForCase(caseRecord.id)
-  const caseAlerts = getAlertsForCase(caseRecord.id)
+  const caseEvidence = caseRecord.evidence ?? []
+  const caseAlerts = caseRecord.alerts ?? []
 
   return (
     <div className="space-y-8">
@@ -77,7 +93,7 @@ export function CaseDetailPage() {
         <MetricCard
           label="Evidence snapshots"
           value={String(caseEvidence.length).padStart(2, '0')}
-          delta="Redactions preserved"
+          delta="Snapshots + metadata only"
           tone="success"
         />
       </section>
@@ -114,8 +130,8 @@ export function CaseDetailPage() {
               <div className="flex gap-3 border border-dashed border-accent bg-[#f8ece6] p-3 text-sm text-[#7d381f]">
                 <ShieldBan className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>
-                  Evidence review is limited to snapshots, motion metadata, and redacted
-                  analyst notes. No biometric identification is available.
+                  Evidence review is limited to snapshots and metadata. Biometrics are
+                  disabled and human validation remains mandatory.
                 </span>
               </div>
               <Link
@@ -129,7 +145,11 @@ export function CaseDetailPage() {
           </CardContent>
         </Card>
 
-        <CaseTimeline events={caseRecord.timeline} />
+        {caseRecord.timeline.length ? (
+          <CaseTimeline events={caseRecord.timeline} />
+        ) : (
+          <ErrorPanel title="Timeline unavailable" message="No timeline events were found." />
+        )}
       </section>
 
       <EvidenceViewer snapshots={caseEvidence} />

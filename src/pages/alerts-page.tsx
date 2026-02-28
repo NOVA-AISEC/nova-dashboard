@@ -1,31 +1,79 @@
-import { useState } from 'react'
+import { useDeferredValue, useState } from 'react'
+import { api } from '@/api'
 import { AlertTable } from '@/components/ops/alert-table'
+import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { FiltersBar } from '@/components/shared/filters-bar'
 import { MetricCard } from '@/components/shared/metric-card'
 import { SectionHeader } from '@/components/shared/section-header'
 import { Button } from '@/components/ui/button'
-import { alerts } from '@/data/mock-data'
+import { useAsyncData } from '@/hooks/use-async-data'
 
 export function AlertsPage() {
   const [severity, setSeverity] = useState('all')
   const [status, setStatus] = useState('all')
+  const [cameraId, setCameraId] = useState('all')
   const [query, setQuery] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [busyAlertId, setBusyAlertId] = useState<string | null>(null)
+  const deferredQuery = useDeferredValue(query)
 
-  const filteredAlerts = alerts.filter((alert) => {
-    const matchesSeverity = severity === 'all' || alert.severity === severity
-    const matchesStatus = status === 'all' || alert.status === status
-    const haystack =
-      `${alert.id} ${alert.title} ${alert.area} ${alert.summary} ${alert.rule}`.toLowerCase()
-    const matchesQuery = !query.trim() || haystack.includes(query.trim().toLowerCase())
-    return matchesSeverity && matchesStatus && matchesQuery
-  })
+  const metadataState = useAsyncData(() => api.search(''), [])
+  const alertsState = useAsyncData(
+    () =>
+      api.listAlerts({
+        severity,
+        status,
+        cameraId,
+        q: deferredQuery,
+        from: dateFrom || undefined,
+        to: dateTo || undefined,
+        page: 1,
+        pageSize: 50,
+      }),
+    [severity, status, cameraId, deferredQuery, dateFrom, dateTo, refreshKey],
+  )
+
+  async function handleAcknowledge(alertId: string) {
+    try {
+      setBusyAlertId(alertId)
+      await api.ackAlert(alertId)
+      setRefreshKey((value) => value + 1)
+    } finally {
+      setBusyAlertId(null)
+    }
+  }
+
+  if (alertsState.isLoading && !alertsState.data) {
+    return (
+      <div className="space-y-6">
+        <LoadingPanel lines={4} />
+        <section className="grid gap-4 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <LoadingPanel key={index} lines={3} />
+          ))}
+        </section>
+        <LoadingPanel lines={8} />
+      </div>
+    )
+  }
+
+  if (alertsState.error || !alertsState.data) {
+    return <ErrorPanel message={alertsState.error ?? 'Alert data is unavailable.'} />
+  }
+
+  const alerts = alertsState.data.items
+  const cameras =
+    metadataState.data?.cameras ??
+    Array.from(new Set(alerts.map((alert) => alert.cameraId))).sort()
 
   return (
     <div className="space-y-8">
       <SectionHeader
         eyebrow="Event queue"
         title="Alert review queue"
-        description="Filter by severity and response state, then open the linked case workspace for evidence review."
+        description="Filter by severity, state, camera, date range, and free-text query. Acknowledgement keeps the workflow evidence-first and still requires human validation."
         actions={<Button variant="outline">Shift handoff notes</Button>}
       />
 
@@ -47,11 +95,11 @@ export function AlertsPage() {
           tone="accent"
         />
         <MetricCard
-          label="Contained"
+          label="Acknowledged"
           value={String(
-            alerts.filter((alert) => alert.status === 'contained').length,
+            alerts.filter((alert) => alert.status === 'acknowledged').length,
           ).padStart(2, '0')}
-          delta="Watchlist follow-up only"
+          delta="Awaiting next action"
           tone="success"
         />
       </section>
@@ -59,6 +107,10 @@ export function AlertsPage() {
       <FiltersBar
         searchValue={query}
         onSearchChange={setQuery}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
         groups={[
           {
             id: 'severity',
@@ -79,9 +131,19 @@ export function AlertsPage() {
             options: [
               { label: 'All', value: 'all' },
               { label: 'New', value: 'new' },
+              { label: 'Ack', value: 'acknowledged' },
               { label: 'Triaging', value: 'triaging' },
               { label: 'Contained', value: 'contained' },
               { label: 'Closed', value: 'closed' },
+            ],
+          },
+          {
+            id: 'camera',
+            label: 'Camera',
+            value: cameraId,
+            options: [
+              { label: 'All', value: 'all' },
+              ...cameras.map((item) => ({ label: item, value: item })),
             ],
           },
         ]}
@@ -93,14 +155,24 @@ export function AlertsPage() {
           if (groupId === 'status') {
             setStatus(value)
           }
+
+          if (groupId === 'camera') {
+            setCameraId(value)
+          }
         }}
       />
 
-      <AlertTable
-        alerts={filteredAlerts}
-        title="Filtered queue"
-        description="Open a case to inspect its snapshots, metadata, and timeline."
-      />
+      {alertsState.error ? (
+        <ErrorPanel message={alertsState.error} />
+      ) : (
+        <AlertTable
+          alerts={alerts}
+          busyAlertId={busyAlertId}
+          onAcknowledge={(alert) => void handleAcknowledge(alert.id)}
+          title="Filtered queue"
+          description="Open a case to inspect snapshots, metadata, audit, and validation history."
+        />
+      )}
     </div>
   )
 }

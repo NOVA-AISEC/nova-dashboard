@@ -14,10 +14,10 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { formatDateTime } from '@/lib/formatters'
-import type { TimelineEvent, TimelineEventKind } from '@/types/domain'
+import type { CaseTimelineEvent, TimelineEventKind } from '@/types/domain'
 
 interface CaseTimelineProps {
-  events: TimelineEvent[]
+  events: CaseTimelineEvent[]
 }
 
 const timelineIcons: Record<TimelineEventKind, typeof BellRing> = {

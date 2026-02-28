@@ -23,6 +23,10 @@ interface FiltersBarProps {
   placeholder?: string
   groups: FilterGroup[]
   onGroupChange: (groupId: string, value: string) => void
+  dateFrom?: string
+  dateTo?: string
+  onDateFromChange?: (value: string) => void
+  onDateToChange?: (value: string) => void
   rightSlot?: ReactNode
   className?: string
 }
@@ -33,6 +37,10 @@ export function FiltersBar({
   placeholder = 'Search snapshots, cameras, zones, or tags',
   groups,
   onGroupChange,
+  dateFrom,
+  dateTo,
+  onDateFromChange,
+  onDateToChange,
   rightSlot,
   className,
 }: FiltersBarProps) {
@@ -77,6 +85,28 @@ export function FiltersBar({
               ))}
             </div>
           ))}
+
+          {onDateFromChange ? (
+            <div className="flex items-center gap-2 border border-border bg-background px-3 py-2">
+              <span className="eyebrow text-[10px]">From</span>
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(event) => onDateFromChange(event.target.value)}
+              />
+            </div>
+          ) : null}
+
+          {onDateToChange ? (
+            <div className="flex items-center gap-2 border border-border bg-background px-3 py-2">
+              <span className="eyebrow text-[10px]">To</span>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(event) => onDateToChange(event.target.value)}
+              />
+            </div>
+          ) : null}
         </div>
       </CardContent>
     </Card>

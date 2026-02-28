@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Download, ShieldBan } from 'lucide-react'
+import { api } from '@/api'
 import { AlertTable } from '@/components/ops/alert-table'
+import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
 import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
@@ -13,16 +15,88 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { alerts, cases, complianceNotices, opsMetrics } from '@/data/mock-data'
+import { useAsyncData } from '@/hooks/use-async-data'
+import { complianceNotices } from '@/lib/compliance'
 import { formatDateTime, formatRelativeHours, titleCase } from '@/lib/formatters'
+import type { SearchResults } from '@/types/domain'
+
+function getMetrics(results: SearchResults) {
+  const openAlerts = results.alerts.filter((alert) => alert.status !== 'closed')
+  const activeCases = results.cases.filter((caseItem) => caseItem.status !== 'closed')
+
+  return [
+    {
+      label: 'Open alert load',
+      value: String(openAlerts.length).padStart(2, '0'),
+      delta: `${openAlerts.filter((alert) => alert.severity === 'critical').length} critical`,
+      tone: 'accent' as const,
+    },
+    {
+      label: 'Evidence bundles sealed',
+      value: String(results.evidence.length).padStart(2, '0'),
+      delta: 'Snapshots + metadata only',
+      tone: 'success' as const,
+    },
+    {
+      label: 'Active cases',
+      value: String(activeCases.length).padStart(2, '0'),
+      delta: 'Human validation required',
+      tone: 'warning' as const,
+    },
+    {
+      label: 'Biometric actions',
+      value: '00',
+      delta: 'Disabled by policy',
+      tone: 'ink' as const,
+    },
+  ]
+}
+
+function useOpsData() {
+  return useAsyncData(() => api.search(''), [])
+}
 
 export function OpsPage() {
+  const { data, error, isLoading } = useOpsData()
+
+  if (isLoading && !data) {
+    return (
+      <div className="space-y-6">
+        <LoadingPanel lines={4} />
+        <section className="grid gap-4 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <LoadingPanel key={index} lines={3} />
+          ))}
+        </section>
+        <LoadingPanel lines={8} />
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return <ErrorPanel message={error ?? 'Operations data is unavailable.'} />
+  }
+
+  const metrics = getMetrics(data)
+  const openAlerts = data.alerts.filter((alert) => alert.status !== 'closed')
+  const activeCases = [...data.cases].sort((left, right) =>
+    right.updatedAt.localeCompare(left.updatedAt),
+  )
+  const zoneSummary = Object.entries(
+    openAlerts.reduce<Record<string, number>>((accumulator, alert) => {
+      accumulator[alert.zone] = (accumulator[alert.zone] ?? 0) + 1
+      return accumulator
+    }, {}),
+  )
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 3)
+
   return (
     <div className="space-y-8">
       <SectionHeader
         eyebrow="Live command"
-        title="NOVA Sentinel shift board"
-        description="Monitor alert pressure, active cases, and evidence compliance from a single command surface. Every action on this dashboard is grounded in snapshots and metadata only."
+        title="DAMA LTD shift board"
+        description="Monitor alert pressure, active cases, and evidence compliance from a single command surface. Every workflow is constrained to snapshots plus metadata with biometrics disabled and human validation required."
         actions={
           <>
             <Link className={buttonVariants({ variant: 'outline' })} to="/alerts">
@@ -37,14 +111,14 @@ export function OpsPage() {
       />
 
       <section className="grid gap-4 xl:grid-cols-4">
-        {opsMetrics.map((metric) => (
+        {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,1fr)]">
         <AlertTable
-          alerts={alerts.filter((alert) => alert.status !== 'closed')}
+          alerts={openAlerts}
           title="Priority queue"
           description="Triage the highest-risk items currently open across perimeter, gate, and dock surfaces."
         />
@@ -54,11 +128,11 @@ export function OpsPage() {
             <CardHeader className="border-b border-border">
               <CardTitle>Active cases</CardTitle>
               <CardDescription>
-                Cases with evidence bundles already sealed for analyst review.
+                Cases with sealed evidence bundles and pending human validation.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              {cases.map((caseItem) => (
+              {activeCases.map((caseItem) => (
                 <div
                   key={caseItem.id}
                   className="space-y-3 border border-border bg-background p-4"
@@ -89,11 +163,11 @@ export function OpsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1e1c19] text-[#f5f3ef]">
+          <Card className="bg-[#1d1c19] text-[#f5f3ef]">
             <CardHeader className="border-b border-white/10">
               <CardTitle className="text-[#f5f3ef]">Operational guardrails</CardTitle>
               <CardDescription className="text-[#d6cfc1]">
-                Policy state for the current shift.
+                Active DAMA LTD compliance posture for the current shift.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
@@ -113,25 +187,25 @@ export function OpsPage() {
           <CardHeader className="border-b border-border">
             <CardTitle>Sensor posture</CardTitle>
             <CardDescription>
-              Key surfaces reporting elevated event density this shift.
+              Surfaces with the highest live alert density in the local simulator feed.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
-            {[
-              ['Dock 7 Corridor', 'Rule collisions + manifest drift'],
-              ['North Perimeter', 'Thermal exclusion events'],
-              ['South Gate', 'Vehicle dwell and screening lag'],
-            ].map(([zone, detail]) => (
+            {zoneSummary.map(([zone, count]) => (
               <div
                 key={zone}
                 className="flex items-center justify-between gap-4 border border-border bg-background p-4"
               >
                 <div className="space-y-1">
                   <div className="font-display text-lg font-bold">{zone}</div>
-                  <div className="text-sm text-muted-foreground">{detail}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {count} alert{count === 1 ? '' : 's'} currently open
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-display text-2xl font-bold">+12%</div>
+                  <div className="font-display text-2xl font-bold">
+                    +{count * 4}%
+                  </div>
                   <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Event density
                   </div>
@@ -145,11 +219,11 @@ export function OpsPage() {
           <CardHeader className="border-b border-border">
             <CardTitle>Latest analyst actions</CardTitle>
             <CardDescription>
-              Timestamped handoffs from the active shift roster.
+              Case owners with the most recent evidence-backed updates.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
-            {cases.map((caseItem) => (
+            {activeCases.map((caseItem) => (
               <div
                 key={caseItem.id}
                 className="flex flex-col gap-2 border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between"

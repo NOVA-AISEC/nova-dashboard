@@ -28,9 +28,9 @@ export function MetricCard({ label, value, delta, tone }: MetricCardProps) {
 
   return (
     <Card className={cn('border-t-4 bg-panel', toneClasses[tone])}>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <p className="eyebrow">{label}</p>
-        <CardTitle className="text-4xl">{value}</CardTitle>
+        <CardTitle className="text-4xl tracking-[-0.06em]">{value}</CardTitle>
       </CardHeader>
       <CardContent className="flex items-center gap-2 text-sm text-muted-foreground">
         <Icon className="h-4 w-4" />

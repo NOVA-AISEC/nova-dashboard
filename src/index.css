@@ -12,23 +12,23 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0rem;
-  --background: #f5f3ef;
+  --background: #f6f1e8;
   --foreground: #171717;
-  --card: #ece7de;
+  --card: #eee7dc;
   --card-foreground: #171717;
   --popover: #ece7de;
   --popover-foreground: #171717;
   --primary: #171717;
   --primary-foreground: #f5f3ef;
-  --secondary: #ddd6c7;
+  --secondary: #e2d8c6;
   --secondary-foreground: #171717;
-  --muted: #e6e0d4;
-  --muted-foreground: #5d554c;
+  --muted: #e8dfd0;
+  --muted-foreground: #61584e;
   --accent: #c05a3c;
   --accent-foreground: #fff7f1;
   --destructive: #b54a4a;
-  --border: #d0c7b8;
-  --input: #d6cdbf;
+  --border: #d4cab9;
+  --input: #ddd2c1;
   --ring: #c05a3c;
   --chart-1: #c05a3c;
   --chart-2: #4a7c59;
@@ -43,9 +43,9 @@
   --sidebar-accent-foreground: #f5f3ef;
   --sidebar-border: #33302b;
   --sidebar-ring: #c05a3c;
-  --panel: #e8e4dc;
-  --panel-strong: #d8d0c2;
-  --panel-dark: #23211d;
+  --panel: #ece5d9;
+  --panel-strong: #ddd1c0;
+  --panel-dark: #23201c;
   --signal-critical: #a6403b;
   --signal-high: #c05a3c;
   --signal-medium: #8a6f43;
@@ -119,9 +119,10 @@
     background-image:
       linear-gradient(rgba(192, 90, 60, 0.06) 1px, transparent 1px),
       linear-gradient(90deg, rgba(192, 90, 60, 0.06) 1px, transparent 1px),
-      radial-gradient(circle at top right, rgba(192, 90, 60, 0.14), transparent 22rem);
+      radial-gradient(circle at top right, rgba(192, 90, 60, 0.16), transparent 22rem),
+      radial-gradient(circle at bottom left, rgba(92, 124, 138, 0.08), transparent 18rem);
     background-position: top left;
-    background-size: 36px 36px, 36px 36px, auto;
+    background-size: 36px 36px, 36px 36px, auto, auto;
   }
 
   a {
@@ -160,5 +161,9 @@
       linear-gradient(rgba(23, 23, 23, 0.06) 1px, transparent 1px),
       linear-gradient(90deg, rgba(23, 23, 23, 0.06) 1px, transparent 1px);
     background-size: 24px 24px;
+  }
+
+  .data-kicker {
+    @apply text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground;
   }
 }

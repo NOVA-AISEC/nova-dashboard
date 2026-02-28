@@ -69,16 +69,13 @@ export function AppShell() {
                   <Command className="h-5 w-5" />
                 </div>
                 <div>
-                  <div className="font-display text-lg font-bold uppercase tracking-[0.24em]">
-                    NOVA
-                  </div>
-                  <div className="text-xs uppercase tracking-[0.32em] text-sidebar-foreground/60">
-                    Sentinel
+                  <div className="font-display text-lg font-bold uppercase tracking-[0.2em]">
+                    DAMA LTD
                   </div>
                 </div>
               </div>
               <p className="max-w-xs text-sm text-sidebar-foreground/70">
-                Evidence-first operations workspace. Snapshots and metadata only.
+                DAMA LTD keeps operations evidence-first with snapshots plus metadata only.
               </p>
             </div>
 
@@ -132,14 +129,18 @@ export function AppShell() {
             <div className="space-y-3 text-sm text-sidebar-foreground/80">
               <div className="flex items-start gap-3">
                 <ShieldBan className="mt-0.5 h-4 w-4 text-sidebar-primary" />
-                <span>No face matching, identity resolution, or biometric search.</span>
+                <span>No facial recognition, identity resolution, or biometric search.</span>
               </div>
               <div className="flex items-start gap-3">
                 <FolderOpenDot className="mt-0.5 h-4 w-4 text-sidebar-primary" />
-                <span>Exports preserve chain-of-custody records and redactions.</span>
+                <span>Exports preserve chain-of-custody records and require human review.</span>
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="border-t border-sidebar-border px-6 py-5 text-xs uppercase tracking-[0.2em] text-sidebar-foreground/55">
+          DAMA LTD
         </div>
       </aside>
 
@@ -157,7 +158,10 @@ export function AppShell() {
               </Button>
 
               <div className="min-w-0">
-                <p className="eyebrow">{handle?.eyebrow ?? 'NOVA Sentinel'}</p>
+                <p className="eyebrow">DAMA LTD</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                  {handle?.eyebrow ?? 'Operations'}
+                </p>
                 <h2 className="truncate font-display text-2xl font-bold tracking-[-0.04em]">
                   {handle?.title ?? 'Operations'}
                 </h2>
@@ -169,7 +173,7 @@ export function AppShell() {
                 Biometrics disabled
               </div>
               <div className="border border-border bg-panel px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                Shift alpha / 06:30 UTC
+                Snapshots + metadata only
               </div>
               <Link
                 className={buttonVariants({ variant: 'outline', size: 'default' })}
@@ -183,6 +187,10 @@ export function AppShell() {
 
         <main className="px-4 pb-10 pt-6 sm:px-6 lg:px-10">
           <Outlet />
+          <footer className="mt-10 border-t border-border pt-4 text-sm text-muted-foreground">
+            DAMA LTD. Evidence is limited to snapshots and metadata. Human validation is
+            required for operational action.
+          </footer>
         </main>
       </div>
     </div>
