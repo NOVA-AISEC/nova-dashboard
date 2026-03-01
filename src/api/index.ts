@@ -1,4 +1,5 @@
 import * as httpClient from '@/api/client'
 import * as mockClient from '@/api/mock-client'
+import { useMockApi } from '@/lib/env'
 
-export const api = import.meta.env.VITE_USE_MOCK === 'false' ? httpClient : mockClient
+export const api = useMockApi ? mockClient : httpClient
