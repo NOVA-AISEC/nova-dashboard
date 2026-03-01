@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
+import { ActionButton } from '@/components/shared/action-button'
+import { SeverityBadge } from '@/components/shared/severity-badge'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -9,9 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { getAlertAccentClassName } from '@/lib/alert-accent'
+import { getAlertSeverityTone, getAlertStatusTone } from '@/lib/action-gradient'
 import { formatDateTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-import type { Alert, AlertSeverity, AlertStatus } from '@/types/domain'
+import type { Alert } from '@/types/domain'
 
 interface AlertTableProps {
   alerts: Alert[]
@@ -19,21 +22,6 @@ interface AlertTableProps {
   description?: string
   onAcknowledge?: (alert: Alert) => void
   busyAlertId?: string | null
-}
-
-const severityClasses: Record<AlertSeverity, string> = {
-  critical: 'badge-critical',
-  high: 'badge-high',
-  medium: 'badge-medium',
-  low: 'badge-low',
-}
-
-const statusClasses: Record<AlertStatus, string> = {
-  new: 'badge-status-info',
-  acknowledged: 'badge-status-muted',
-  triaging: 'badge-status-triage',
-  contained: 'badge-status-success',
-  closed: 'badge-neutral',
 }
 
 export function AlertTable({
@@ -72,8 +60,7 @@ export function AlertTable({
                   className={cn(
                     'border-t border-surfaceMuted/20 align-top',
                     index % 2 === 0 ? 'bg-primaryDark/45' : 'bg-transparent',
-                    alert.severity === 'critical' && 'alert-row-critical',
-                    alert.severity === 'high' && 'alert-row-high',
+                    getAlertAccentClassName(getAlertSeverityTone(alert.severity)),
                   )}
                 >
                   <td className="px-4 py-3.5">
@@ -102,14 +89,14 @@ export function AlertTable({
                     </Badge>
                   </td>
                   <td className="px-4 py-3.5">
-                    <Badge className={cn(severityClasses[alert.severity])}>
+                    <SeverityBadge tone={getAlertSeverityTone(alert.severity)}>
                       {alert.severity}
-                    </Badge>
+                    </SeverityBadge>
                   </td>
                   <td className="px-4 py-3.5">
-                    <Badge className={cn(statusClasses[alert.status])}>
+                    <SeverityBadge tone={getAlertStatusTone(alert.status)}>
                       {alert.status}
-                    </Badge>
+                    </SeverityBadge>
                   </td>
                   <td className="px-4 py-3.5 text-textSecondary">
                     <div>{alert.zone}</div>
@@ -136,18 +123,18 @@ export function AlertTable({
                   </td>
                   <td className="px-4 py-3.5">
                     {onAcknowledge ? (
-                      <Button
+                      <ActionButton
+                        intent="action"
+                        loading={busyAlertId === alert.id}
                         size="sm"
-                        variant="outline"
                         disabled={
-                          busyAlertId === alert.id ||
                           alert.status === 'acknowledged' ||
                           alert.status === 'closed'
                         }
                         onClick={() => onAcknowledge(alert)}
                       >
                         {busyAlertId === alert.id ? 'Saving...' : 'Acknowledge'}
-                      </Button>
+                      </ActionButton>
                     ) : (
                       <span className="text-xs uppercase tracking-[0.18em] text-textSecondary">
                         Human review

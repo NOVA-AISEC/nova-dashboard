@@ -4,11 +4,12 @@ import { ArrowUpRight, Download, ShieldBan } from 'lucide-react'
 import { api } from '@/api'
 import { AlertTable } from '@/components/ops/alert-table'
 import { PageHeader } from '@/components/page-header'
+import { ActionButton } from '@/components/shared/action-button'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
+import { SeverityBadge } from '@/components/shared/severity-badge'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -17,6 +18,7 @@ import {
   complianceNotices,
 } from '@/data/mock-data'
 import { useAsyncData } from '@/hooks/use-async-data'
+import { getCasePriorityTone } from '@/lib/action-gradient'
 import { formatDateTime, formatRelativeHours, titleCase } from '@/lib/formatters'
 import { readShiftNotes, writeShiftNotes } from '@/lib/operator-storage'
 import { exportShiftBrief } from '@/lib/shift-brief'
@@ -102,6 +104,17 @@ export function OpsPage() {
   const activeCases = [...data.cases].sort((left, right) =>
     right.updatedAt.localeCompare(left.updatedAt),
   )
+  const pendingHumanValidations =
+    activeCases.filter((caseItem) => caseItem.humanValidationRequired).length +
+    openAlerts.filter((alert) => alert.requiresHumanValidation).length
+  const triageSlaTone =
+    openAlerts.length >= 6 ? 'critical' : openAlerts.length >= 3 ? 'elevated' : 'normal'
+  const validationTone =
+    pendingHumanValidations >= 6
+      ? 'critical'
+      : pendingHumanValidations >= 3
+        ? 'elevated'
+        : 'normal'
   const zoneSummary = Object.entries(
     openAlerts.reduce<Record<string, number>>((accumulator, alert) => {
       accumulator[alert.zone] = (accumulator[alert.zone] ?? 0) + 1
@@ -119,6 +132,8 @@ export function OpsPage() {
         subtitle="Run Strathmore-facing campus security operations across gates, hostels, library, parking, perimeter, and event flow. Work stays evidence-first with snapshots plus metadata only, biometrics disabled, and human validation required."
         meta={
           <>
+            <SeverityBadge tone={triageSlaTone}>Triage SLA watch</SeverityBadge>
+            <SeverityBadge tone={validationTone}>Pending validations</SeverityBadge>
             <Badge className="chip-compliance">Biometrics disabled</Badge>
             <Badge className="chip-compliance">Snapshots</Badge>
             <Badge className="chip-compliance">Metadata only</Badge>
@@ -126,10 +141,11 @@ export function OpsPage() {
         }
         actions={
           <>
-            <Link className={buttonVariants({ variant: 'outline' })} to="/queue">
+            <Link className={buttonVariants({ variant: 'action' })} to="/queue">
               Open live queue
             </Link>
-            <Button
+            <ActionButton
+              intent="neutral"
               onClick={() =>
                 exportShiftBrief({
                   generatedBy: session.name,
@@ -141,7 +157,7 @@ export function OpsPage() {
             >
               <Download className="h-4 w-4" />
               Export shift brief
-            </Button>
+            </ActionButton>
           </>
         }
       />
@@ -211,9 +227,9 @@ export function OpsPage() {
                       <p className="eyebrow text-[10px]">{caseItem.id}</p>
                       <h3 className="font-display text-lg font-bold">{caseItem.title}</h3>
                     </div>
-                    <Badge className="badge-high">
+                    <SeverityBadge tone={getCasePriorityTone(caseItem.priority)}>
                       {titleCase(caseItem.priority)}
-                    </Badge>
+                    </SeverityBadge>
                   </div>
                   <p className="text-sm text-textSecondary">{caseItem.summary}</p>
                   <div className="flex items-center justify-between text-sm text-textSecondary">

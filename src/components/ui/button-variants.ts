@@ -6,6 +6,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default: 'btn-primary',
+        action: 'btn-action',
         secondary: 'btn-secondary',
         outline: 'btn-outline',
         ghost: 'btn-ghost',

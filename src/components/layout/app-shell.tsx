@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import {
   ChevronDown,
-  Command,
   FolderOpenDot,
   LogOut,
   Menu,
@@ -22,6 +21,7 @@ import { api } from '@/api'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Button } from '@/components/ui/button'
+import { NovaLogo } from '@/components/shared/nova-logo'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { useAsyncData } from '@/hooks/use-async-data'
 import { useAuth } from '@/lib/auth'
@@ -112,22 +112,12 @@ export function AppShell() {
         <div className="border-b border-surfaceMuted/20 px-5 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-3">
-                <div className="sidebar-logo-mark flex h-11 w-11 items-center justify-center border">
-                  <Command className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="sidebar-title font-display text-lg font-bold uppercase tracking-[0.18em]">
-                    NOVA
-                  </div>
-                  <div className="sidebar-subtitle text-xs uppercase tracking-[0.22em]">
-                    Strathmore Security Operations
-                  </div>
-                  <div className="sidebar-attribution mt-1 text-[10px] uppercase tracking-[0.22em]">
-                    by DAMA LTD
-                  </div>
-                </div>
-              </div>
+              <Link
+                className="block max-w-[18.5rem] rounded-2xl bg-white px-4 py-3 shadow-[0_16px_36px_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-0.5"
+                to={routePaths.ops}
+              >
+                <NovaLogo className="max-h-24" />
+              </Link>
               <p className="sidebar-copy max-w-xs text-sm leading-relaxed">
                 NOVA coordinates triage queue, guard dispatch, incident desk review,
                 traffic response, and evidence exports for Strathmore teams.
@@ -258,14 +248,12 @@ export function AppShell() {
                 <Menu className="h-5 w-5" />
               </Button>
 
-              <div className="min-w-0">
-                <p className="font-display text-[12px] font-bold uppercase tracking-[0.28em] text-ink">
-                  NOVA
-                </p>
-                <div className="truncate text-[13px] font-medium text-textSecondary">
-                  Strathmore Security Operations
-                </div>
-              </div>
+              <Link
+                className="header-brand-lockup min-w-0 max-w-[12.5rem] sm:max-w-[15.5rem]"
+                to={routePaths.ops}
+              >
+                <NovaLogo className="header-brand-image max-h-12 sm:max-h-14" />
+              </Link>
             </div>
 
             <div className="flex items-center justify-end gap-2.5">
@@ -341,8 +329,16 @@ export function AppShell() {
         <main className="mx-auto max-w-[1500px] px-4 pb-8 pt-6 sm:px-6 lg:px-8">
           <Outlet />
           <footer className="mt-8 border-t border-surfaceMuted/20 pt-4 text-sm text-textSecondary">
-            DAMA LTD / Powered by NOVA. Campus evidence remains limited to snapshots
-            plus metadata, and operational action requires human validation.
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="footer-brand-lockup w-full max-w-[11rem] px-3 py-2">
+                <NovaLogo className="max-h-12" />
+              </div>
+              <div>
+                DAMA LTD / Powered by NOVA. Campus evidence remains limited to
+                snapshots plus metadata, and operational action requires human
+                validation.
+              </div>
+            </div>
           </footer>
         </main>
       </div>

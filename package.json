@@ -8,6 +8,7 @@
     "dev:server": "node --watch server/index.js",
     "dev:web": "vite",
     "build": "tsc -b && vite build",
+    "test:action-gradient": "node scripts/test-action-gradient.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

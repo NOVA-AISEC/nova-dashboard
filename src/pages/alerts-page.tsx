@@ -77,10 +77,10 @@ export function AlertsPage() {
         subtitle="Filter the triage queue by severity, state, camera, date range, and free-text query. Acknowledgement supports guard dispatch and still requires human validation."
         actions={
           <>
-            <Link className={buttonVariants({ variant: 'outline' })} to="/cases">
+            <Link className={buttonVariants({ variant: 'action' })} to="/cases">
               Create case from selection
             </Link>
-            <Link className={buttonVariants({ variant: 'default' })} to="/exports">
+            <Link className={buttonVariants({ variant: 'outline' })} to="/exports">
               Export evidence pack
             </Link>
           </>

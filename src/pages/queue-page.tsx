@@ -3,11 +3,15 @@ import { Radio, Users } from 'lucide-react'
 import { api } from '@/api'
 import { AlertTable } from '@/components/ops/alert-table'
 import { PageHeader } from '@/components/page-header'
+import { AlertCardAccent } from '@/components/shared/alert-card-accent'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
+import { LiveIndicatorDot } from '@/components/shared/live-indicator-dot'
 import { MetricCard } from '@/components/shared/metric-card'
+import { SeverityBadge } from '@/components/shared/severity-badge'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAsyncData } from '@/hooks/use-async-data'
+import { getAlertSeverityTone, getCaseStatusTone } from '@/lib/action-gradient'
 import { formatDateTime } from '@/lib/formatters'
 
 export function QueuePage() {
@@ -32,6 +36,7 @@ export function QueuePage() {
         eyebrow="Guard Dispatch"
         title="Live Queue"
         subtitle="Run the campus triage queue with dispatch context, incident desk ownership, and human-validation checkpoints."
+        meta={<LiveIndicatorDot label={`${pendingDispatch.length} live dispatch items`} />}
       />
 
       <section className="grid gap-4 xl:grid-cols-4">
@@ -56,17 +61,26 @@ export function QueuePage() {
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               {openAlerts.slice(0, 4).map((alert) => (
-                <div key={alert.id} className="space-y-2 border border-surfaceMuted/20 bg-primaryDark p-4">
+                <AlertCardAccent
+                  key={alert.id}
+                  className="space-y-2 border border-surfaceMuted/20 bg-primaryDark p-4"
+                  tone={getAlertSeverityTone(alert.severity)}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-display text-lg font-bold">{alert.zone}</div>
-                    <Badge className="badge-panel">{alert.assignee}</Badge>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <SeverityBadge tone={getAlertSeverityTone(alert.severity)}>
+                        {alert.severity}
+                      </SeverityBadge>
+                      <Badge className="badge-panel">{alert.assignee}</Badge>
+                    </div>
                   </div>
                   <p className="text-sm text-textSecondary">{alert.summary}</p>
                   <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-textSecondary">
                     <span>{alert.category.replaceAll('-', ' ')}</span>
                     <span>{formatDateTime(alert.updatedAt)}</span>
                   </div>
-                </div>
+                </AlertCardAccent>
               ))}
             </CardContent>
           </Card>
@@ -87,7 +101,9 @@ export function QueuePage() {
                     <div className="surface-command-copy text-sm">{caseItem.location}</div>
                     <div className="surface-command-copy flex items-center gap-2 text-xs uppercase tracking-[0.18em]">
                       <Radio className="h-3.5 w-3.5" />
-                      <span>{caseItem.status}</span>
+                      <SeverityBadge tone={getCaseStatusTone(caseItem.status)}>
+                        {caseItem.status}
+                      </SeverityBadge>
                     </div>
                   </div>
                 </Link>

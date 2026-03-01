@@ -7,7 +7,7 @@ import { AlertTable } from '@/components/ops/alert-table'
 import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
-import { Badge } from '@/components/ui/badge'
+import { SeverityBadge } from '@/components/shared/severity-badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import {
   Card,
@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useAsyncData } from '@/hooks/use-async-data'
+import { getCasePriorityTone, getCaseStatusTone } from '@/lib/action-gradient'
 import { formatLongDateTime, titleCase } from '@/lib/formatters'
 
 export function CaseDetailPage() {
@@ -66,8 +67,12 @@ export function CaseDetailPage() {
         subtitle={caseRecord.summary}
         meta={
           <>
-            <Badge className="badge-neutral">{caseRecord.status}</Badge>
-            <Badge className="badge-high">{titleCase(caseRecord.priority)}</Badge>
+            <SeverityBadge tone={getCaseStatusTone(caseRecord.status)}>
+              {caseRecord.status}
+            </SeverityBadge>
+            <SeverityBadge tone={getCasePriorityTone(caseRecord.priority)}>
+              {titleCase(caseRecord.priority)}
+            </SeverityBadge>
           </>
         }
         actions={
@@ -75,7 +80,7 @@ export function CaseDetailPage() {
             <Link className={buttonVariants({ variant: 'outline' })} to="/reports">
               Add note
             </Link>
-            <Link className={buttonVariants({ variant: 'default' })} to="/exports">
+            <Link className={buttonVariants({ variant: 'action' })} to="/exports">
               Export case brief
             </Link>
           </>

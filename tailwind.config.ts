@@ -33,6 +33,13 @@ export default {
       current: 'currentColor',
     },
     extend: {
+      backgroundImage: {
+        'nova-action': 'var(--nova-action-gradient)',
+      },
+      boxShadow: {
+        'nova-action': '0 6px 18px var(--nova-action-shadow)',
+        'nova-action-hover': '0 10px 22px var(--nova-action-shadow)',
+      },
       fontFamily: {
         sans: ['IBM Plex Sans', 'sans-serif'],
         display: ['Space Grotesk', 'sans-serif'],

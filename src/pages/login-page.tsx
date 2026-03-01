@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { LockKeyhole, ShieldBan } from 'lucide-react'
 import { getDefaultRoute, roleLabels, type UserRole } from '@/app/access'
 import { PageHeader } from '@/components/page-header'
+import { NovaLogo } from '@/components/shared/nova-logo'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -51,6 +52,9 @@ export function LoginPage() {
           <div className="brand-hero-overlay absolute inset-0" />
           <div className="relative flex h-full flex-col justify-between gap-6">
             <div className="space-y-4">
+              <div className="inline-flex max-w-full rounded-[1.75rem] bg-white px-5 py-4 shadow-[0_20px_48px_rgba(0,0,0,0.22)]">
+                <NovaLogo className="w-[20rem] max-w-full sm:w-[24rem]" />
+              </div>
               <PageHeader
                 tone="inverse"
                 eyebrow="Strathmore Security Operations by DAMA LTD"

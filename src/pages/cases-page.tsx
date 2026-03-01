@@ -3,10 +3,11 @@ import { ArrowUpRight } from 'lucide-react'
 import { api } from '@/api'
 import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { Badge } from '@/components/ui/badge'
+import { SeverityBadge } from '@/components/shared/severity-badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAsyncData } from '@/hooks/use-async-data'
+import { getCasePriorityTone, getCaseStatusTone } from '@/lib/action-gradient'
 import { formatDateTime, titleCase } from '@/lib/formatters'
 
 export function CasesPage() {
@@ -33,7 +34,7 @@ export function CasesPage() {
             <Link className={buttonVariants({ variant: 'outline' })} to="/reports">
               Add note
             </Link>
-            <Link className={buttonVariants({ variant: 'default' })} to="/exports">
+            <Link className={buttonVariants({ variant: 'action' })} to="/exports">
               Export case brief
             </Link>
           </>
@@ -49,9 +50,9 @@ export function CasesPage() {
                   <CardTitle>{caseItem.title}</CardTitle>
                   <CardDescription>{caseItem.location}</CardDescription>
                 </div>
-                <Badge className="badge-high">
+                <SeverityBadge tone={getCasePriorityTone(caseItem.priority)}>
                   {titleCase(caseItem.priority)}
-                </Badge>
+                </SeverityBadge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
@@ -67,7 +68,9 @@ export function CasesPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <Badge className="badge-neutral">{caseItem.status}</Badge>
+                <SeverityBadge tone={getCaseStatusTone(caseItem.status)}>
+                  {caseItem.status}
+                </SeverityBadge>
                 <Link to={`/cases/${caseItem.id}`} className="brand-link">
                   Open case
                   <ArrowUpRight className="h-4 w-4" />
