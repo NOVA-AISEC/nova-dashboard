@@ -199,15 +199,15 @@ export function AppShell() {
             </div>
             <div className="space-y-3 text-sm text-surfaceMuted">
               <div className="flex items-start gap-3">
-                <ShieldBan className="mt-0.5 h-4 w-4 text-accentGlow" />
+                <ShieldBan className="sidebar-panel-icon mt-0.5 h-4 w-4" />
                 <span>No facial recognition or identity inference.</span>
               </div>
               <div className="flex items-start gap-3">
-                <FolderOpenDot className="mt-0.5 h-4 w-4 text-accentGlow" />
+                <FolderOpenDot className="sidebar-panel-icon mt-0.5 h-4 w-4" />
                 <span>Human validation is required before action.</span>
               </div>
             </div>
-            <ThemeToggle />
+            <ThemeToggle className="sidebar-theme-toggle w-full justify-center" />
           </div>
         </div>
 

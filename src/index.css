@@ -14,8 +14,15 @@
     --ink: #101318;
     --muted: #5B616B;
     --border: #D8D2C8;
-    --sidebar-bg: #081F42;
+    --sidebar-bg: #02338D;
+    --sidebar-alt: #081F42;
     --sidebar-ink: #F6F2EA;
+    --sidebar-border: #36558D;
+    --sidebar-hover: #123E9A;
+    --sidebar-active: #1848A8;
+    --sidebar-accent: #F6F2EA;
+    --sidebar-notification: #970400;
+    --sidebar-notification-ink: #FFFFFF;
     --primary-dark: #F6F2EA;
     --primary-deep: #FFFFFF;
     --surface-light: #FFFFFF;
@@ -47,7 +54,8 @@
     --color-ink: 16 19 24;
     --color-muted: 91 97 107;
     --color-border: 216 210 200;
-    --color-sidebar-bg: 8 31 66;
+    --color-sidebar-bg: 2 51 141;
+    --color-sidebar-alt: 8 31 66;
     --color-sidebar-ink: 246 242 234;
   }
 
@@ -71,7 +79,7 @@
     background-image:
       radial-gradient(circle at top right, color-mix(in srgb, var(--brand-gold) 14%, transparent) 0, transparent 24rem),
       radial-gradient(circle at bottom left, color-mix(in srgb, var(--brand-blue) 10%, transparent) 0, transparent 26rem),
-      linear-gradient(180deg, var(--brand-white) 0%, var(--surface) 100%);
+      linear-gradient(180deg, color-mix(in srgb, var(--primary-deep) 74%, var(--surface)) 0%, var(--surface) 100%);
     background-attachment: fixed;
     transition: background-color 160ms ease, color 160ms ease;
   }
@@ -181,9 +189,9 @@
   }
 
   .badge-high {
-    border-color: var(--brand-gold);
-    background-color: color-mix(in srgb, var(--brand-gold) 18%, var(--brand-white));
-    color: var(--brand-black);
+    border-color: color-mix(in srgb, var(--brand-red) 48%, var(--border));
+    background-color: color-mix(in srgb, var(--brand-red) 10%, var(--brand-white));
+    color: color-mix(in srgb, var(--brand-red) 88%, var(--ink));
   }
 
   .badge-medium {
@@ -214,6 +222,12 @@
     border-color: var(--brand-blue);
     background-color: var(--brand-blue);
     color: var(--brand-white);
+  }
+
+  .badge-status-triage {
+    border-color: color-mix(in srgb, var(--brand-red) 42%, var(--border));
+    background-color: color-mix(in srgb, var(--brand-red) 9%, var(--brand-white));
+    color: color-mix(in srgb, var(--brand-red) 86%, var(--ink));
   }
 
   .notice-panel {
@@ -309,21 +323,21 @@
   }
 
   .chip-compliance-inverse {
-    border-color: color-mix(in srgb, var(--brand-gold) 72%, transparent);
+    border-color: color-mix(in srgb, var(--sidebar-ink) 18%, transparent);
     background-color: color-mix(in srgb, var(--sidebar-ink) 10%, var(--sidebar-bg));
     color: var(--sidebar-ink);
   }
 
   .sidebar-shell {
     background:
-      linear-gradient(180deg, color-mix(in srgb, var(--brand-blue) 88%, var(--sidebar-bg)) 0%, var(--sidebar-bg) 100%);
+      linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-alt) 100%);
     color: var(--sidebar-ink);
   }
 
   .sidebar-logo-mark {
-    border-color: var(--brand-gold);
-    background-color: color-mix(in srgb, var(--brand-gold) 12%, var(--sidebar-bg));
-    color: var(--brand-gold);
+    border-color: color-mix(in srgb, var(--sidebar-ink) 18%, transparent);
+    background-color: color-mix(in srgb, var(--sidebar-ink) 10%, var(--sidebar-bg));
+    color: var(--sidebar-ink);
   }
 
   .sidebar-title {
@@ -335,7 +349,7 @@
   }
 
   .sidebar-attribution {
-    color: color-mix(in srgb, var(--brand-gold) 76%, var(--sidebar-ink));
+    color: color-mix(in srgb, var(--sidebar-ink) 70%, var(--muted));
   }
 
   .sidebar-copy {
@@ -353,23 +367,23 @@
   }
 
   .sidebar-link:hover {
-    border-color: color-mix(in srgb, var(--brand-gold) 36%, transparent);
-    background-color: color-mix(in srgb, var(--sidebar-ink) 8%, var(--sidebar-bg));
+    border-color: color-mix(in srgb, var(--sidebar-ink) 18%, transparent);
+    background-color: var(--sidebar-hover);
     color: var(--sidebar-ink);
   }
 
   .sidebar-link-active {
-    border-color: color-mix(in srgb, var(--brand-gold) 60%, transparent);
-    background-color: color-mix(in srgb, var(--sidebar-ink) 12%, var(--sidebar-bg));
+    border-color: color-mix(in srgb, var(--sidebar-ink) 24%, transparent);
+    background-color: var(--sidebar-active);
     color: var(--sidebar-ink);
   }
 
   .sidebar-link-indicator {
-    background-color: var(--brand-gold);
+    background-color: var(--sidebar-accent);
   }
 
   .sidebar-link-icon {
-    color: var(--brand-gold);
+    color: var(--sidebar-accent);
   }
 
   .sidebar-link-copy {
@@ -381,14 +395,68 @@
   }
 
   .sidebar-link-badge {
-    border-color: var(--brand-gold);
-    background-color: color-mix(in srgb, var(--brand-gold) 16%, var(--sidebar-bg));
-    color: var(--sidebar-ink);
+    border-color: color-mix(in srgb, var(--sidebar-notification) 56%, transparent);
+    background-color: var(--sidebar-notification);
+    color: var(--sidebar-notification-ink);
   }
 
   .sidebar-panel {
+    border-color: color-mix(in srgb, var(--sidebar-border) 78%, transparent);
+    background-color: color-mix(in srgb, var(--sidebar-ink) 8%, var(--sidebar-bg));
+  }
+
+  .sidebar-panel-icon {
+    color: var(--sidebar-accent);
+  }
+
+  .sidebar-theme-toggle {
     border-color: color-mix(in srgb, var(--sidebar-ink) 18%, transparent);
     background-color: color-mix(in srgb, var(--sidebar-ink) 8%, var(--sidebar-bg));
+    color: var(--sidebar-ink);
+  }
+
+  .sidebar-theme-toggle:hover {
+    border-color: color-mix(in srgb, var(--sidebar-ink) 24%, transparent);
+    background-color: var(--sidebar-hover);
+    color: var(--sidebar-ink);
+  }
+
+  .metric-card-warning {
+    border-top-color: color-mix(in srgb, var(--brand-red) 74%, var(--border));
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand-red) 6%, var(--primary-deep)) 0%,
+      var(--primary-deep) 100%
+    );
+  }
+
+  .metric-card-warning .metric-card-icon,
+  .metric-card-warning .metric-card-value {
+    color: color-mix(in srgb, var(--brand-red) 85%, var(--ink));
+  }
+
+  .alert-row-critical {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--brand-red) 10%, transparent) 0%,
+      transparent 24%
+    );
+  }
+
+  .alert-row-high {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--brand-red) 5%, transparent) 0%,
+      transparent 20%
+    );
+  }
+
+  .alert-title-critical {
+    color: color-mix(in srgb, var(--brand-red) 88%, var(--ink));
+  }
+
+  .alert-title-high {
+    color: color-mix(in srgb, var(--brand-red) 76%, var(--ink));
   }
 
   .surface-command-divider {

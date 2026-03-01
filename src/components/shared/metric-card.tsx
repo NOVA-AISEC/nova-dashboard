@@ -13,7 +13,7 @@ const toneClasses: Record<MetricCardProps['tone'], string> = {
   accent: 'border-t-accentBlue',
   ink: 'border-t-surfaceMuted',
   success: 'border-t-success',
-  warning: 'border-t-warning',
+  warning: 'metric-card-warning',
 }
 
 const toneIcons = {
@@ -30,10 +30,10 @@ export function MetricCard({ label, value, delta, tone }: MetricCardProps) {
     <Card className={cn('border-t-4 bg-primaryDeep', toneClasses[tone])}>
       <CardHeader className="pb-1">
         <p className="eyebrow">{label}</p>
-        <CardTitle className="text-3xl tracking-[-0.06em]">{value}</CardTitle>
+        <CardTitle className="metric-card-value text-3xl tracking-[-0.06em]">{value}</CardTitle>
       </CardHeader>
       <CardContent className="flex items-center gap-2 text-sm text-textSecondary">
-        <Icon className="h-4 w-4" />
+        <Icon className="metric-card-icon h-4 w-4" />
         <span>{delta}</span>
       </CardContent>
     </Card>

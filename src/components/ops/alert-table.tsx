@@ -31,7 +31,7 @@ const severityClasses: Record<AlertSeverity, string> = {
 const statusClasses: Record<AlertStatus, string> = {
   new: 'badge-status-info',
   acknowledged: 'badge-status-muted',
-  triaging: 'badge-high',
+  triaging: 'badge-status-triage',
   contained: 'badge-status-success',
   closed: 'badge-neutral',
 }
@@ -72,12 +72,20 @@ export function AlertTable({
                   className={cn(
                     'border-t border-surfaceMuted/20 align-top',
                     index % 2 === 0 ? 'bg-primaryDark/45' : 'bg-transparent',
+                    alert.severity === 'critical' && 'alert-row-critical',
+                    alert.severity === 'high' && 'alert-row-high',
                   )}
                 >
                   <td className="px-4 py-3.5">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
-                        <span className="font-display text-base font-bold tracking-[-0.02em]">
+                        <span
+                          className={cn(
+                            'font-display text-base font-bold tracking-[-0.02em]',
+                            alert.severity === 'critical' && 'alert-title-critical',
+                            alert.severity === 'high' && 'alert-title-high',
+                          )}
+                        >
                           {alert.title}
                         </span>
                         <span className="text-xs text-textSecondary">{alert.id}</span>

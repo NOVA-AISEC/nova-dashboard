@@ -38,7 +38,14 @@ type SemanticPalette = {
   muted: string
   border: string
   sidebarBg: string
+  sidebarAlt: string
   sidebarInk: string
+  sidebarBorder: string
+  sidebarHover: string
+  sidebarActive: string
+  sidebarAccent: string
+  sidebarNotification: string
+  sidebarNotificationInk: string
 }
 
 const lightSemanticColors: SemanticPalette = {
@@ -62,17 +69,24 @@ const lightSemanticColors: SemanticPalette = {
   ink: STRATHMORE.ink,
   muted: STRATHMORE.muted,
   border: STRATHMORE.border,
-  sidebarBg: STRATHMORE.navy2,
+  sidebarBg: STRATHMORE.blue,
+  sidebarAlt: STRATHMORE.navy2,
   sidebarInk: STRATHMORE.offwhite,
+  sidebarBorder: '#36558D',
+  sidebarHover: '#123E9A',
+  sidebarActive: '#1848A8',
+  sidebarAccent: STRATHMORE.offwhite,
+  sidebarNotification: STRATHMORE.red,
+  sidebarNotificationInk: STRATHMORE.white,
 }
 
 const darkSemanticColors: SemanticPalette = {
-  primaryDark: '#101722',
-  primaryDeep: '#162033',
+  primaryDark: '#0E1B38',
+  primaryDeep: '#14264C',
   accentBlue: STRATHMORE.blue,
   accentGlow: STRATHMORE.gold,
   surfaceLight: STRATHMORE.offwhite,
-  surfaceMuted: '#2D3951',
+  surfaceMuted: '#31466B',
   textPrimary: STRATHMORE.offwhite,
   textSecondary: '#C5BFB4',
   success: STRATHMORE.blue,
@@ -83,12 +97,19 @@ const darkSemanticColors: SemanticPalette = {
   brandRed: STRATHMORE.red,
   brandBlack: STRATHMORE.black,
   brandWhite: STRATHMORE.white,
-  surface: STRATHMORE.black,
+  surface: '#091427',
   ink: STRATHMORE.offwhite,
   muted: '#C5BFB4',
-  border: '#2A354B',
+  border: '#2B4164',
   sidebarBg: '#061731',
+  sidebarAlt: '#0A2347',
   sidebarInk: STRATHMORE.offwhite,
+  sidebarBorder: '#2B4164',
+  sidebarHover: '#10315F',
+  sidebarActive: '#174684',
+  sidebarAccent: '#DCE6F8',
+  sidebarNotification: STRATHMORE.red,
+  sidebarNotificationInk: STRATHMORE.white,
 }
 
 export const strathmoreThemeModes: Record<ThemeMode, SemanticPalette> = {
@@ -128,7 +149,14 @@ function buildThemeVariables(mode: ThemeMode) {
     '--muted': palette.muted,
     '--border': palette.border,
     '--sidebar-bg': palette.sidebarBg,
+    '--sidebar-alt': palette.sidebarAlt,
     '--sidebar-ink': palette.sidebarInk,
+    '--sidebar-border': palette.sidebarBorder,
+    '--sidebar-hover': palette.sidebarHover,
+    '--sidebar-active': palette.sidebarActive,
+    '--sidebar-accent': palette.sidebarAccent,
+    '--sidebar-notification': palette.sidebarNotification,
+    '--sidebar-notification-ink': palette.sidebarNotificationInk,
     '--primary-dark': palette.primaryDark,
     '--primary-deep': palette.primaryDeep,
     '--surface-light': palette.surfaceLight,
@@ -161,6 +189,7 @@ function buildThemeVariables(mode: ThemeMode) {
     '--color-muted': hexToRgbChannels(palette.muted),
     '--color-border': hexToRgbChannels(palette.border),
     '--color-sidebar-bg': hexToRgbChannels(palette.sidebarBg),
+    '--color-sidebar-alt': hexToRgbChannels(palette.sidebarAlt),
     '--color-sidebar-ink': hexToRgbChannels(palette.sidebarInk),
   } as const
 }
