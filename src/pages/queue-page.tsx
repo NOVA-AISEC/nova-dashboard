@@ -27,7 +27,7 @@ export function QueuePage() {
   const latestCases = [...data.cases].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).slice(0, 3)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Guard Dispatch"
         title="Live Queue"

@@ -69,7 +69,7 @@ export function AlertsPage() {
     Array.from(new Set(alerts.map((alert) => alert.cameraId))).sort()
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Incident Desk"
         title="Campus alert queue"

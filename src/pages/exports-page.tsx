@@ -6,7 +6,7 @@ import { formatDateTime } from '@/lib/formatters'
 
 export function ExportsPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Chain Of Custody"
         title="Evidence Exports"

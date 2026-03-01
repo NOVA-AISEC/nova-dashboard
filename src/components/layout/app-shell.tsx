@@ -11,6 +11,7 @@ import { api } from '@/api'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { useAsyncData } from '@/hooks/use-async-data'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
@@ -96,7 +97,7 @@ export function AppShell() {
           isNavOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="border-b border-surfaceMuted/20 px-6 py-6">
+        <div className="border-b border-surfaceMuted/20 px-5 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-3">
@@ -206,10 +207,11 @@ export function AppShell() {
                 <span>Human validation is required before action.</span>
               </div>
             </div>
+            <ThemeToggle />
           </div>
         </div>
 
-        <div className="border-t border-surfaceMuted/20 px-6 py-4">
+        <div className="border-t border-surfaceMuted/20 px-5 py-4">
           <div className="text-xs uppercase tracking-[0.2em] text-textSecondary">
             {session.name} / {roleLabels[session.role]}
           </div>
@@ -221,7 +223,7 @@ export function AppShell() {
 
       <div className="lg:pl-80">
         <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-surface/95 backdrop-blur">
-          <div className="flex min-h-[92px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+          <div className="flex min-h-[84px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
             <div className="flex min-w-0 items-center gap-4">
               <Button
                 className="lg:hidden"
@@ -237,7 +239,7 @@ export function AppShell() {
                 <p className="mt-1 text-xs uppercase tracking-[0.22em] text-textSecondary">
                   {handle?.eyebrow ?? 'Operations'}
                 </p>
-                <h2 className="truncate font-display text-2xl font-bold tracking-[-0.04em]">
+                <h2 className="truncate font-display text-[1.75rem] font-bold tracking-[-0.04em]">
                   {handle?.title ?? 'Operations'}
                 </h2>
                 <div className="mt-3 flex flex-wrap gap-2 md:hidden">
@@ -254,6 +256,7 @@ export function AppShell() {
               <Badge className="badge-panel">
                 {roleLabels[session.role]} / {session.shift}
               </Badge>
+              <ThemeToggle />
               {complianceChips.map((label) => (
                 <Badge key={label} className="chip-compliance">
                   {label}
@@ -275,9 +278,9 @@ export function AppShell() {
           </div>
         </header>
 
-        <main className="px-4 pb-10 pt-6 sm:px-6 lg:px-10">
+        <main className="px-4 pb-8 pt-5 sm:px-6 lg:px-10">
           <Outlet />
-          <footer className="mt-10 border-t border-surfaceMuted/20 pt-4 text-sm text-textSecondary">
+          <footer className="mt-8 border-t border-surfaceMuted/20 pt-4 text-sm text-textSecondary">
             DAMA LTD / Powered by NOVA. Campus evidence remains limited to snapshots
             plus metadata, and operational action requires human validation.
           </footer>

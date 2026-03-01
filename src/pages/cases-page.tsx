@@ -22,7 +22,7 @@ export function CasesPage() {
   const caseList = [...data.cases].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Incident Desk"
         title="Cases"

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { campusZones } from '@/data/mock-data'
 import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
@@ -17,7 +18,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Local Preferences"
         title="Preferences"
@@ -30,6 +31,14 @@ export function SettingsPage() {
           <CardDescription>These settings tune the local view without changing policy guardrails.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 pt-5">
+          <div className="flex items-center justify-between gap-4 border border-surfaceMuted/20 bg-primaryDark px-4 py-3">
+            <div className="space-y-1">
+              <div className="font-medium">Theme mode</div>
+              <div className="text-sm text-textSecondary">Switch between Strathmore light and dark workspace modes.</div>
+            </div>
+            <ThemeToggle />
+          </div>
+
           <label className="block space-y-2">
             <span className="eyebrow text-[10px]">Default zone</span>
             <Select value={preferences.defaultZone} onChange={(event) => update('defaultZone', event.target.value)}>

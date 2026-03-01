@@ -53,7 +53,7 @@ export function SearchPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Snapshot index"
         title="Search evidence metadata"

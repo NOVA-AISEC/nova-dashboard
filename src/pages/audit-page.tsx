@@ -17,7 +17,7 @@ export function AuditPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Operator Trace"
         title="Audit Log"

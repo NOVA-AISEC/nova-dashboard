@@ -46,8 +46,8 @@ export function FiltersBar({
 }: FiltersBarProps) {
   return (
     <Card className={cn('bg-primaryDeep', className)}>
-      <CardContent className="space-y-5 pt-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+      <CardContent className="space-y-4 pt-4">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <label className="relative block flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-textSecondary" />
             <Input
@@ -57,10 +57,10 @@ export function FiltersBar({
               onChange={(event) => onSearchChange(event.target.value)}
             />
           </label>
-          {rightSlot ? <div className="flex flex-wrap gap-3">{rightSlot}</div> : null}
+          {rightSlot ? <div className="flex flex-wrap gap-2.5">{rightSlot}</div> : null}
         </div>
 
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-3">
           {groups.map((group) => (
             <div
               key={group.id}

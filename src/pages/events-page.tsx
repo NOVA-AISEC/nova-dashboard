@@ -6,7 +6,7 @@ import { formatDateTime } from '@/lib/formatters'
 
 export function EventsPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Campus Scheduling"
         title="Events"

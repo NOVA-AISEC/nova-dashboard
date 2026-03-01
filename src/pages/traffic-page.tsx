@@ -7,7 +7,7 @@ import { formatDateTime } from '@/lib/formatters'
 
 export function TrafficPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Mobility Control"
         title="Parking / Traffic"

@@ -16,8 +16,39 @@
     --border: #D8D2C8;
     --sidebar-bg: #081F42;
     --sidebar-ink: #F6F2EA;
-    --ring: var(--brand-gold);
-    --link: var(--brand-blue);
+    --primary-dark: #F6F2EA;
+    --primary-deep: #FFFFFF;
+    --surface-light: #FFFFFF;
+    --surface-muted: #D8D2C8;
+    --text-primary: #101318;
+    --text-secondary: #5B616B;
+    --success: #02338D;
+    --warning: #CC9C4A;
+    --danger: #970400;
+    --ring: #CC9C4A;
+    --link: #02338D;
+    --color-primary-dark: 246 242 234;
+    --color-primary-deep: 255 255 255;
+    --color-accent-blue: 2 51 141;
+    --color-accent-glow: 204 156 74;
+    --color-surface-light: 255 255 255;
+    --color-surface-muted: 216 210 200;
+    --color-text-primary: 16 19 24;
+    --color-text-secondary: 91 97 107;
+    --color-success: 2 51 141;
+    --color-warning: 204 156 74;
+    --color-danger: 151 4 0;
+    --color-brand-blue: 2 51 141;
+    --color-brand-gold: 204 156 74;
+    --color-brand-red: 151 4 0;
+    --color-brand-black: 11 13 16;
+    --color-brand-white: 255 255 255;
+    --color-surface: 246 242 234;
+    --color-ink: 16 19 24;
+    --color-muted: 91 97 107;
+    --color-border: 216 210 200;
+    --color-sidebar-bg: 8 31 66;
+    --color-sidebar-ink: 246 242 234;
   }
 
   * {
@@ -42,6 +73,7 @@
       radial-gradient(circle at bottom left, color-mix(in srgb, var(--brand-blue) 10%, transparent) 0, transparent 26rem),
       linear-gradient(180deg, var(--brand-white) 0%, var(--surface) 100%);
     background-attachment: fixed;
+    transition: background-color 160ms ease, color 160ms ease;
   }
 
   :focus-visible {
@@ -217,6 +249,14 @@
   .btn-primary:hover {
     background-color: var(--sidebar-bg);
     border-color: var(--sidebar-bg);
+  }
+
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible,
+  .btn-outline:focus-visible,
+  .btn-ghost:focus-visible,
+  .btn-danger:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 32%, transparent);
   }
 
   .btn-secondary {

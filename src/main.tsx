@@ -2,9 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
-import { applyStrathmoreTheme } from './theme/strathmore'
+import { applyStrathmoreTheme, getStoredThemeMode } from './theme/strathmore'
 
-applyStrathmoreTheme()
+applyStrathmoreTheme(getStoredThemeMode())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

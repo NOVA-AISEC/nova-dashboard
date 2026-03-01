@@ -12,10 +12,10 @@ export const buttonVariants = cva(
         danger: 'btn-danger',
       },
       size: {
-        default: 'h-11 px-4.5',
-        sm: 'h-8.5 px-3 text-[10px]',
-        lg: 'h-12 px-5',
-        icon: 'h-10 w-10',
+        default: 'h-10 px-4',
+        sm: 'h-8 px-2.5 text-[10px]',
+        lg: 'h-11 px-4.5',
+        icon: 'h-9 w-9',
       },
     },
     defaultVariants: {

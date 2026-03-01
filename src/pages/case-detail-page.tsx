@@ -59,7 +59,7 @@ export function CaseDetailPage() {
   const caseAlerts = caseRecord.alerts ?? []
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow={caseRecord.id}
         title={caseRecord.title}

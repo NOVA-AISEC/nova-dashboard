@@ -46,7 +46,7 @@ export function ReportsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Manual Intake"
         title="Reports"

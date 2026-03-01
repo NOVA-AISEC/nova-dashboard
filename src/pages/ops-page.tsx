@@ -112,7 +112,7 @@ export function OpsPage() {
     .slice(0, 4)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Campus Command Center"
         title="Ops Command"

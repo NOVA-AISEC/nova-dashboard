@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { LockKeyhole, ShieldBan } from 'lucide-react'
 import { getDefaultRoute, roleLabels, type UserRole } from '@/app/access'
+import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,22 +42,25 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-surface px-4 py-8 text-ink sm:px-6 lg:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-stretch gap-6 lg:grid-cols-[minmax(0,1.15fr)_28rem]">
-        <section className="brand-hero relative overflow-hidden border border-surfaceMuted/20 p-8 text-surfaceLight sm:p-10">
+      <div className="mx-auto mb-4 flex max-w-6xl justify-end">
+        <ThemeToggle />
+      </div>
+      <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-stretch gap-5 lg:grid-cols-[minmax(0,1.15fr)_28rem]">
+        <section className="brand-hero relative overflow-hidden border border-surfaceMuted/20 p-7 text-surfaceLight sm:p-8">
           <div className="brand-hero-overlay absolute inset-0" />
-          <div className="relative flex h-full flex-col justify-between gap-8">
-            <div className="space-y-5">
+          <div className="relative flex h-full flex-col justify-between gap-6">
+            <div className="space-y-4">
               <Badge className="brand-hero-chip">
                 <LockKeyhole className="h-3.5 w-3.5" />
                 NOVA / Strathmore Security Operations
               </Badge>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <p className="brand-hero-muted eyebrow">Strathmore Security Operations by DAMA LTD</p>
-                <h1 className="max-w-2xl font-display text-4xl font-bold tracking-[-0.05em] sm:text-5xl">
+                <h1 className="max-w-2xl font-display text-3xl font-bold tracking-[-0.05em] sm:text-4xl">
                   NOVA keeps Strathmore security operations evidence-first across gates,
                   hostels, lecture blocks, and perimeter patrol.
                 </h1>
-                <p className="brand-hero-muted max-w-2xl text-base">
+                <p className="brand-hero-muted max-w-2xl text-[15px]">
                   Login is local-only for now. NOVA preserves snapshots plus metadata,
                   keeps biometrics disabled, and requires human-in-the-loop validation
                   before action.

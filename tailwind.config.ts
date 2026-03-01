@@ -1,31 +1,34 @@
 import type { Config } from 'tailwindcss'
-import { strathmoreSemanticColors } from './src/theme/strathmore'
+
+function cssColorVariable(name: string) {
+  return `rgb(var(${name}) / <alpha-value>)`
+}
 
 export default {
   theme: {
     colors: {
-      primaryDark: strathmoreSemanticColors.primaryDark,
-      primaryDeep: strathmoreSemanticColors.primaryDeep,
-      accentBlue: strathmoreSemanticColors.accentBlue,
-      accentGlow: strathmoreSemanticColors.accentGlow,
-      surfaceLight: strathmoreSemanticColors.surfaceLight,
-      surfaceMuted: strathmoreSemanticColors.surfaceMuted,
-      textPrimary: strathmoreSemanticColors.textPrimary,
-      textSecondary: strathmoreSemanticColors.textSecondary,
-      success: strathmoreSemanticColors.success,
-      warning: strathmoreSemanticColors.warning,
-      danger: strathmoreSemanticColors.danger,
-      brandBlue: strathmoreSemanticColors.brandBlue,
-      brandGold: strathmoreSemanticColors.brandGold,
-      brandRed: strathmoreSemanticColors.brandRed,
-      brandBlack: strathmoreSemanticColors.brandBlack,
-      brandWhite: strathmoreSemanticColors.brandWhite,
-      surface: strathmoreSemanticColors.surface,
-      ink: strathmoreSemanticColors.ink,
-      muted: strathmoreSemanticColors.muted,
-      border: strathmoreSemanticColors.border,
-      sidebarBg: strathmoreSemanticColors.sidebarBg,
-      sidebarInk: strathmoreSemanticColors.sidebarInk,
+      primaryDark: cssColorVariable('--color-primary-dark'),
+      primaryDeep: cssColorVariable('--color-primary-deep'),
+      accentBlue: cssColorVariable('--color-accent-blue'),
+      accentGlow: cssColorVariable('--color-accent-glow'),
+      surfaceLight: cssColorVariable('--color-surface-light'),
+      surfaceMuted: cssColorVariable('--color-surface-muted'),
+      textPrimary: cssColorVariable('--color-text-primary'),
+      textSecondary: cssColorVariable('--color-text-secondary'),
+      success: cssColorVariable('--color-success'),
+      warning: cssColorVariable('--color-warning'),
+      danger: cssColorVariable('--color-danger'),
+      brandBlue: cssColorVariable('--color-brand-blue'),
+      brandGold: cssColorVariable('--color-brand-gold'),
+      brandRed: cssColorVariable('--color-brand-red'),
+      brandBlack: cssColorVariable('--color-brand-black'),
+      brandWhite: cssColorVariable('--color-brand-white'),
+      surface: cssColorVariable('--color-surface'),
+      ink: cssColorVariable('--color-ink'),
+      muted: cssColorVariable('--color-muted'),
+      border: cssColorVariable('--color-border'),
+      sidebarBg: cssColorVariable('--color-sidebar-bg'),
+      sidebarInk: cssColorVariable('--color-sidebar-ink'),
       transparent: 'transparent',
       current: 'currentColor',
     },

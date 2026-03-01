@@ -6,7 +6,7 @@ import { formatDateTime } from '@/lib/formatters'
 
 export function ZonesPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeader
         eyebrow="Campus Coverage"
         title="Zones & Cameras"
