@@ -1,55 +1,30 @@
 # NOVA Dashboard
 
-Vite, React, TypeScript, and Tailwind v4 for NOVA, the Strathmore-facing operations dashboard by DAMA LTD.
+NOVA is a minimum working dashboard for DAMA LTD's Strathmore-facing security operations workflow. The current build includes a local login flow, a shared operator shell, and placeholder-backed modules for Ops Command, Live Queue, Alerts, Cases, Reports, Search, Mobility, Campus, and Administration.
 
-## Overview
+The product is demo-safe by design. It uses still snapshots plus metadata only, keeps biometrics disabled, and does not connect to real CCTV, PII, or identity-resolution services.
 
-This repo now ships with a lightweight local end-to-end setup:
+## Current status
 
-- React dashboard for `/ops`, `/alerts`, `/cases/:id`, and `/search`
-- Local Express API under `/api`
-- JSON-backed storage with first-run seeding from `server/data/seed.json`
-- Ingestion simulator that rotates alert inserts from `server/data/mock-events.ndjson`
-- Evidence constrained to still snapshots plus metadata only
+- Minimum working dashboard with local login and role-gated routes
+- Frontend pages are implemented, but most module data is placeholder/mock data
+- Default build mode uses in-browser mock data
+- Optional local Express API and simulator exist for richer local demos
+- No production auth, no real integrations, no live campus data sources
 
-Compliance guardrails are enforced throughout the UI and simulator:
+## Tech stack
 
-- No raw video is stored or returned
-- Biometrics are disabled
-- Facial recognition and identity inference are not implemented
-- Human analyst validation remains required
+- Vite 7
+- React 19
+- TypeScript 5
+- React Router 7 (`createBrowserRouter`)
+- Tailwind CSS v4
+- shadcn-style local UI primitives under `src/components/ui`
+- Lucide icons
+- Express 5 local demo API under `server/`
+- State management: React context + component state only
 
-## Project Structure
-
-```text
-src/
-  api/              Typed frontend API clients and mock fallback
-  app/              Router setup
-  components/       Layout, shared, domain, and UI components
-  data/             Mock fallback dataset when VITE_USE_MOCK=true
-  hooks/            Async data hooks
-  lib/              Utilities and compliance copy
-  pages/            Route-level pages
-  types/            Shared domain types
-server/
-  data/             Seed data and simulator event feed
-  db.js             JSON-backed storage layer
-  index.js          Local API server
-  simulator.js      Rotating ingestion simulator
-scripts/
-  dev.mjs           Cross-platform dev runner for web + API
-  rename-to-dama.*  Safe repo rename helpers
-docs/
-  api/contracts.md  API endpoint and payload contract
-```
-
-## Branding
-
-- Product name: `NOVA` or `NOVA AI`
-- Company attribution: `DAMA LTD`
-- Strathmore-facing UI copy should read as Strathmore Security Operations by DAMA LTD
-
-## Development
+## Quick start
 
 Install dependencies:
 
@@ -57,80 +32,152 @@ Install dependencies:
 npm install
 ```
 
-Start the web app and local API together:
+Start local web + local API:
 
 ```bash
 npm run dev
 ```
 
-Run the API only:
-
-```bash
-npm run dev:server
-```
-
-Run the web app only:
+Start web only:
 
 ```bash
 npm run dev:web
 ```
 
-Run lint:
+Start API only:
 
 ```bash
-npm run lint
+npm run dev:server
 ```
 
-Create a production build:
+Build:
 
 ```bash
 npm run build
 ```
 
-Audit for forbidden orange/amber Tailwind classes:
+Preview the production build locally:
 
 ```bash
-rg -n "orange-|amber-" src
+npm run preview
 ```
 
-This should return no matches.
+Lint:
 
-## Environment Variables
-
-- `VITE_USE_MOCK=true`
-  Uses the in-browser fallback dataset in `src/data/mock-data.ts` instead of the local API.
-- `DAMA_API_PORT=8787`
-  Overrides the local API port. Vite proxying follows the same value in development.
-- `SIMULATOR_INTERVAL_MS=8000`
-  Controls how often the ingestion simulator inserts a new alert.
-- `SIMULATOR_ENABLED=false`
-  Disables the rotating simulator while leaving the API available.
-
-## Evidence Model
-
-Evidence is represented as:
-
-```ts
-{
-  snapshotUrl: string
-  metadata: {
-    cameraId: string
-    zone: string
-    ts: string
-    bboxList: BoundingBox[]
-    classes: string[]
-    confidence: number
-    biometricsDisabled: true
-    humanValidationRequired: true
-    source: 'snapshot'
-  }
-}
+```bash
+npm run lint
 ```
 
-Raw video is intentionally excluded.
+Optional repo test script:
 
-## Notes
+```bash
+npm run test:action-gradient
+```
 
-- Placeholder snapshots are stored under `public/evidence/`.
-- Runtime API state is written to `server/data/db.json` and is not committed.
-- The repository package name is `dama-dashboard`.
+## Environment variables
+
+Copy `.env.example` to `.env` if you want to override defaults.
+
+| Variable | Required for local dev | Required for static preview hosting | Purpose |
+| --- | --- | --- | --- |
+| `VITE_USE_MOCK` | Recommended | Yes | Frontend data source switch. Any value other than `false` keeps the app on the in-browser mock client. |
+| `DAMA_API_PORT` | Only if changing port | No | Local Express API port and Vite dev proxy target. |
+| `SIMULATOR_ENABLED` | Optional | No | Enables/disables the local alert-ingest simulator. |
+| `SIMULATOR_INTERVAL_MS` | Optional | No | Local simulator tick interval in milliseconds. |
+
+Auth is mocked/local-only. There are no auth secrets, OAuth keys, or backend identity providers in this repo.
+
+## Route map
+
+Public:
+
+- `/login`
+
+Authenticated shell:
+
+- `/ops`
+- `/queue`
+- `/alerts`
+- `/cases`
+- `/cases/:id`
+- `/reports`
+- `/vehicles`
+- `/traffic`
+- `/zones`
+- `/events`
+- `/exports`
+- `/audit`
+- `/users`
+- `/settings`
+- `/search`
+
+Role access is enforced in the router. Guards, analysts, supervisors, and admins land on different allowed surfaces after login.
+
+## Deployment preview
+
+For stakeholder preview deploys on Vercel or Netlify, build with:
+
+```bash
+VITE_USE_MOCK=true
+```
+
+Reason:
+
+- Static hosts in this repo do not include the local Express API
+- The production build calls `/api/*` only when `VITE_USE_MOCK=false`
+- There are no serverless routes or rewrites included for Vercel/Netlify
+
+Safe preview workflow:
+
+1. Set `VITE_USE_MOCK=true`.
+2. Run `npm run build`.
+3. Deploy `dist/`.
+4. Share it as a demo-only preview.
+
+If you want API-backed previews, you need a separate Node deployment for `server/` plus matching routing/proxy work. That is not implemented in this repo.
+
+## Security notes
+
+- No raw video storage
+- No facial recognition
+- No biometric identification
+- No real CCTV or campus integrations
+- No production session backend
+- Demo-safe placeholder imagery only under `public/evidence/`
+
+## Repo map
+
+```text
+src/
+  api/         frontend API selector, HTTP client, mock client
+  app/         route definitions and role/access metadata
+  components/  layout shell, feature components, shared primitives, UI wrappers
+  data/        in-browser placeholder datasets
+  hooks/       async and theme hooks
+  lib/         auth, storage, formatting, compliance helpers
+  pages/       route-level screens
+  theme/       Strathmore token setup and theme application
+  types/       shared domain contracts
+server/
+  data/        seed data, mutable local db, simulator feed
+  db.js        local JSON-backed data layer
+  index.js     Express API
+  simulator.js mock alert ingestion loop
+docs/
+  00-08*.md    architecture and workflow documentation
+  adr/         architecture decision records
+  api/         endpoint contracts
+```
+
+## Documentation
+
+- `docs/00-overview.md`
+- `docs/01-architecture.md`
+- `docs/02-routing-and-layout.md`
+- `docs/03-auth-and-session.md`
+- `docs/04-ui-system.md`
+- `docs/05-features.md`
+- `docs/06-dev-setup.md`
+- `docs/07-deploy-preview.md`
+- `docs/08-adr.md`
+- `docs/api/contracts.md`
