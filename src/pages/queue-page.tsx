@@ -73,7 +73,7 @@ export function QueuePage() {
 
           <Card className="surface-command">
             <CardHeader className="surface-command-divider border-b">
-              <CardTitle className="text-surfaceLight">Incident desk watch</CardTitle>
+              <CardTitle className="text-ink">Incident desk watch</CardTitle>
               <CardDescription className="surface-command-copy">
                 Cases needing the next supervisor or admin decision.
               </CardDescription>

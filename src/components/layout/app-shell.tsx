@@ -81,10 +81,10 @@ export function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-primaryDark text-surfaceLight">
+    <div className="min-h-screen bg-surface text-ink">
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-primaryDark/70 transition-opacity lg:hidden',
+          'fixed inset-0 z-40 bg-brandBlack/45 transition-opacity lg:hidden',
           isNavOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={() => setIsNavOpen(false)}
@@ -92,7 +92,7 @@ export function AppShell() {
 
       <aside
         className={cn(
-          'sidebar-shell fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-surfaceMuted/20 bg-primaryDark text-surfaceLight transition-transform lg:translate-x-0',
+          'sidebar-shell fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-surfaceMuted/20 transition-transform lg:translate-x-0',
           isNavOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -220,7 +220,7 @@ export function AppShell() {
       </aside>
 
       <div className="lg:pl-80">
-        <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-primaryDark/95 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-surface/95 backdrop-blur">
           <div className="flex min-h-[92px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
             <div className="flex min-w-0 items-center gap-4">
               <Button

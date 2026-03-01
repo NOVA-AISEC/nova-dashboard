@@ -1,11 +1,5 @@
 import type { Alert, Case } from '@/types/domain'
-import {
-  STRATIZEN_ACCENT_BLUE,
-  STRATIZEN_PRIMARY_DARK,
-  STRATIZEN_PRIMARY_DEEP,
-  STRATIZEN_SURFACE_LIGHT,
-  STRATIZEN_SURFACE_MUTED,
-} from '@/theme/stratizen'
+import { STRATHMORE } from '@/theme/strathmore'
 
 export function exportShiftBrief({
   generatedBy,
@@ -28,11 +22,12 @@ export function exportShiftBrief({
     <meta charset="utf-8" />
     <title>NOVA Shift Brief</title>
     <style>
-      body { font-family: Arial, sans-serif; margin: 32px; color: ${STRATIZEN_SURFACE_LIGHT}; background: ${STRATIZEN_PRIMARY_DARK}; }
-      h1, h2 { margin-bottom: 8px; }
+      body { font-family: Arial, sans-serif; margin: 32px; color: ${STRATHMORE.ink}; background: ${STRATHMORE.offwhite}; }
+      h1, h2 { margin-bottom: 8px; color: ${STRATHMORE.blue}; }
       .meta, .chip { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; }
-      .chip { display: inline-block; border: 1px solid ${STRATIZEN_ACCENT_BLUE}; background: ${STRATIZEN_PRIMARY_DEEP}; color: ${STRATIZEN_SURFACE_LIGHT}; padding: 6px 10px; margin-right: 8px; margin-bottom: 8px; }
-      .card { border: 1px solid ${STRATIZEN_SURFACE_MUTED}; background: ${STRATIZEN_PRIMARY_DEEP}; padding: 16px; margin-bottom: 12px; }
+      .meta { color: ${STRATHMORE.muted}; }
+      .chip { display: inline-block; border: 1px solid ${STRATHMORE.gold}; background: ${STRATHMORE.white}; color: ${STRATHMORE.blue}; padding: 6px 10px; margin-right: 8px; margin-bottom: 8px; }
+      .card { border: 1px solid ${STRATHMORE.border}; background: ${STRATHMORE.white}; padding: 16px; margin-bottom: 12px; }
       ul { padding-left: 18px; }
     </style>
   </head>

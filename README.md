@@ -87,6 +87,14 @@ Create a production build:
 npm run build
 ```
 
+Audit for forbidden orange/amber Tailwind classes:
+
+```bash
+rg -n "orange-|amber-" src
+```
+
+This should return no matches.
+
 ## Environment Variables
 
 - `VITE_USE_MOCK=true`

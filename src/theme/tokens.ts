@@ -1,1 +1,1 @@
-export { stratizenPalette as themeTokens } from './stratizen'
+export { STRATHMORE as themeTokens } from './strathmore'

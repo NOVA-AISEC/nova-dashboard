@@ -29,7 +29,7 @@ export function TrafficPage() {
                   <CardTitle>{item.zone}</CardTitle>
                   <CardDescription>{formatDateTime(item.updatedAt)}</CardDescription>
                 </div>
-                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{item.status}</Badge>
+                <Badge className="badge-panel">{item.status}</Badge>
               </div>
             </CardHeader>
             <CardContent className="pt-5 text-sm text-textSecondary">{item.summary}</CardContent>

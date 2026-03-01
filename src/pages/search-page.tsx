@@ -166,7 +166,7 @@ export function SearchPage() {
                       className="h-full w-full object-cover"
                       src={snapshot.snapshotUrl}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-primaryDark to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brandBlack via-brandBlack/55 to-transparent" />
                     <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.22em] text-surfaceMuted">
                       <span>{snapshot.metadata.cameraId}</span>
                       <span>{snapshot.id}</span>

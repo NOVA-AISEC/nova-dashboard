@@ -1,25 +1,15 @@
-export const STRATIZEN_PRIMARY_DARK = '#0B0F1A'
-export const STRATIZEN_PRIMARY_DEEP = '#111827'
-export const STRATIZEN_ACCENT_BLUE = '#2563EB'
-export const STRATIZEN_ACCENT_GLOW = '#3B82F6'
-export const STRATIZEN_SURFACE_LIGHT = '#F9FAFB'
-export const STRATIZEN_SURFACE_MUTED = '#E5E7EB'
-export const STRATIZEN_TEXT_PRIMARY = '#111827'
-export const STRATIZEN_TEXT_SECONDARY = '#6B7280'
-export const STRATIZEN_SUCCESS = '#16A34A'
-export const STRATIZEN_WARNING = '#F59E0B'
-export const STRATIZEN_DANGER = '#DC2626'
+import { strathmoreSemanticColors } from './strathmore'
 
-export const stratizenPalette = {
-  primaryDark: STRATIZEN_PRIMARY_DARK,
-  primaryDeep: STRATIZEN_PRIMARY_DEEP,
-  accentBlue: STRATIZEN_ACCENT_BLUE,
-  accentGlow: STRATIZEN_ACCENT_GLOW,
-  surfaceLight: STRATIZEN_SURFACE_LIGHT,
-  surfaceMuted: STRATIZEN_SURFACE_MUTED,
-  textPrimary: STRATIZEN_TEXT_PRIMARY,
-  textSecondary: STRATIZEN_TEXT_SECONDARY,
-  success: STRATIZEN_SUCCESS,
-  warning: STRATIZEN_WARNING,
-  danger: STRATIZEN_DANGER,
-} as const
+export const STRATIZEN_PRIMARY_DARK = strathmoreSemanticColors.primaryDark
+export const STRATIZEN_PRIMARY_DEEP = strathmoreSemanticColors.primaryDeep
+export const STRATIZEN_ACCENT_BLUE = strathmoreSemanticColors.accentBlue
+export const STRATIZEN_ACCENT_GLOW = strathmoreSemanticColors.accentGlow
+export const STRATIZEN_SURFACE_LIGHT = strathmoreSemanticColors.surfaceLight
+export const STRATIZEN_SURFACE_MUTED = strathmoreSemanticColors.surfaceMuted
+export const STRATIZEN_TEXT_PRIMARY = strathmoreSemanticColors.textPrimary
+export const STRATIZEN_TEXT_SECONDARY = strathmoreSemanticColors.textSecondary
+export const STRATIZEN_SUCCESS = strathmoreSemanticColors.success
+export const STRATIZEN_WARNING = strathmoreSemanticColors.warning
+export const STRATIZEN_DANGER = strathmoreSemanticColors.danger
+
+export const stratizenPalette = strathmoreSemanticColors

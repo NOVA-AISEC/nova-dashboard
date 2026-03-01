@@ -58,12 +58,12 @@ export function EvidenceViewer({ snapshots }: EvidenceViewerProps) {
               className="h-full w-full object-cover"
               src={selected.snapshotUrl}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-primaryDark via-primaryDeep to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brandBlack via-brandBlack/55 to-transparent" />
             <div className="absolute inset-x-0 top-0 flex items-center justify-between border-b border-surfaceMuted/20 px-4 py-3 text-[11px] uppercase tracking-[0.24em] text-surfaceMuted">
               <span>{selected.metadata.cameraId}</span>
               <span>{selected.metadata.zone}</span>
             </div>
-            <div className="absolute inset-x-0 bottom-0 space-y-3 border-t border-surfaceMuted/20 bg-primaryDark/85 p-4 text-surfaceLight">
+            <div className="absolute inset-x-0 bottom-0 space-y-3 border-t border-surfaceMuted/20 bg-brandBlack/78 p-4 text-surfaceLight">
               <div className="flex flex-wrap gap-2">
                 {selected.metadata.classes.map((tag) => (
                   <span

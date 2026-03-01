@@ -40,7 +40,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-primaryDark px-4 py-8 text-surfaceLight sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-surface px-4 py-8 text-ink sm:px-6 lg:px-8">
       <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl items-stretch gap-6 lg:grid-cols-[minmax(0,1.15fr)_28rem]">
         <section className="brand-hero relative overflow-hidden border border-surfaceMuted/20 p-8 text-surfaceLight sm:p-10">
           <div className="brand-hero-overlay absolute inset-0" />
@@ -135,7 +135,7 @@ export function LoginPage() {
               ) : null}
 
               {error ? (
-                <div className="border border-danger bg-primaryDark px-4 py-3 text-sm text-danger">
+                <div className="border border-danger bg-primaryDeep px-4 py-3 text-sm text-danger">
                   {error}
                 </div>
               ) : null}

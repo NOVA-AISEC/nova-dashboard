@@ -22,7 +22,7 @@ export function ZonesPage() {
                   <CardTitle>{zone.name}</CardTitle>
                   <CardDescription>{zone.cameraId}</CardDescription>
                 </div>
-                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{zone.status}</Badge>
+                <Badge className="badge-panel">{zone.status}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">

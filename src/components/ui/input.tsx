@@ -9,7 +9,7 @@ export function Input({
   return (
     <input
       className={cn(
-        'flex h-11 w-full border border-surfaceMuted bg-primaryDark px-4 text-sm text-surfaceLight placeholder:text-textSecondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accentGlow',
+        'flex h-11 w-full border border-surfaceMuted bg-primaryDeep px-4 text-sm text-textPrimary placeholder:text-textSecondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accentGlow',
         className,
       )}
       type={type}

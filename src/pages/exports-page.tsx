@@ -22,7 +22,7 @@ export function ExportsPage() {
                   <CardTitle>{item.packageType}</CardTitle>
                   <CardDescription>{item.destination}</CardDescription>
                 </div>
-                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{item.status}</Badge>
+                <Badge className="badge-panel">{item.status}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3 pt-5 text-sm text-textSecondary">

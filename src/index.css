@@ -4,8 +4,25 @@
 @import "tw-animate-css";
 
 @layer base {
+  :root {
+    --brand-blue: #02338D;
+    --brand-gold: #CC9C4A;
+    --brand-red: #970400;
+    --brand-black: #0B0D10;
+    --brand-white: #FFFFFF;
+    --surface: #F6F2EA;
+    --ink: #101318;
+    --muted: #5B616B;
+    --border: #D8D2C8;
+    --sidebar-bg: #081F42;
+    --sidebar-ink: #F6F2EA;
+    --ring: var(--brand-gold);
+    --link: var(--brand-blue);
+  }
+
   * {
-    @apply border-surfaceMuted/20 outline-accentGlow/60;
+    border-color: var(--border);
+    outline-color: color-mix(in srgb, var(--ring) 60%, transparent);
   }
 
   html,
@@ -18,19 +35,22 @@
     margin: 0;
     min-width: 320px;
     font-family: "IBM Plex Sans", sans-serif;
-    background-color: #0B0F1A;
-    color: #F9FAFB;
-    background-image: linear-gradient(180deg, #111827 0%, #0B0F1A 100%);
-    background-position: top left;
-    background-size: cover;
+    background-color: var(--surface);
+    color: var(--ink);
+    background-image:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--brand-gold) 14%, transparent) 0, transparent 24rem),
+      radial-gradient(circle at bottom left, color-mix(in srgb, var(--brand-blue) 10%, transparent) 0, transparent 26rem),
+      linear-gradient(180deg, var(--brand-white) 0%, var(--surface) 100%);
+    background-attachment: fixed;
   }
 
   :focus-visible {
-    outline: 2px solid #3B82F6;
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
   a {
+    color: var(--link);
     text-decoration: none;
   }
 
@@ -52,276 +72,337 @@
   }
 
   ::selection {
-    background-color: #2563EB;
-    color: #F9FAFB;
-  }
-
-  button.primary {
-    background-color: #2563EB;
-    color: #F9FAFB;
+    background-color: var(--brand-gold);
+    color: var(--brand-black);
   }
 
   .card {
-    background-color: #111827;
-    border: 1px solid #E5E7EB;
+    background-color: var(--brand-white);
+    border: 1px solid var(--border);
+    color: var(--ink);
   }
 }
 
 @layer components {
   .bg-surface {
-    @apply bg-primaryDeep;
+    background-color: var(--surface);
   }
 
   .text-ink {
-    @apply text-surfaceLight;
+    color: var(--ink);
   }
 
   .text-muted {
-    @apply text-textSecondary;
+    color: var(--muted);
   }
 
   .border-brand {
-    @apply border-surfaceMuted;
+    border-color: var(--border);
   }
 
   .bg-sidebar {
-    @apply bg-primaryDark text-surfaceLight;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-ink);
   }
 
   .eyebrow {
     font-family: "Space Grotesk", sans-serif;
-    @apply text-[11px] font-semibold uppercase tracking-[0.28em] text-textSecondary;
+    @apply text-[11px] font-semibold uppercase tracking-[0.28em];
+    color: var(--muted);
   }
 
   .panel-grid {
     background-image:
-      linear-gradient(#2563EB 1px, transparent 1px),
-      linear-gradient(90deg, #2563EB 1px, transparent 1px);
+      linear-gradient(color-mix(in srgb, var(--brand-blue) 22%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--brand-blue) 22%, transparent) 1px, transparent 1px);
     background-size: 24px 24px;
-    opacity: 0.14;
+    opacity: 0.5;
   }
 
   .data-kicker {
-    @apply text-[10px] font-semibold uppercase tracking-[0.24em] text-textSecondary;
+    @apply text-[10px] font-semibold uppercase tracking-[0.24em];
+    color: var(--muted);
   }
 
   .badge-panel {
-    @apply border-surfaceMuted bg-primaryDark text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-blue) 18%, var(--border));
+    background-color: var(--brand-white);
+    color: var(--brand-blue);
   }
 
   .badge-neutral {
-    @apply border-surfaceMuted bg-primaryDark text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-blue) 18%, var(--border));
+    background-color: color-mix(in srgb, var(--brand-blue) 8%, var(--brand-white));
+    color: var(--brand-blue);
   }
 
   .badge-compliance {
-    @apply border-accentBlue bg-accentBlue text-surfaceLight;
+    border-color: var(--brand-gold);
+    background-color: color-mix(in srgb, var(--brand-gold) 14%, var(--brand-white));
+    color: var(--brand-blue);
   }
 
   .badge-critical {
-    @apply border-danger bg-danger text-surfaceLight;
+    border-color: var(--brand-red);
+    background-color: color-mix(in srgb, var(--brand-red) 14%, var(--brand-white));
+    color: var(--brand-red);
   }
 
   .badge-high {
-    @apply border-warning bg-warning text-primaryDark;
+    border-color: var(--brand-gold);
+    background-color: color-mix(in srgb, var(--brand-gold) 18%, var(--brand-white));
+    color: var(--brand-black);
   }
 
   .badge-medium {
-    @apply border-accentGlow bg-accentGlow text-surfaceLight;
+    border-color: var(--brand-blue);
+    background-color: color-mix(in srgb, var(--brand-blue) 12%, var(--brand-white));
+    color: var(--brand-blue);
   }
 
   .badge-low {
-    @apply border-surfaceMuted bg-surfaceMuted text-textPrimary;
+    border-color: var(--border);
+    background-color: var(--surface);
+    color: var(--muted);
   }
 
   .badge-status-info {
-    @apply border-accentBlue bg-accentBlue text-surfaceLight;
+    border-color: var(--brand-blue);
+    background-color: color-mix(in srgb, var(--brand-blue) 12%, var(--brand-white));
+    color: var(--brand-blue);
   }
 
   .badge-status-muted {
-    @apply border-surfaceMuted bg-surfaceMuted text-textPrimary;
+    border-color: var(--border);
+    background-color: var(--surface);
+    color: var(--muted);
   }
 
   .badge-status-success {
-    @apply border-success bg-success text-surfaceLight;
+    border-color: var(--brand-blue);
+    background-color: var(--brand-blue);
+    color: var(--brand-white);
   }
 
   .notice-panel {
-    @apply border-accentBlue bg-primaryDeep text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-blue) 22%, var(--border));
+    background-color: color-mix(in srgb, var(--brand-blue) 7%, var(--brand-white));
+    color: var(--ink);
   }
 
   .surface-command {
-    @apply border-accentBlue bg-primaryDeep text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-blue) 22%, var(--border));
+    background-color: var(--brand-white);
+    color: var(--ink);
   }
 
   .brand-link {
     @apply inline-flex items-center gap-2 font-semibold transition-colors;
-    @apply text-accentGlow;
-    text-decoration-color: #2563EB;
+    color: var(--brand-blue);
+    text-decoration-color: var(--brand-gold);
     text-underline-offset: 0.25rem;
   }
 
   .brand-link:hover {
-    @apply text-accentBlue;
+    color: var(--brand-gold);
   }
 
   .btn-primary {
-    @apply bg-accentBlue border-accentBlue text-surfaceLight;
+    background-color: var(--brand-blue);
+    border-color: var(--brand-blue);
+    color: var(--brand-white);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ring) 0%, transparent);
   }
 
   .btn-primary:hover {
-    @apply bg-accentGlow border-accentGlow;
+    background-color: var(--sidebar-bg);
+    border-color: var(--sidebar-bg);
   }
 
   .btn-secondary {
-    @apply bg-primaryDeep border-surfaceMuted text-surfaceLight;
+    background-color: var(--brand-white);
+    border-color: var(--brand-gold);
+    color: var(--brand-blue);
   }
 
   .btn-secondary:hover {
-    @apply bg-primaryDark border-accentBlue;
+    background-color: color-mix(in srgb, var(--brand-gold) 12%, var(--brand-white));
+    border-color: var(--brand-blue);
   }
 
   .btn-outline {
-    @apply border-accentBlue bg-transparent text-accentGlow;
+    border-color: var(--brand-gold);
+    background-color: transparent;
+    color: var(--brand-blue);
   }
 
   .btn-outline:hover {
-    @apply bg-primaryDeep border-accentGlow text-surfaceLight;
+    background-color: color-mix(in srgb, var(--brand-gold) 10%, var(--brand-white));
+    border-color: var(--brand-gold);
+    color: var(--brand-blue);
   }
 
   .btn-ghost {
-    @apply border-transparent bg-transparent text-surfaceLight;
+    border-color: transparent;
+    background-color: transparent;
+    color: inherit;
   }
 
   .btn-ghost:hover {
-    @apply bg-primaryDeep;
+    background-color: color-mix(in srgb, var(--brand-blue) 8%, transparent);
   }
 
   .btn-danger {
-    @apply bg-danger border-danger text-surfaceLight;
+    background-color: var(--brand-red);
+    border-color: var(--brand-red);
+    color: var(--brand-white);
   }
 
   .btn-danger:hover {
-    @apply bg-danger border-danger;
     filter: brightness(1.08);
   }
 
   .chip-compliance {
-    @apply border-accentBlue bg-primaryDark text-accentGlow;
+    border-color: var(--brand-gold);
+    background-color: color-mix(in srgb, var(--brand-gold) 8%, var(--brand-white));
+    color: var(--brand-blue);
   }
 
   .chip-compliance-inverse {
-    @apply border-accentGlow bg-primaryDeep text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-gold) 72%, transparent);
+    background-color: color-mix(in srgb, var(--sidebar-ink) 10%, var(--sidebar-bg));
+    color: var(--sidebar-ink);
   }
 
   .sidebar-shell {
-    background-image: linear-gradient(180deg, #111827 0%, #0B0F1A 100%);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--brand-blue) 88%, var(--sidebar-bg)) 0%, var(--sidebar-bg) 100%);
+    color: var(--sidebar-ink);
   }
 
   .sidebar-logo-mark {
-    @apply border-accentBlue bg-primaryDeep text-accentGlow;
+    border-color: var(--brand-gold);
+    background-color: color-mix(in srgb, var(--brand-gold) 12%, var(--sidebar-bg));
+    color: var(--brand-gold);
   }
 
   .sidebar-title {
-    @apply text-surfaceLight;
+    color: var(--sidebar-ink);
   }
 
   .sidebar-subtitle {
-    @apply text-textSecondary;
+    color: color-mix(in srgb, var(--sidebar-ink) 72%, var(--brand-white));
   }
 
   .sidebar-attribution {
-    @apply text-textSecondary;
+    color: color-mix(in srgb, var(--brand-gold) 76%, var(--sidebar-ink));
   }
 
   .sidebar-copy {
-    @apply text-surfaceMuted;
+    color: color-mix(in srgb, var(--sidebar-ink) 84%, var(--brand-white));
   }
 
   .sidebar-section-heading {
-    @apply border-surfaceMuted/20 text-textSecondary;
+    border-color: color-mix(in srgb, var(--sidebar-ink) 16%, transparent);
+    color: color-mix(in srgb, var(--sidebar-ink) 64%, var(--brand-white));
   }
 
   .sidebar-link {
-    @apply border-transparent text-surfaceMuted;
+    border-color: transparent;
+    color: color-mix(in srgb, var(--sidebar-ink) 80%, var(--brand-white));
   }
 
   .sidebar-link:hover {
-    @apply border-accentBlue bg-primaryDeep text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-gold) 36%, transparent);
+    background-color: color-mix(in srgb, var(--sidebar-ink) 8%, var(--sidebar-bg));
+    color: var(--sidebar-ink);
   }
 
   .sidebar-link-active {
-    @apply border-accentGlow bg-primaryDeep text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-gold) 60%, transparent);
+    background-color: color-mix(in srgb, var(--sidebar-ink) 12%, var(--sidebar-bg));
+    color: var(--sidebar-ink);
   }
 
   .sidebar-link-indicator {
-    @apply bg-accentGlow;
+    background-color: var(--brand-gold);
   }
 
   .sidebar-link-icon {
-    @apply text-accentGlow;
+    color: var(--brand-gold);
   }
 
   .sidebar-link-copy {
-    @apply text-textSecondary;
+    color: color-mix(in srgb, var(--sidebar-ink) 60%, var(--brand-white));
   }
 
   .sidebar-link-active .sidebar-link-copy {
-    @apply text-surfaceMuted;
+    color: color-mix(in srgb, var(--sidebar-ink) 82%, var(--brand-white));
   }
 
   .sidebar-link-badge {
-    @apply border-accentBlue bg-primaryDark text-accentGlow;
+    border-color: var(--brand-gold);
+    background-color: color-mix(in srgb, var(--brand-gold) 16%, var(--sidebar-bg));
+    color: var(--sidebar-ink);
   }
 
   .sidebar-panel {
-    @apply border-surfaceMuted/20 bg-primaryDeep;
+    border-color: color-mix(in srgb, var(--sidebar-ink) 18%, transparent);
+    background-color: color-mix(in srgb, var(--sidebar-ink) 8%, var(--sidebar-bg));
   }
 
   .surface-command-divider {
-    @apply border-surfaceMuted/20;
+    border-color: color-mix(in srgb, var(--border) 100%, transparent);
   }
 
   .surface-command-copy {
-    @apply text-surfaceMuted;
+    color: var(--muted);
   }
 
   .surface-command-row {
-    @apply border-surfaceMuted/20 bg-primaryDark;
+    border-color: color-mix(in srgb, var(--brand-blue) 12%, var(--border));
+    background-color: color-mix(in srgb, var(--brand-blue) 4%, var(--brand-white));
   }
 
   .brand-hero {
-    background-image: linear-gradient(135deg, #111827 0%, #0B0F1A 55%, #2563EB 100%);
-    color: #F9FAFB;
+    background-image:
+      linear-gradient(140deg, var(--sidebar-bg) 0%, var(--brand-blue) 58%, color-mix(in srgb, var(--brand-gold) 28%, var(--brand-blue)) 100%);
+    color: var(--brand-white);
   }
 
   .brand-hero-overlay {
     background-image:
-      radial-gradient(circle at top right, #3B82F6 0, transparent 22rem),
-      radial-gradient(circle at bottom left, #2563EB 0, transparent 18rem);
-    opacity: 0.2;
+      radial-gradient(circle at top right, color-mix(in srgb, var(--brand-gold) 22%, transparent) 0, transparent 18rem),
+      radial-gradient(circle at bottom left, color-mix(in srgb, var(--brand-white) 10%, transparent) 0, transparent 20rem);
+    opacity: 0.55;
   }
 
   .brand-hero-chip {
-    @apply border-accentGlow bg-primaryDeep text-surfaceLight;
+    border-color: color-mix(in srgb, var(--brand-gold) 72%, transparent);
+    background-color: color-mix(in srgb, var(--brand-white) 10%, transparent);
+    color: var(--brand-white);
   }
 
   .brand-hero-muted {
-    @apply text-surfaceMuted;
+    color: color-mix(in srgb, var(--brand-white) 82%, var(--brand-gold));
   }
 
   .brand-hero-card {
-    @apply border-surfaceMuted/20 bg-primaryDark;
+    border-color: color-mix(in srgb, var(--brand-white) 18%, transparent);
+    background-color: color-mix(in srgb, var(--brand-white) 8%, transparent);
   }
 
   .snapshot-thumb {
-    @apply border-surfaceMuted bg-primaryDark;
+    border-color: var(--border);
+    background-color: var(--brand-white);
   }
 
   .snapshot-thumb:hover {
-    @apply border-accentBlue;
+    border-color: var(--brand-blue);
   }
 
   .snapshot-thumb-active {
-    @apply border-accentGlow bg-primaryDeep;
+    border-color: var(--brand-gold);
+    background-color: color-mix(in srgb, var(--brand-gold) 10%, var(--brand-white));
   }
 }

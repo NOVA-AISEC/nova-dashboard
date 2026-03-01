@@ -168,7 +168,7 @@ export function OpsPage() {
 
         <Card className="surface-command">
           <CardHeader className="surface-command-divider border-b">
-            <CardTitle className="text-surfaceLight">Operational guardrails</CardTitle>
+            <CardTitle className="text-ink">Operational guardrails</CardTitle>
             <CardDescription className="surface-command-copy">
               Compliance posture for every campus workflow in this shift.
             </CardDescription>

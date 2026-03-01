@@ -70,14 +70,14 @@ export function VehiclesPage() {
                   <CardTitle>{item.color} {item.type}</CardTitle>
                   <CardDescription>{item.zone}</CardDescription>
                 </div>
-                <Badge className="border-surfaceMuted bg-primaryDark text-surfaceLight">{item.direction}</Badge>
+                <Badge className="badge-panel">{item.direction}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               <div className="text-sm text-textSecondary">{formatDateTime(item.timestamp)}</div>
               <div className="flex flex-wrap gap-2">
                 {item.attributes.map((attribute) => (
-                  <Badge key={attribute} className="border-surfaceMuted bg-primaryDark text-surfaceLight">{attribute}</Badge>
+                  <Badge key={attribute} className="badge-panel">{attribute}</Badge>
                 ))}
               </div>
               <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">

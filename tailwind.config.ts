@@ -1,21 +1,31 @@
 import type { Config } from 'tailwindcss'
+import { strathmoreSemanticColors } from './src/theme/strathmore'
 
-// STRATIZEN BRAND COLORS - DO NOT MODIFY
-// Any tool regeneration must preserve these values.
 export default {
   theme: {
     colors: {
-      primaryDark: '#0B0F1A',
-      primaryDeep: '#111827',
-      accentBlue: '#2563EB',
-      accentGlow: '#3B82F6',
-      surfaceLight: '#F9FAFB',
-      surfaceMuted: '#E5E7EB',
-      textPrimary: '#111827',
-      textSecondary: '#6B7280',
-      success: '#16A34A',
-      warning: '#F59E0B',
-      danger: '#DC2626',
+      primaryDark: strathmoreSemanticColors.primaryDark,
+      primaryDeep: strathmoreSemanticColors.primaryDeep,
+      accentBlue: strathmoreSemanticColors.accentBlue,
+      accentGlow: strathmoreSemanticColors.accentGlow,
+      surfaceLight: strathmoreSemanticColors.surfaceLight,
+      surfaceMuted: strathmoreSemanticColors.surfaceMuted,
+      textPrimary: strathmoreSemanticColors.textPrimary,
+      textSecondary: strathmoreSemanticColors.textSecondary,
+      success: strathmoreSemanticColors.success,
+      warning: strathmoreSemanticColors.warning,
+      danger: strathmoreSemanticColors.danger,
+      brandBlue: strathmoreSemanticColors.brandBlue,
+      brandGold: strathmoreSemanticColors.brandGold,
+      brandRed: strathmoreSemanticColors.brandRed,
+      brandBlack: strathmoreSemanticColors.brandBlack,
+      brandWhite: strathmoreSemanticColors.brandWhite,
+      surface: strathmoreSemanticColors.surface,
+      ink: strathmoreSemanticColors.ink,
+      muted: strathmoreSemanticColors.muted,
+      border: strathmoreSemanticColors.border,
+      sidebarBg: strathmoreSemanticColors.sidebarBg,
+      sidebarInk: strathmoreSemanticColors.sidebarInk,
       transparent: 'transparent',
       current: 'currentColor',
     },
