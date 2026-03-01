@@ -1,6 +1,6 @@
 import { api } from '@/api'
+import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAsyncData } from '@/hooks/use-async-data'
 import { formatDateTime } from '@/lib/formatters'
@@ -18,10 +18,10 @@ export function AuditPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Operator Trace"
         title="Audit Log"
-        description="Review a local trail of acknowledgements, escalations, and export-related actions."
+        subtitle="Review a local trail of acknowledgements, escalations, and export-related actions."
       />
 
       <Card className="overflow-hidden bg-primaryDeep">

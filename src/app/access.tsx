@@ -10,7 +10,6 @@ import {
   Map,
   RadioTower,
   ScrollText,
-  Settings2,
   ShieldAlert,
   TrafficCone,
   Users,
@@ -199,7 +198,7 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
-    label: 'Settings',
+    label: 'Admin',
     items: [
       {
         id: 'users',
@@ -207,13 +206,6 @@ export const navigationGroups: NavigationGroup[] = [
         label: 'Users & Roles',
         description: 'RBAC roster view',
         icon: Users,
-      },
-      {
-        id: 'settings',
-        to: routePaths.settings,
-        label: 'Preferences',
-        description: 'Local operator defaults',
-        icon: Settings2,
       },
     ],
   },

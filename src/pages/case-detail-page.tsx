@@ -1,12 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ArrowUpRight, ShieldBan } from 'lucide-react'
+import { ArrowUpRight, ShieldBan } from 'lucide-react'
 import { api } from '@/api'
 import { CaseTimeline } from '@/components/cases/case-timeline'
 import { EvidenceViewer } from '@/components/cases/evidence-viewer'
 import { AlertTable } from '@/components/ops/alert-table'
+import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import {
@@ -60,19 +60,24 @@ export function CaseDetailPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow={caseRecord.id}
         title={caseRecord.title}
-        description={caseRecord.summary}
+        subtitle={caseRecord.summary}
+        meta={
+          <>
+            <Badge className="badge-neutral">{caseRecord.status}</Badge>
+            <Badge className="badge-high">{titleCase(caseRecord.priority)}</Badge>
+          </>
+        }
         actions={
           <>
-            <Link className={buttonVariants({ variant: 'outline' })} to="/alerts">
-              <ArrowLeft className="h-4 w-4" />
-              Back to queue
+            <Link className={buttonVariants({ variant: 'outline' })} to="/reports">
+              Add note
             </Link>
-            <Badge className="badge-high">
-              {titleCase(caseRecord.priority)}
-            </Badge>
+            <Link className={buttonVariants({ variant: 'default' })} to="/exports">
+              Export case brief
+            </Link>
           </>
         }
       />

@@ -1,10 +1,10 @@
 import { startTransition, useDeferredValue, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowUpRight, ShieldBan } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { api } from '@/api'
+import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { FiltersBar } from '@/components/shared/filters-bar'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -54,10 +54,10 @@ export function SearchPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Snapshot index"
         title="Search evidence metadata"
-        description="Search zones, camera IDs, object classes, timestamps, and linked alerts for campus review. The index stores still images plus metadata only and keeps biometric functions disabled."
+        subtitle="Search zones, camera IDs, object classes, timestamps, and linked alerts for campus review. The index stores still images plus metadata only and keeps biometric functions disabled."
       />
 
       <FiltersBar
@@ -124,12 +124,6 @@ export function SearchPage() {
             setStatus(value)
           }
         }}
-        rightSlot={
-          <Badge className="badge-compliance">
-            <ShieldBan className="h-3.5 w-3.5" />
-            biometrics disabled
-          </Badge>
-        }
       />
 
       <Card className="bg-primaryDeep">

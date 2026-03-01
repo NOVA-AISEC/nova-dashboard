@@ -1,16 +1,23 @@
 import { evidenceExports } from '@/data/mock-data'
-import { SectionHeader } from '@/components/shared/section-header'
+import { Link } from 'react-router-dom'
+import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDateTime } from '@/lib/formatters'
 
 export function ExportsPage() {
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Chain Of Custody"
         title="Evidence Exports"
-        description="Release evidence packs for admin review only after human validation. Every package remains snapshots plus metadata only."
+        subtitle="Release evidence packs for admin review only after human validation. Every package remains snapshots plus metadata only."
+        actions={
+          <Link className={buttonVariants({ variant: 'default' })} to="/search">
+            New export
+          </Link>
+        }
       />
 
       <div className="grid gap-5 xl:grid-cols-3">

@@ -1,11 +1,12 @@
 import { useDeferredValue, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '@/api'
 import { AlertTable } from '@/components/ops/alert-table'
+import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { FiltersBar } from '@/components/shared/filters-bar'
 import { MetricCard } from '@/components/shared/metric-card'
-import { SectionHeader } from '@/components/shared/section-header'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { useAsyncData } from '@/hooks/use-async-data'
 
 export function AlertsPage() {
@@ -70,11 +71,20 @@ export function AlertsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Incident Desk"
         title="Campus alert queue"
-        description="Filter the triage queue by severity, state, camera, date range, and free-text query. Acknowledgement supports guard dispatch and still requires human validation."
-        actions={<Button variant="outline">Shift handoff notes</Button>}
+        subtitle="Filter the triage queue by severity, state, camera, date range, and free-text query. Acknowledgement supports guard dispatch and still requires human validation."
+        actions={
+          <>
+            <Link className={buttonVariants({ variant: 'outline' })} to="/cases">
+              Create case from selection
+            </Link>
+            <Link className={buttonVariants({ variant: 'default' })} to="/exports">
+              Export evidence pack
+            </Link>
+          </>
+        }
       />
 
       <section className="grid gap-4 xl:grid-cols-3">

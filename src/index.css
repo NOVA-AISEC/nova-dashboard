@@ -421,6 +421,40 @@
     color: var(--sidebar-ink);
   }
 
+  .sidebar-footer {
+    border-color: color-mix(in srgb, var(--sidebar-ink) 16%, transparent);
+  }
+
+  .sidebar-footer-copy {
+    color: var(--sidebar-ink);
+    transition: color 160ms ease;
+  }
+
+  .sidebar-footer-copy:hover {
+    color: color-mix(in srgb, var(--sidebar-ink) 88%, var(--brand-white));
+  }
+
+  .sidebar-footer-meta {
+    color: color-mix(in srgb, var(--sidebar-ink) 78%, var(--brand-white));
+    transition: color 160ms ease;
+  }
+
+  .sidebar-footer-meta:hover {
+    color: var(--sidebar-ink);
+  }
+
+  .sidebar-footer-action {
+    border-color: color-mix(in srgb, var(--sidebar-ink) 18%, transparent);
+    background-color: color-mix(in srgb, var(--sidebar-ink) 8%, var(--sidebar-bg));
+    color: var(--sidebar-ink);
+  }
+
+  .sidebar-footer-action:hover {
+    border-color: color-mix(in srgb, var(--sidebar-ink) 24%, transparent);
+    background-color: var(--sidebar-hover);
+    color: var(--sidebar-ink);
+  }
+
   .metric-card-warning {
     border-top-color: color-mix(in srgb, var(--brand-red) 74%, var(--border));
     background-image: linear-gradient(

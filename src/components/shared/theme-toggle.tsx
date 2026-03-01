@@ -15,7 +15,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
   return (
     <Button
       aria-label={`Switch to ${nextMode} mode`}
-      className={cn(!compact && 'min-w-[8.5rem]', className)}
+      className={cn(!compact && 'min-w-[7.5rem]', className)}
       size="sm"
       variant="outline"
       onClick={toggleThemeMode}

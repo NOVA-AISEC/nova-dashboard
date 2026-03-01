@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
+import { PageHeader } from '@/components/page-header'
 import { campusZones } from '@/data/mock-data'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,10 +19,10 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Local Preferences"
         title="Preferences"
-        description="Operator defaults stored in localStorage only. Compliance controls stay enforced and cannot be disabled here."
+        subtitle="Operator defaults stored in localStorage only. Compliance controls stay enforced and cannot be disabled here."
       />
 
       <Card className="bg-primaryDeep">

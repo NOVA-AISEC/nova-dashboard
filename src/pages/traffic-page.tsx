@@ -1,6 +1,6 @@
 import { trafficAdvisories } from '@/data/mock-data'
+import { PageHeader } from '@/components/page-header'
 import { MetricCard } from '@/components/shared/metric-card'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDateTime } from '@/lib/formatters'
@@ -8,10 +8,10 @@ import { formatDateTime } from '@/lib/formatters'
 export function TrafficPage() {
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Mobility Control"
         title="Parking / Traffic"
-        description="Track parking lane pressure, event crossover, and gate release timing to keep campus flow moving."
+        subtitle="Track parking lane pressure, event crossover, and gate release timing to keep campus flow moving."
       />
 
       <section className="grid gap-4 xl:grid-cols-3">

@@ -1,11 +1,22 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useMatches } from 'react-router-dom'
-import { Command, FolderOpenDot, LogOut, Menu, ShieldBan, X } from 'lucide-react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
+import {
+  ChevronDown,
+  Command,
+  FolderOpenDot,
+  LogOut,
+  Menu,
+  Search,
+  Settings2,
+  ShieldBan,
+  UserRound,
+  X,
+} from 'lucide-react'
 import {
   canAccessRoute,
   getAllowedNavigation,
-  quickAction,
   roleLabels,
+  routePaths,
 } from '@/app/access'
 import { api } from '@/api'
 import { Badge } from '@/components/ui/badge'
@@ -24,14 +35,8 @@ function countByStatus(values: string[], status: string) {
 
 export function AppShell() {
   const [isNavOpen, setIsNavOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const { session, logout } = useAuth()
-  const matches = useMatches()
-  const handle = matches.at(-1)?.handle as
-    | {
-        eyebrow?: string
-        title?: string
-      }
-    | undefined
   const role = session?.role ?? 'guard'
   const navGroups = getAllowedNavigation(role)
   const navData = useAsyncData(
@@ -89,6 +94,13 @@ export function AppShell() {
           isNavOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={() => setIsNavOpen(false)}
+      />
+      <div
+        className={cn(
+          'fixed inset-0 z-20 transition-opacity',
+          isUserMenuOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
+        )}
+        onClick={() => setIsUserMenuOpen(false)}
       />
 
       <aside
@@ -152,7 +164,10 @@ export function AppShell() {
                           isActive && 'sidebar-link-active',
                         )
                       }
-                      onClick={() => setIsNavOpen(false)}
+                      onClick={() => {
+                        setIsNavOpen(false)
+                        setIsUserMenuOpen(false)
+                      }}
                       to={item.to}
                     >
                       {({ isActive }) => (
@@ -211,19 +226,28 @@ export function AppShell() {
           </div>
         </div>
 
-        <div className="border-t border-surfaceMuted/20 px-5 py-4">
-          <div className="text-xs uppercase tracking-[0.2em] text-textSecondary">
+        <div className="sidebar-footer border-t px-5 py-4">
+          <div className="sidebar-footer-copy text-xs uppercase tracking-[0.2em]">
             {session.name} / {roleLabels[session.role]}
           </div>
-          <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-textSecondary">
+          <div className="sidebar-footer-meta mt-2 text-[10px] uppercase tracking-[0.22em]">
             DAMA LTD
           </div>
+          <Button
+            className="sidebar-footer-action mt-4 w-full"
+            size="sm"
+            variant="outline"
+            onClick={logout}
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
         </div>
       </aside>
 
       <div className="lg:pl-80">
         <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-surface/95 backdrop-blur">
-          <div className="flex min-h-[84px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+          <div className="mx-auto flex min-h-[68px] max-w-[1500px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-4">
               <Button
                 className="lg:hidden"
@@ -235,50 +259,86 @@ export function AppShell() {
               </Button>
 
               <div className="min-w-0">
-                <p className="eyebrow">NOVA / Strathmore Security Operations</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.22em] text-textSecondary">
-                  {handle?.eyebrow ?? 'Operations'}
+                <p className="font-display text-[12px] font-bold uppercase tracking-[0.28em] text-ink">
+                  NOVA
                 </p>
-                <h2 className="truncate font-display text-[1.75rem] font-bold tracking-[-0.04em]">
-                  {handle?.title ?? 'Operations'}
-                </h2>
-                <div className="mt-3 flex flex-wrap gap-2 md:hidden">
-                  {complianceChips.map((label) => (
-                    <Badge key={label} className="chip-compliance">
-                      {label}
-                    </Badge>
-                  ))}
+                <div className="truncate text-[13px] font-medium text-textSecondary">
+                  Strathmore Security Operations
                 </div>
               </div>
             </div>
 
-            <div className="hidden flex-wrap items-center justify-end gap-3 md:flex">
+            <div className="flex items-center justify-end gap-2.5">
               <Badge className="badge-panel">
                 {roleLabels[session.role]} / {session.shift}
               </Badge>
-              <ThemeToggle />
-              {complianceChips.map((label) => (
-                <Badge key={label} className="chip-compliance">
-                  {label}
-                </Badge>
-              ))}
-              {canAccessRoute(session.role, quickAction.id) ? (
+              {canAccessRoute(session.role, 'settings') ? (
                 <Link
-                  className={buttonVariants({ variant: 'outline', size: 'default' })}
-                  to={quickAction.to}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                  to={routePaths.settings}
                 >
-                  {quickAction.label}
+                  <Settings2 className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Settings</span>
                 </Link>
               ) : null}
-              <Button variant="outline" onClick={logout}>
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+              {canAccessRoute(session.role, 'search') ? (
+                <Link
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                  to={routePaths.search}
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Snapshot Search</span>
+                </Link>
+              ) : null}
+              <ThemeToggle compact />
+              <div className="relative">
+                <Button
+                  aria-expanded={isUserMenuOpen}
+                  aria-haspopup="menu"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsUserMenuOpen((value) => !value)}
+                >
+                  <UserRound className="h-4 w-4" />
+                  <span className="hidden sm:inline">{session.name}</span>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+                <div
+                  className={cn(
+                    'absolute right-0 top-[calc(100%+0.5rem)] z-30 w-56 border border-surfaceMuted/20 bg-primaryDeep p-2 shadow-lg transition-all',
+                    isUserMenuOpen
+                      ? 'translate-y-0 opacity-100'
+                      : 'pointer-events-none -translate-y-1 opacity-0',
+                  )}
+                  role="menu"
+                >
+                  <div className="border-b border-surfaceMuted/20 px-2.5 pb-2 pt-1">
+                    <div className="text-sm font-semibold text-ink">{session.name}</div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
+                      {roleLabels[session.role]}
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      className="flex w-full items-center gap-2 border border-transparent px-2.5 py-2 text-left text-sm text-ink transition-colors hover:border-surfaceMuted/20 hover:bg-primaryDark"
+                      onClick={() => {
+                        setIsUserMenuOpen(false)
+                        logout()
+                      }}
+                      role="menuitem"
+                      type="button"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="px-4 pb-8 pt-5 sm:px-6 lg:px-10">
+        <main className="mx-auto max-w-[1500px] px-4 pb-8 pt-6 sm:px-6 lg:px-8">
           <Outlet />
           <footer className="mt-8 border-t border-surfaceMuted/20 pt-4 text-sm text-textSecondary">
             DAMA LTD / Powered by NOVA. Campus evidence remains limited to snapshots

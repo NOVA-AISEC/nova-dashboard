@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { campusAlertCategories, campusZones } from '@/data/mock-data'
-import { SectionHeader } from '@/components/shared/section-header'
+import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,14 +47,19 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Manual Intake"
         title="Reports"
-        description="Capture guard notes, lost & found handoffs, and suspicious-item reports for the incident desk. Every report remains human-reviewed."
+        subtitle="Capture guard notes, lost & found handoffs, and suspicious-item reports for the incident desk. Every report remains human-reviewed."
+        actions={
+          <Button onClick={() => document.getElementById('new-report-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+            New report
+          </Button>
+        }
       />
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]">
-        <Card className="bg-primaryDeep">
+        <Card className="bg-primaryDeep" id="new-report-form">
           <CardHeader className="border-b border-surfaceMuted/20">
             <CardTitle>Create manual report</CardTitle>
             <CardDescription>

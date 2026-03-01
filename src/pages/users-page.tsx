@@ -1,15 +1,15 @@
 import { campusUsers } from '@/data/mock-data'
-import { SectionHeader } from '@/components/shared/section-header'
+import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function UsersPage() {
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="RBAC View"
         title="Users & Roles"
-        description="Read-only role mapping for local campus operators. Permission changes are not editable in this build."
+        subtitle="Read-only role mapping for local campus operators. Permission changes are not editable in this build."
       />
 
       <div className="grid gap-5 xl:grid-cols-2">

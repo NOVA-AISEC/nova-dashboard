@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { api } from '@/api'
+import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAsyncData } from '@/hooks/use-async-data'
 import { formatDateTime, titleCase } from '@/lib/formatters'
@@ -23,10 +24,20 @@ export function CasesPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Incident Desk"
         title="Cases"
-        description="Case files combine triage, shift handoff, and evidence-backed decision notes for campus operations."
+        subtitle="Case files combine triage, shift handoff, and evidence-backed decision notes for campus operations."
+        actions={
+          <>
+            <Link className={buttonVariants({ variant: 'outline' })} to="/reports">
+              Add note
+            </Link>
+            <Link className={buttonVariants({ variant: 'default' })} to="/exports">
+              Export case brief
+            </Link>
+          </>
+        }
       />
 
       <div className="grid gap-5 xl:grid-cols-2">

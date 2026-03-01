@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { ArrowUpRight, Download, ShieldBan } from 'lucide-react'
 import { api } from '@/api'
 import { AlertTable } from '@/components/ops/alert-table'
+import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { Button } from '@/components/ui/button'
@@ -113,15 +113,19 @@ export function OpsPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Campus Command Center"
         title="Ops Command"
-        description="Run Strathmore-facing campus security operations across gates, hostels, library, parking, perimeter, and event flow. Work stays evidence-first with snapshots plus metadata only, biometrics disabled, and human validation required."
-        actions={
+        subtitle="Run Strathmore-facing campus security operations across gates, hostels, library, parking, perimeter, and event flow. Work stays evidence-first with snapshots plus metadata only, biometrics disabled, and human validation required."
+        meta={
           <>
             <Badge className="chip-compliance">Biometrics disabled</Badge>
             <Badge className="chip-compliance">Snapshots</Badge>
             <Badge className="chip-compliance">Metadata only</Badge>
+          </>
+        }
+        actions={
+          <>
             <Link className={buttonVariants({ variant: 'outline' })} to="/queue">
               Open live queue
             </Link>

@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom'
 import { Radio, Users } from 'lucide-react'
 import { api } from '@/api'
 import { AlertTable } from '@/components/ops/alert-table'
+import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
-import { SectionHeader } from '@/components/shared/section-header'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAsyncData } from '@/hooks/use-async-data'
@@ -28,10 +28,10 @@ export function QueuePage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Guard Dispatch"
         title="Live Queue"
-        description="Run the campus triage queue with dispatch context, incident desk ownership, and human-validation checkpoints."
+        subtitle="Run the campus triage queue with dispatch context, incident desk ownership, and human-validation checkpoints."
       />
 
       <section className="grid gap-4 xl:grid-cols-4">

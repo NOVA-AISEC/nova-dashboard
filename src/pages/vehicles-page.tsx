@@ -1,16 +1,26 @@
 import { useMemo, useState } from 'react'
 import { campusZones, vehicleSightings } from '@/data/mock-data'
-import { SectionHeader } from '@/components/shared/section-header'
+import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { formatDateTime } from '@/lib/formatters'
 
 export function VehiclesPage() {
+  const [draftZone, setDraftZone] = useState('all')
+  const [draftVehicleType, setDraftVehicleType] = useState('all')
+  const [draftQuery, setDraftQuery] = useState('')
   const [zone, setZone] = useState('all')
   const [vehicleType, setVehicleType] = useState('all')
   const [query, setQuery] = useState('')
+
+  function runSearch() {
+    setZone(draftZone)
+    setVehicleType(draftVehicleType)
+    setQuery(draftQuery.trim())
+  }
 
   const filtered = useMemo(
     () =>
@@ -28,17 +38,18 @@ export function VehiclesPage() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Mobility Search"
         title="Vehicles"
-        description="Search vehicle sightings by time, zone, color, type, and directional attributes. No biometrics, no facial recognition, and no plate OCR are used."
+        subtitle="Search vehicle sightings by time, zone, color, type, and directional attributes. No biometrics, no facial recognition, and no plate OCR are used."
+        actions={<Button onClick={runSearch}>Run search</Button>}
       />
 
-      <Card className="bg-primaryDeep">
+      <Card className="bg-primaryDeep" id="vehicle-filters">
         <CardContent className="grid gap-4 pt-6 md:grid-cols-3">
           <label className="space-y-2">
             <span className="eyebrow text-[10px]">Zone</span>
-            <Select value={zone} onChange={(event) => setZone(event.target.value)}>
+            <Select value={draftZone} onChange={(event) => setDraftZone(event.target.value)}>
               <option value="all">All zones</option>
               {campusZones.map((item) => (
                 <option key={item.id} value={item.name}>{item.name}</option>
@@ -47,7 +58,7 @@ export function VehiclesPage() {
           </label>
           <label className="space-y-2">
             <span className="eyebrow text-[10px]">Type</span>
-            <Select value={vehicleType} onChange={(event) => setVehicleType(event.target.value)}>
+            <Select value={draftVehicleType} onChange={(event) => setDraftVehicleType(event.target.value)}>
               <option value="all">All types</option>
               {Array.from(new Set(vehicleSightings.map((item) => item.type))).map((item) => (
                 <option key={item} value={item}>{item}</option>
@@ -56,7 +67,7 @@ export function VehiclesPage() {
           </label>
           <label className="space-y-2">
             <span className="eyebrow text-[10px]">Search</span>
-            <Input value={query} placeholder="Color, direction, or attribute" onChange={(event) => setQuery(event.target.value)} />
+            <Input value={draftQuery} placeholder="Color, direction, or attribute" onChange={(event) => setDraftQuery(event.target.value)} />
           </label>
         </CardContent>
       </Card>

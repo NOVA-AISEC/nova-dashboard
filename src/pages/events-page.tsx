@@ -1,5 +1,5 @@
 import { campusEvents } from '@/data/mock-data'
-import { SectionHeader } from '@/components/shared/section-header'
+import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDateTime } from '@/lib/formatters'
@@ -7,10 +7,10 @@ import { formatDateTime } from '@/lib/formatters'
 export function EventsPage() {
   return (
     <div className="space-y-6">
-      <SectionHeader
+      <PageHeader
         eyebrow="Campus Scheduling"
         title="Events"
-        description="Watch crowd surges and scheduled activity that can change triage load, parking pressure, or perimeter patrol priority."
+        subtitle="Watch crowd surges and scheduled activity that can change triage load, parking pressure, or perimeter patrol priority."
       />
 
       <div className="grid gap-5 xl:grid-cols-3">
