@@ -23,7 +23,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        'flex flex-col gap-4 border-b pb-4 lg:flex-row lg:items-end lg:justify-between',
+        'flex flex-col gap-5 border-b pb-5 lg:flex-row lg:items-end lg:justify-between',
         isInverse ? 'border-surfaceLight/15' : 'border-surfaceMuted/20',
       )}
     >
@@ -32,7 +32,7 @@ export function PageHeader({
         <div className="space-y-1.5">
           <h1
             className={cn(
-              'font-display text-2xl font-bold tracking-[-0.04em] sm:text-3xl',
+              'font-display text-3xl font-bold tracking-[-0.05em] sm:text-4xl',
               isInverse ? 'text-surfaceLight' : 'text-ink',
             )}
           >

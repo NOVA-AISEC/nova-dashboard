@@ -52,7 +52,7 @@ export function LoginPage() {
           <div className="brand-hero-overlay absolute inset-0" />
           <div className="relative flex h-full flex-col justify-between gap-6">
             <div className="space-y-4">
-              <div className="inline-flex max-w-full rounded-[1.75rem] bg-white px-5 py-4 shadow-[0_20px_48px_rgba(0,0,0,0.22)]">
+              <div className="logo-lockup-panel logo-lockup-contrast inline-flex max-w-full">
                 <NovaLogo className="w-[20rem] max-w-full sm:w-[24rem]" />
               </div>
               <PageHeader

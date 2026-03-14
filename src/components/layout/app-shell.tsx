@@ -105,18 +105,19 @@ export function AppShell() {
 
       <aside
         className={cn(
-          'sidebar-shell fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-surfaceMuted/20 transition-transform lg:translate-x-0',
+          'sidebar-shell fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-surfaceMuted/20 transition-transform lg:translate-x-0',
           isNavOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="border-b border-surfaceMuted/20 px-5 py-5">
           <div className="flex items-start justify-between gap-4">
-            <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="eyebrow text-[10px] text-surfaceMuted">Security operations workspace</div>
               <Link
-                className="block max-w-[18.5rem] rounded-2xl bg-white px-4 py-3 shadow-[0_16px_36px_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-0.5"
+                className="logo-lockup-panel logo-lockup-contrast block max-w-[11.5rem] transition-transform hover:-translate-y-0.5"
                 to={routePaths.ops}
               >
-                <NovaLogo className="max-h-24" />
+                <NovaLogo className="max-h-16" />
               </Link>
               <p className="sidebar-copy max-w-xs text-sm leading-relaxed">
                 NOVA coordinates triage queue, guard dispatch, incident desk review,
@@ -150,7 +151,7 @@ export function AppShell() {
                       key={item.to}
                       className={({ isActive }) =>
                         cn(
-                          'sidebar-link group relative flex items-start gap-3 border px-4 py-3 transition-colors',
+                          'sidebar-link group relative flex items-start gap-3 rounded-2xl border px-4 py-3 transition-colors',
                           isActive && 'sidebar-link-active',
                         )
                       }
@@ -175,7 +176,7 @@ export function AppShell() {
                                 {item.label}
                               </div>
                               {navBadges[item.id] ? (
-                                <span className="sidebar-link-badge border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em]">
+                                <span className="sidebar-link-badge rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]">
                                   {navBadges[item.id]}
                                 </span>
                               ) : null}
@@ -193,8 +194,8 @@ export function AppShell() {
             </section>
           ))}
 
-          <div className="sidebar-panel space-y-3 border p-4">
-            <p className="eyebrow text-textSecondary">Compliance Guardrails</p>
+          <div className="sidebar-panel space-y-3 rounded-[1.5rem] border p-4">
+            <p className="eyebrow text-surfaceMuted">Compliance Guardrails</p>
             <div className="flex flex-wrap gap-2">
               {complianceChips.map((label) => (
                 <Badge key={label} className="chip-compliance-inverse">
@@ -202,7 +203,7 @@ export function AppShell() {
                 </Badge>
               ))}
             </div>
-            <div className="space-y-3 text-sm text-surfaceMuted">
+            <div className="space-y-3 text-sm text-sidebarInk/88">
               <div className="flex items-start gap-3">
                 <ShieldBan className="sidebar-panel-icon mt-0.5 h-4 w-4" />
                 <span>No facial recognition or identity inference.</span>
@@ -235,9 +236,9 @@ export function AppShell() {
         </div>
       </aside>
 
-      <div className="lg:pl-80">
-        <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-surface/95 backdrop-blur">
-          <div className="mx-auto flex min-h-[68px] max-w-[1500px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <div className="lg:pl-72">
+        <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-surface/88 backdrop-blur-xl">
+          <div className="mx-auto flex min-h-[78px] max-w-[1500px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-4">
               <Button
                 className="lg:hidden"
@@ -248,16 +249,16 @@ export function AppShell() {
                 <Menu className="h-5 w-5" />
               </Button>
 
-              <Link
-                className="header-brand-lockup min-w-0 max-w-[12.5rem] sm:max-w-[15.5rem]"
-                to={routePaths.ops}
-              >
-                <NovaLogo className="header-brand-image max-h-12 sm:max-h-14" />
-              </Link>
+              <div className="topbar-context min-w-0">
+                <div className="eyebrow text-[10px]">NOVA Sentinel</div>
+                <div className="truncate font-display text-lg font-bold tracking-[-0.03em] text-ink">
+                  Campus Security Operations
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5">
-              <Badge className="badge-panel">
+            <div className="topbar-utility-cluster flex items-center justify-end gap-2.5 rounded-full border border-surfaceMuted/50 px-2 py-2">
+              <Badge className="topbar-status">
                 {roleLabels[session.role]} / {session.shift}
               </Badge>
               {canAccessRoute(session.role, 'settings') ? (

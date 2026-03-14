@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Download, ShieldBan } from 'lucide-react'
+import { ArrowUpRight, Download, ShieldBan, Sparkles } from 'lucide-react'
 import { api } from '@/api'
+import { roleLabels } from '@/app/access'
 import { AlertTable } from '@/components/ops/alert-table'
-import { PageHeader } from '@/components/page-header'
 import { ActionButton } from '@/components/shared/action-button'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { MetricCard } from '@/components/shared/metric-card'
@@ -126,41 +126,87 @@ export function OpsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Campus Command Center"
-        title="Ops Command"
-        subtitle="Run Strathmore-facing campus security operations across gates, hostels, library, parking, perimeter, and event flow. Work stays evidence-first with snapshots plus metadata only, biometrics disabled, and human validation required."
-        meta={
-          <>
-            <SeverityBadge tone={triageSlaTone}>Triage SLA watch</SeverityBadge>
-            <SeverityBadge tone={validationTone}>Pending validations</SeverityBadge>
-            <Badge className="chip-compliance">Biometrics disabled</Badge>
-            <Badge className="chip-compliance">Snapshots</Badge>
-            <Badge className="chip-compliance">Metadata only</Badge>
-          </>
-        }
-        actions={
-          <>
-            <Link className={buttonVariants({ variant: 'action' })} to="/queue">
-              Open live queue
-            </Link>
-            <ActionButton
-              intent="neutral"
-              onClick={() =>
-                exportShiftBrief({
-                  generatedBy: session.name,
-                  notes: shiftNotes,
-                  alerts: openAlerts,
-                  cases: activeCases,
-                })
-              }
-            >
-              <Download className="h-4 w-4" />
-              Export shift brief
-            </ActionButton>
-          </>
-        }
-      />
+      <section className="ops-hero-panel overflow-hidden rounded-[2rem] border border-surfaceMuted/40">
+        <div className="ops-hero-grid grid gap-8 p-6 lg:grid-cols-[minmax(0,1.35fr)_22rem] lg:p-8">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <div className="eyebrow">Campus Command Center</div>
+              <div className="space-y-3">
+                <h1 className="font-display text-4xl font-bold tracking-[-0.06em] text-ink sm:text-5xl">
+                  Ops Command
+                </h1>
+                <p className="max-w-3xl text-sm leading-7 text-textSecondary sm:text-[15px]">
+                  Run Strathmore-facing campus security operations across gates, hostels,
+                  library, parking, perimeter, and event flow. Work stays evidence-first
+                  with snapshots plus metadata only, biometrics disabled, and human
+                  validation required.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2.5">
+              <SeverityBadge tone={triageSlaTone}>Triage SLA watch</SeverityBadge>
+              <SeverityBadge tone={validationTone}>Pending validations</SeverityBadge>
+              <Badge className="chip-compliance">Biometrics disabled</Badge>
+              <Badge className="chip-compliance">Snapshots</Badge>
+              <Badge className="chip-compliance">Metadata only</Badge>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link className={buttonVariants({ variant: 'action', size: 'lg' })} to="/queue">
+                Open live queue
+              </Link>
+              <ActionButton
+                intent="neutral"
+                size="lg"
+                onClick={() =>
+                  exportShiftBrief({
+                    generatedBy: session.name,
+                    notes: shiftNotes,
+                    alerts: openAlerts,
+                    cases: activeCases,
+                  })
+                }
+              >
+                <Download className="h-4 w-4" />
+                Export shift brief
+              </ActionButton>
+            </div>
+          </div>
+
+          <div className="ops-hero-aside space-y-4 rounded-[1.75rem] border border-surfaceMuted/40 p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="eyebrow text-[10px]">Shift Overview</div>
+                <div className="mt-2 font-display text-2xl font-bold tracking-[-0.04em] text-ink">
+                  {session.name}
+                </div>
+                <div className="mt-1 text-sm text-textSecondary">
+                  {roleLabels[session.role]} leading the current watch window.
+                </div>
+              </div>
+              <div className="rounded-full border border-brandGold/40 bg-brandGold/10 p-2 text-brandBlue">
+                <Sparkles className="h-4 w-4" />
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="ops-mini-stat">
+                <span className="ops-mini-stat-label">Open alerts</span>
+                <span className="ops-mini-stat-value">{openAlerts.length}</span>
+              </div>
+              <div className="ops-mini-stat">
+                <span className="ops-mini-stat-label">Peak zone</span>
+                <span className="ops-mini-stat-value">{zoneSummary[0]?.[0] ?? 'Stable'}</span>
+              </div>
+              <div className="ops-mini-stat">
+                <span className="ops-mini-stat-label">Validations</span>
+                <span className="ops-mini-stat-value">{pendingHumanValidations}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="grid gap-4 xl:grid-cols-4">
         {metrics.map((metric) => (
@@ -178,7 +224,7 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="grid gap-3 pt-5 sm:grid-cols-2 xl:grid-cols-3">
             {campusContextAreas.map((area) => (
-              <div key={area.name} className="border border-surfaceMuted/20 bg-primaryDark p-4">
+              <div key={area.name} className="dashboard-tile">
                 <div className="font-display text-lg font-bold">{area.name}</div>
                 <div className="mt-2 text-sm text-textSecondary">{area.detail}</div>
               </div>
@@ -195,7 +241,7 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {complianceNotices.map((notice) => (
-              <div key={notice} className="surface-command-row flex gap-3 border p-3">
+              <div key={notice} className="guardrail-row surface-command-row flex gap-3 border p-4">
                 <ShieldBan className="mt-0.5 h-4 w-4 text-accentGlow" />
                 <p className="surface-command-copy text-sm">{notice}</p>
               </div>
@@ -221,7 +267,7 @@ export function OpsPage() {
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
               {activeCases.map((caseItem) => (
-                <div key={caseItem.id} className="space-y-3 border border-surfaceMuted/20 bg-primaryDark p-4">
+                <div key={caseItem.id} className="dashboard-tile space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="eyebrow text-[10px]">{caseItem.id}</p>
@@ -277,7 +323,7 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {zoneSummary.map(([zone, count]) => (
-              <div key={zone} className="flex items-center justify-between gap-4 border border-surfaceMuted/20 bg-primaryDark p-4">
+              <div key={zone} className="dashboard-tile flex items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="font-display text-lg font-bold">{zone}</div>
                   <div className="text-sm text-textSecondary">
@@ -306,7 +352,7 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
             {bottleneckSolutions.map((item) => (
-              <div key={item.title} className="border border-surfaceMuted/20 bg-primaryDark p-4">
+              <div key={item.title} className="dashboard-tile">
                 <div className="font-display text-lg font-bold">{item.title}</div>
                 <div className="mt-2 text-sm text-textSecondary">{item.detail}</div>
               </div>
@@ -323,7 +369,7 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {zoneSummary.map(([zone, count]) => (
-              <div key={zone} className="flex items-center justify-between border border-surfaceMuted/20 bg-primaryDark px-4 py-3">
+              <div key={zone} className="dashboard-tile flex items-center justify-between px-4 py-3">
                 <span className="font-medium">{zone}</span>
                 <Badge className="badge-panel">{count} open</Badge>
               </div>
@@ -338,7 +384,7 @@ export function OpsPage() {
           </CardHeader>
           <CardContent className="space-y-4 pt-5">
             {activeCases.map((caseItem) => (
-              <div key={caseItem.id} className="flex flex-col gap-2 border border-surfaceMuted/20 bg-primaryDark p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div key={caseItem.id} className="dashboard-tile flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="eyebrow text-[10px]">{caseItem.leadAnalyst}</p>
                   <div className="font-display text-lg font-bold">{caseItem.title}</div>

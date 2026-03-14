@@ -65,7 +65,7 @@ export function DemoGate({ children }: { children: ReactNode }) {
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-md items-center justify-center">
         <Card className="w-full overflow-hidden">
           <CardHeader className="space-y-4 border-b border-surfaceMuted/20">
-            <div className="inline-flex max-w-fit rounded-[1.25rem] bg-white px-4 py-3 shadow-[0_18px_36px_rgba(2,51,141,0.12)]">
+            <div className="logo-lockup-panel logo-lockup-contrast inline-flex max-w-fit">
               <NovaLogo className="w-40 max-w-full" />
             </div>
             <div className="space-y-2">

@@ -27,13 +27,15 @@ export function MetricCard({ label, value, delta, tone }: MetricCardProps) {
   const Icon = toneIcons[tone]
 
   return (
-    <Card className={cn('border-t-4 bg-primaryDeep', toneClasses[tone])}>
-      <CardHeader className="pb-1">
+    <Card className={cn('metric-card-shell border-t-4 bg-primaryDeep', toneClasses[tone])}>
+      <CardHeader className="pb-2">
         <p className="eyebrow">{label}</p>
-        <CardTitle className="metric-card-value text-3xl tracking-[-0.06em]">{value}</CardTitle>
+        <CardTitle className="metric-card-value text-4xl tracking-[-0.07em]">{value}</CardTitle>
       </CardHeader>
       <CardContent className="flex items-center gap-2 text-sm text-textSecondary">
-        <Icon className="metric-card-icon h-4 w-4" />
+        <span className="metric-card-icon-wrap">
+          <Icon className="metric-card-icon h-4 w-4" />
+        </span>
         <span>{delta}</span>
       </CardContent>
     </Card>
