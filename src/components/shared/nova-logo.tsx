@@ -8,7 +8,7 @@ export function NovaLogo({ className, alt = 'NOVA Security Operations', ...props
     <img
       alt={alt}
       className={cn('h-auto w-full object-contain', className)}
-      src="/nova-sec.png"
+      src="/logo.png"
       {...props}
     />
   )
