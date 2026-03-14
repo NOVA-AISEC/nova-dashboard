@@ -10,7 +10,8 @@
     "build": "tsc -b && vite build",
     "test:action-gradient": "node scripts/test-action-gradient.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "push:all": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/push-all.ps1"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
