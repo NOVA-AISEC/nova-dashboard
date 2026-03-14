@@ -16,6 +16,7 @@ dist-ssr
 .pencil-temp.pen
 node_modules/.tmp
 *.tsbuildinfo
+.codex-logs/
 
 # Editor directories and files
 .vscode/*
