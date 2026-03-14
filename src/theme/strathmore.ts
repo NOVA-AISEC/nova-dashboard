@@ -2,16 +2,16 @@
  * Replace hexes with exact values sampled from Strathmore website/brand guide.
  */
 export const STRATHMORE = {
-  blue: '#02338D', // TODO confirm against official Strathmore Blue
-  gold: '#CC9C4A', // TODO confirm against official Strathmore gold
-  red: '#970400', // TODO confirm against official Strathmore red
+  blue: '#003A8C',
+  gold: '#F2C230',
+  red: '#B1121B',
   black: '#0B0D10',
   white: '#FFFFFF',
-  offwhite: '#F6F2EA',
-  ink: '#101318',
-  muted: '#5B616B',
-  border: '#D8D2C8',
-  navy2: '#081F42', // helper for sidebar depth
+  offwhite: '#F4F7FF',
+  ink: '#0B1730',
+  muted: '#56657F',
+  border: '#C5D0E3',
+  navy2: '#001F54',
 } as const
 
 export type ThemeMode = 'light' | 'dark'
@@ -72,23 +72,23 @@ const lightSemanticColors: SemanticPalette = {
   sidebarBg: STRATHMORE.blue,
   sidebarAlt: STRATHMORE.navy2,
   sidebarInk: STRATHMORE.offwhite,
-  sidebarBorder: '#36558D',
-  sidebarHover: '#123E9A',
-  sidebarActive: '#1848A8',
+  sidebarBorder: '#365EAF',
+  sidebarHover: '#0A4DB8',
+  sidebarActive: '#145FCC',
   sidebarAccent: STRATHMORE.offwhite,
   sidebarNotification: STRATHMORE.red,
   sidebarNotificationInk: STRATHMORE.white,
 }
 
 const darkSemanticColors: SemanticPalette = {
-  primaryDark: '#0E1B38',
-  primaryDeep: '#14264C',
+  primaryDark: '#07142D',
+  primaryDeep: '#0D2148',
   accentBlue: STRATHMORE.blue,
   accentGlow: STRATHMORE.gold,
-  surfaceLight: STRATHMORE.offwhite,
-  surfaceMuted: '#31466B',
-  textPrimary: STRATHMORE.offwhite,
-  textSecondary: '#C5BFB4',
+  surfaceLight: '#F4F7FF',
+  surfaceMuted: '#2D4777',
+  textPrimary: '#F4F7FF',
+  textSecondary: '#C7D4EC',
   success: STRATHMORE.blue,
   warning: STRATHMORE.gold,
   danger: STRATHMORE.red,
@@ -97,17 +97,17 @@ const darkSemanticColors: SemanticPalette = {
   brandRed: STRATHMORE.red,
   brandBlack: STRATHMORE.black,
   brandWhite: STRATHMORE.white,
-  surface: '#091427',
-  ink: STRATHMORE.offwhite,
-  muted: '#C5BFB4',
-  border: '#2B4164',
-  sidebarBg: '#061731',
-  sidebarAlt: '#0A2347',
-  sidebarInk: STRATHMORE.offwhite,
-  sidebarBorder: '#2B4164',
-  sidebarHover: '#10315F',
-  sidebarActive: '#174684',
-  sidebarAccent: '#DCE6F8',
+  surface: '#061126',
+  ink: '#F4F7FF',
+  muted: '#C7D4EC',
+  border: '#28416D',
+  sidebarBg: '#04102A',
+  sidebarAlt: '#082050',
+  sidebarInk: '#F4F7FF',
+  sidebarBorder: '#28416D',
+  sidebarHover: '#0E347A',
+  sidebarActive: '#1452B5',
+  sidebarAccent: '#F2C230',
   sidebarNotification: STRATHMORE.red,
   sidebarNotificationInk: STRATHMORE.white,
 }
