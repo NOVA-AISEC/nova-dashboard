@@ -1,3 +1,7 @@
+# Current operator workspace
+
+The October 2026 redesign supersedes the historical mockup descriptions below. See [product direction](product-redesign.md), [features](05-features.md), and [UI system](04-ui-system.md) for current behavior. NOVA remains a local demo pending production backend and campus integrations.
+
 # NOVA Overview
 
 ## What this repo is

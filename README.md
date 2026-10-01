@@ -1,13 +1,13 @@
 # NOVA Dashboard
 
-NOVA is a minimum working dashboard for DAMA LTD's Strathmore-facing security operations workflow. The current build includes a local login flow, a shared operator shell, and placeholder-backed modules for Ops Command, Live Queue, Alerts, Cases, Reports, Search, Mobility, Campus, and Administration.
+NOVA is an operator workspace for DAMA LTD's Strathmore-facing campus security workflow. It connects campus conditions, priority incident review, cases, evidence search, reports, and shift handover through a responsive interface.
 
 The product is demo-safe by design. It uses still snapshots plus metadata only, keeps biometrics disabled, and does not connect to real CCTV, PII, or identity-resolution services.
 
 ## Current status
 
-- Minimum working dashboard with local login and role-gated routes
-- Frontend pages are implemented, but most module data is placeholder/mock data
+- Redesigned operator workspace with local login and role-gated routes
+- Working local incident acknowledgement, case creation, reports, filters, and downloads; sample operational data
 - Default build mode uses in-browser mock data
 - Optional local Express API and simulator exist for richer local demos
 - No production auth, no real integrations, no live campus data sources
@@ -68,10 +68,10 @@ Lint:
 npm run lint
 ```
 
-Optional repo test script:
+Workflow regression checks:
 
 ```bash
-npm run test:action-gradient
+npm run test:operations
 ```
 
 ## Environment variables
@@ -168,6 +168,10 @@ docs/
   adr/         architecture decision records
   api/         endpoint contracts
 ```
+
+## Product direction
+
+Control-room operators lead the redesign. See [product decisions](docs/product-redesign.md), [UI system](docs/04-ui-system.md), and [feature behavior](docs/05-features.md). Mock actions persist in this browser; production authentication, authorization, shared storage, CCTV, and dispatch services are still required.
 
 ## Documentation
 
