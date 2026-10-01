@@ -64,7 +64,10 @@ export interface Mission {
   title: string
   severity: string
   location: string
-  status: 'pending-approval' | 'active' | 'rejected' | 'completed'
+  status: 'pending-approval' | 'active' | 'paused' | 'cancelled' | 'rejected' | 'completed'
+  revision: number
+  assignedTeam: string
+  activity: import('./mission-control').MissionActivity[]
   createdAt: string
   updatedAt: string
   createdBy: string

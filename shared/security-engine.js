@@ -1,5 +1,11 @@
 // Provider-independent security workflow contract. No model can introduce executable tools.
 import { placeholderVision, validateVisionFrame } from './vision-engine.js'
+import {
+  initializeMissionControl,
+  upgradeMissionControl,
+  recordMissionChange,
+  validateMissionControl,
+} from './mission-control.js'
 
 export const playbooks = [
   {
@@ -307,26 +313,35 @@ export function contextVersion(context) {
 
 export function missionFromRun(run, actor, timestamp, id) {
   const playbook = playbooks.find((item) => item.id === run.context.playbookId)
-  return {
-    id,
-    runId: run.id,
-    incidentId: run.context.incident.id,
-    title: run.context.incident.title,
-    severity: run.context.incident.severity,
-    location: run.context.incident.location,
-    status: 'pending-approval',
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    createdBy: actor,
-    playbookId: playbook.id,
-    summary: run.assessment.summary,
-    decisionBy: '',
-    decisionNote: '',
-    decidedAt: '',
-    steps: playbook.steps
-      .filter((step) => run.assessment.recommendedStepIds.includes(step.id))
-      .map((step) => ({ ...step, status: 'pending', completedBy: '', completedAt: '', note: '' })),
-  }
+  return initializeMissionControl(
+    {
+      id,
+      runId: run.id,
+      incidentId: run.context.incident.id,
+      title: run.context.incident.title,
+      severity: run.context.incident.severity,
+      location: run.context.incident.location,
+      status: 'pending-approval',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      createdBy: actor,
+      playbookId: playbook.id,
+      summary: run.assessment.summary,
+      decisionBy: '',
+      decisionNote: '',
+      decidedAt: '',
+      steps: playbook.steps
+        .filter((step) => run.assessment.recommendedStepIds.includes(step.id))
+        .map((step) => ({
+          ...step,
+          status: 'pending',
+          completedBy: '',
+          completedAt: '',
+          note: '',
+        })),
+    },
+    run.context.incident.assignee,
+  )
 }
 
 export function assertFreshRun(run, records, now = Date.now()) {
@@ -440,6 +455,7 @@ export function validateSecurityRecords(value) {
     runIds = new Set()
   for (const mission of value.missions) {
     const run = value.runs.find((item) => item.id === mission?.runId)
+    if (mission && run) upgradeMissionControl(mission, run.context.incident.assignee)
     if (
       !mission ||
       !run ||
@@ -447,7 +463,9 @@ export function validateSecurityRecords(value) {
       !mission.id ||
       missionIds.has(mission.id) ||
       runIds.has(mission.runId) ||
-      !['pending-approval', 'active', 'rejected', 'completed'].includes(mission.status) ||
+      !['pending-approval', 'active', 'paused', 'cancelled', 'rejected', 'completed'].includes(
+        mission.status,
+      ) ||
       ![
         'title',
         'location',
@@ -505,10 +523,13 @@ export function validateSecurityRecords(value) {
       throw new Error('Invalid mission decision.')
     if (
       (mission.status === 'completed' && pending) ||
-      (mission.status === 'active' && !pending) ||
+      (['active', 'paused', 'cancelled'].includes(mission.status) && !pending) ||
       (mission.status === 'rejected' && mission.steps.some((step) => step.status !== 'pending'))
     )
       throw new Error('Invalid mission lifecycle.')
+    validateMissionControl(mission)
+    if (mission.activity[0].team !== run.context.incident.assignee)
+      throw new Error('Invalid mission proposal ownership history.')
   }
   return value
 }
@@ -522,14 +543,21 @@ export function decideMission(mission, decision, note, actor, timestamp) {
     note.length > 2000
   )
     throw new Error('Add a decision note between 1 and 2000 characters.')
-  return {
-    ...mission,
-    status: decision === 'approve' ? 'active' : 'rejected',
-    decisionBy: actor,
-    decisionNote: note.trim(),
-    decidedAt: timestamp,
-    updatedAt: timestamp,
-  }
+  return recordMissionChange(
+    mission,
+    {
+      ...mission,
+      status: decision === 'approve' ? 'active' : 'rejected',
+      decisionBy: actor,
+      decisionNote: note.trim(),
+      decidedAt: timestamp,
+      updatedAt: timestamp,
+    },
+    decision === 'approve' ? 'approved' : 'rejected',
+    note.trim(),
+    actor,
+    timestamp,
+  )
 }
 
 export function completeMissionStep(mission, stepId, note, actor, timestamp) {
@@ -550,10 +578,18 @@ export function completeMissionStep(mission, stepId, note, actor, timestamp) {
         }
       : step,
   )
-  return {
-    ...mission,
-    steps,
-    status: steps.every((step) => step.status === 'completed') ? 'completed' : 'active',
-    updatedAt: timestamp,
-  }
+  return recordMissionChange(
+    mission,
+    {
+      ...mission,
+      steps,
+      status: steps.every((step) => step.status === 'completed') ? 'completed' : 'active',
+      updatedAt: timestamp,
+    },
+    'step-recorded',
+    note.trim(),
+    actor,
+    timestamp,
+    { stepId },
+  )
 }
