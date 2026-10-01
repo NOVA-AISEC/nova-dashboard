@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRight, Camera, Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { roleLabels, type UserRole } from '@/app/access'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
+import { NovaLogo } from '@/components/shared/nova-logo'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
 import { useMockApi } from '@/lib/env'
@@ -36,10 +37,9 @@ export function LoginPage() {
     <div className="login-page">
       <section className="login-story">
         <div className="login-brand">
-          <span className="nova-symbol">n</span>
-          <strong>
-            NOVA<span>.</span>
-          </strong>
+          <span className="nova-brand-asset">
+            <NovaLogo className="nova-brand-image" />
+          </span>
         </div>
         <div className="login-message">
           <p>CAMPUS SECURITY, CONNECTED</p>

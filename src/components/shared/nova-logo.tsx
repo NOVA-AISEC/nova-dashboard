@@ -3,7 +3,11 @@ import { cn } from '@/lib/utils'
 
 type NovaLogoProps = ComponentPropsWithoutRef<'img'>
 
-export function NovaLogo({ className, alt = 'NOVA Security Operations', ...props }: NovaLogoProps) {
+export function NovaLogo({
+  className,
+  alt = 'Nova Sentinel — Security Solutions',
+  ...props
+}: NovaLogoProps) {
   return (
     <img
       alt={alt}

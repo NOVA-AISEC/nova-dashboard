@@ -32,46 +32,33 @@
   border-right: 1px solid #2b3039;
 }
 .nova-wordmark {
-  height: 88px;
-  padding: 0 25px;
+  padding: 18px 20px 16px;
   display: flex;
-  align-items: center;
-  gap: 9px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   color: #f8f8fa;
   position: relative;
   flex-shrink: 0;
 }
-.nova-wordmark > span:nth-child(2) {
-  font:
-    800 24px 'Manrope',
-    sans-serif;
-  letter-spacing: 1.6px;
+.nova-brand-asset {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid #e7e9ed;
+  border-radius: 7px;
+}
+.nova-brand-image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .nova-wordmark small {
-  position: absolute;
-  top: 60px;
-  left: 68px;
   font-size: 10px;
   letter-spacing: 3px;
   font-weight: 500;
   color: #787e8b;
-}
-.wordmark-dot {
-  color: var(--accent);
-}
-.nova-symbol {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: var(--accent);
-  color: #fff;
-  font: 800 28px 'Manrope';
-  transform: rotate(-8deg);
-  line-height: 1;
-  padding-bottom: 5px;
 }
 .workspace-switcher {
   margin: 6px 14px 15px;

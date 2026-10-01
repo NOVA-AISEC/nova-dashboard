@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { canAccessRoute, getAllowedNavigation, getDefaultRoute, roleLabels } from '@/app/access'
 import { AlertDetail } from '@/components/ops/alert-detail'
+import { NovaLogo } from '@/components/shared/nova-logo'
 import { WorkspaceDialog } from '@/components/shared/workspace-dialog'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { useOperations } from '@/hooks/use-operations'
@@ -149,11 +150,8 @@ export function AppShell() {
           className="nova-wordmark"
           onClick={closeNavigation}
         >
-          <span className="nova-symbol">
-            n<span />
-          </span>
-          <span>
-            NOVA<span className="wordmark-dot">.</span>
+          <span className="nova-brand-asset">
+            <NovaLogo className="nova-brand-image" />
           </span>
           <small>SECURITY OS</small>
         </Link>
