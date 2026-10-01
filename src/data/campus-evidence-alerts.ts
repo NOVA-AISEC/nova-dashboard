@@ -4,8 +4,9 @@ export const evidence: Evidence[] = [
   {
     id: 'ev-701',
     title: 'Main Gate lane watch capture',
-    summary: 'A silver SUV paused across the secondary screening cone before guard dispatch confirmed clearance.',
-    snapshotUrl: '/evidence/placeholder-2.jpg',
+    summary:
+      'A silver SUV paused across the secondary screening cone before guard dispatch confirmed clearance.',
+    snapshotUrl: '/evidence/demo-gate.svg',
     metadata: {
       cameraId: 'STR-MG-01',
       zone: 'Main Gate  Lane 1',
@@ -17,7 +18,14 @@ export const evidence: Evidence[] = [
       humanValidationRequired: true,
       source: 'snapshot',
     },
-    detections: [{ id: 'det-701-1', label: 'vehicle', confidence: 0.9, bbox: { x: 0.28, y: 0.35, width: 0.39, height: 0.25 } }],
+    detections: [
+      {
+        id: 'det-701-1',
+        label: 'vehicle',
+        confidence: 0.9,
+        bbox: { x: 0.28, y: 0.35, width: 0.39, height: 0.25 },
+      },
+    ],
     retention: '90-day mobility review hold',
     chainOfCustody: 'SHA256 verified / campus evidence locker G-12',
     redactions: 'Driver cabin blurred, no plate OCR stored or inferred',
@@ -28,7 +36,7 @@ export const evidence: Evidence[] = [
     id: 'ev-702',
     title: 'Library entrance item snapshot',
     summary: 'Backpack remained unattended beside the reading hall entrance during morning ingress.',
-    snapshotUrl: '/evidence/placeholder-1.jpg',
+    snapshotUrl: '/evidence/demo-library.svg',
     metadata: {
       cameraId: 'STR-LIB-02',
       zone: 'Library Entrance',
@@ -40,7 +48,14 @@ export const evidence: Evidence[] = [
       humanValidationRequired: true,
       source: 'snapshot',
     },
-    detections: [{ id: 'det-702-1', label: 'bag', confidence: 0.88, bbox: { x: 0.43, y: 0.48, width: 0.16, height: 0.18 } }],
+    detections: [
+      {
+        id: 'det-702-1',
+        label: 'bag',
+        confidence: 0.88,
+        bbox: { x: 0.43, y: 0.48, width: 0.16, height: 0.18 },
+      },
+    ],
     retention: '60-day incident review hold',
     chainOfCustody: 'Signed ingest / campus evidence locker L-04',
     redactions: 'Faces masked in source snapshot',
@@ -51,7 +66,7 @@ export const evidence: Evidence[] = [
     id: 'ev-703',
     title: 'Residence block lobby tailgating',
     summary: 'Two followers crossed into the residence lobby during a single door-open cycle.',
-    snapshotUrl: '/evidence/placeholder-3.jpg',
+    snapshotUrl: '/evidence/demo-residence.svg',
     metadata: {
       cameraId: 'STR-RB-03',
       zone: 'Residence Block B  Lobby',
@@ -63,7 +78,14 @@ export const evidence: Evidence[] = [
       humanValidationRequired: true,
       source: 'snapshot',
     },
-    detections: [{ id: 'det-703-1', label: 'person-group', confidence: 0.91, bbox: { x: 0.21, y: 0.18, width: 0.34, height: 0.54 } }],
+    detections: [
+      {
+        id: 'det-703-1',
+        label: 'person-group',
+        confidence: 0.91,
+        bbox: { x: 0.21, y: 0.18, width: 0.34, height: 0.54 },
+      },
+    ],
     retention: '120-day residence security hold',
     chainOfCustody: 'Door-event pair verified / campus evidence locker R-08',
     redactions: 'Silhouettes retained only, identity inference disabled',
@@ -74,7 +96,7 @@ export const evidence: Evidence[] = [
     id: 'ev-704',
     title: 'Parking A east incident frame',
     summary: 'A hatchback blocked the east exit while attendants redirected vehicles around a stalled car.',
-    snapshotUrl: '/evidence/placeholder-2.jpg',
+    snapshotUrl: '/evidence/demo-parking.svg',
     metadata: {
       cameraId: 'STR-PK-04',
       zone: 'Parking A  East',
@@ -86,7 +108,14 @@ export const evidence: Evidence[] = [
       humanValidationRequired: true,
       source: 'snapshot',
     },
-    detections: [{ id: 'det-704-1', label: 'vehicle', confidence: 0.87, bbox: { x: 0.17, y: 0.39, width: 0.44, height: 0.29 } }],
+    detections: [
+      {
+        id: 'det-704-1',
+        label: 'vehicle',
+        confidence: 0.87,
+        bbox: { x: 0.17, y: 0.39, width: 0.44, height: 0.29 },
+      },
+    ],
     retention: '45-day parking operations hold',
     chainOfCustody: 'Mobility snapshot signed / campus evidence locker P-01',
     redactions: 'No plate OCR, no driver recognition, only vehicle class retained',
@@ -97,7 +126,7 @@ export const evidence: Evidence[] = [
     id: 'ev-705',
     title: 'Perimeter north fence thermal watch',
     summary: 'Fence-line movement crossed the patrol route boundary before the next patrol check-in.',
-    snapshotUrl: '/evidence/placeholder-3.jpg',
+    snapshotUrl: '/evidence/demo-perimeter.svg',
     metadata: {
       cameraId: 'STR-PER-05',
       zone: 'Perimeter  North Fence',
@@ -109,7 +138,14 @@ export const evidence: Evidence[] = [
       humanValidationRequired: true,
       source: 'snapshot',
     },
-    detections: [{ id: 'det-705-1', label: 'thermal-signature', confidence: 0.94, bbox: { x: 0.49, y: 0.14, width: 0.18, height: 0.51 } }],
+    detections: [
+      {
+        id: 'det-705-1',
+        label: 'thermal-signature',
+        confidence: 0.94,
+        bbox: { x: 0.49, y: 0.14, width: 0.18, height: 0.51 },
+      },
+    ],
     retention: '180-day perimeter review hold',
     chainOfCustody: 'Thermal bundle notarized / campus evidence locker N-17',
     redactions: 'Silhouette-only imagery, biometrics disabled',
@@ -120,7 +156,7 @@ export const evidence: Evidence[] = [
     id: 'ev-706',
     title: 'Cafeteria forecourt surge frame',
     summary: 'Lunch queue compressed into the forecourt as event traffic spilled from lecture blocks.',
-    snapshotUrl: '/evidence/placeholder-1.jpg',
+    snapshotUrl: '/evidence/demo-cafeteria.svg',
     metadata: {
       cameraId: 'STR-CAF-02',
       zone: 'Cafeteria Walkway',
@@ -132,7 +168,14 @@ export const evidence: Evidence[] = [
       humanValidationRequired: true,
       source: 'snapshot',
     },
-    detections: [{ id: 'det-706-1', label: 'person-group', confidence: 0.89, bbox: { x: 0.18, y: 0.22, width: 0.56, height: 0.47 } }],
+    detections: [
+      {
+        id: 'det-706-1',
+        label: 'person-group',
+        confidence: 0.89,
+        bbox: { x: 0.18, y: 0.22, width: 0.56, height: 0.47 },
+      },
+    ],
     retention: '30-day event operations hold',
     chainOfCustody: 'Crowd snapshot signed / campus evidence locker C-11',
     redactions: 'Faces blurred across the source frame',
@@ -143,7 +186,7 @@ export const evidence: Evidence[] = [
     id: 'ev-707',
     title: 'Lecture block lost property desk intake',
     summary: 'A tablet was logged at the lecture block help desk for lost & found follow-up.',
-    snapshotUrl: '/evidence/placeholder-2.jpg',
+    snapshotUrl: '/evidence/demo-property.svg',
     metadata: {
       cameraId: 'STR-LB-07',
       zone: 'Lecture Block C  Desk',
@@ -155,7 +198,14 @@ export const evidence: Evidence[] = [
       humanValidationRequired: true,
       source: 'snapshot',
     },
-    detections: [{ id: 'det-707-1', label: 'device', confidence: 0.82, bbox: { x: 0.38, y: 0.46, width: 0.19, height: 0.15 } }],
+    detections: [
+      {
+        id: 'det-707-1',
+        label: 'device',
+        confidence: 0.82,
+        bbox: { x: 0.38, y: 0.46, width: 0.19, height: 0.15 },
+      },
+    ],
     retention: '21-day lost property operations hold',
     chainOfCustody: 'Desk intake signed / campus evidence locker F-02',
     redactions: 'No identity extraction from surrounding persons',
@@ -245,7 +295,8 @@ export const alerts: Alert[] = [
     updatedAt: '2026-02-28T08:31:00Z',
     assignee: 'Incident Desk',
     rule: 'Access window outside approved escort schedule',
-    summary: 'Admin block entry requires supervisor review before any escalation beyond snapshots and metadata.',
+    summary:
+      'Admin block entry requires supervisor review before any escalation beyond snapshots and metadata.',
     caseId: 'case-residence-access',
     evidenceIds: ['ev-703'],
     requiresHumanValidation: true,
@@ -302,3 +353,8 @@ export const alerts: Alert[] = [
     requiresHumanValidation: true,
   },
 ]
+
+// Keep immutable seed state separate from the mutable local-demo records.
+export const alertSeedStates = new Map(
+  alerts.map((item) => [item.id, { status: item.status, updatedAt: item.updatedAt }]),
+)
