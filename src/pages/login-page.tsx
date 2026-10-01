@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRight, Camera, Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
-import { getDefaultRoute, roleLabels, type UserRole } from '@/app/access'
+import { roleLabels, type UserRole } from '@/app/access'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
+import { useMockApi } from '@/lib/env'
+import { safeReturnRoute } from '@/lib/session'
 
 export function LoginPage() {
-  const { signIn } = useAuth()
+  const { signIn, error: sessionError } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const [email, setEmail] = useState('supervisor@strathmore.local')
-  const [password, setPassword] = useState('nova123')
+  const [email, setEmail] = useState(useMockApi ? 'supervisor@strathmore.local' : '')
+  const [password, setPassword] = useState(useMockApi ? 'nova123' : '')
   const [role, setRole] = useState<UserRole>('supervisor')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
@@ -23,7 +25,7 @@ export function LoginPage() {
     try {
       const session = await signIn({ email, password, role })
       const from = typeof location.state === 'object' ? location.state?.from : undefined
-      navigate(typeof from === 'string' ? from : getDefaultRoute(session.role), { replace: true })
+      navigate(safeReturnRoute(from, session.role), { replace: true })
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Unable to sign in. Please try again.')
     } finally {
@@ -85,7 +87,7 @@ export function LoginPage() {
       </section>
       <section className="login-form-section">
         <div className="login-topbar">
-          <span className="demo-pill">Demo workspace</span>
+          <span className="demo-pill">{useMockApi ? 'Demo workspace' : 'API workspace'}</span>
           <ThemeToggle compact />
         </div>
         <div className="login-form-wrap">
@@ -123,7 +125,7 @@ export function LoginPage() {
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
-            {import.meta.env.DEV && (
+            {useMockApi && import.meta.env.DEV && (
               <>
                 <label htmlFor="operator-role">Preview as</label>
                 <select
@@ -143,9 +145,9 @@ export function LoginPage() {
                 </select>
               </>
             )}
-            {error && (
+            {(error || sessionError) && (
               <p className="action-error" role="alert">
-                {error}
+                {error || sessionError}
               </p>
             )}
             <Button type="submit" disabled={busy}>
@@ -156,8 +158,9 @@ export function LoginPage() {
           <div className="login-demo-note">
             <ShieldCheck size={18} />
             <p>
-              This preview uses sample data and local sign-in. The demo credentials are prefilled so you can
-              explore the workspace.
+              {useMockApi
+                ? 'This preview uses sample data and local sign-in. The demo credentials are prefilled so you can explore the workspace.'
+                : 'Use your configured operator account. Your access is verified by the server. Operational records remain sample data.'}
             </p>
           </div>
         </div>

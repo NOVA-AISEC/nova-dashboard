@@ -6,4 +6,4 @@ export const useMockApi = readEnv(import.meta.env.VITE_USE_MOCK) !== 'false'
 
 export const demoPassword = readEnv(import.meta.env.VITE_DEMO_PASSWORD)
 
-export const isDemoGateEnabled = demoPassword.length > 0
+export const isDemoGateEnabled = useMockApi && demoPassword.length > 0

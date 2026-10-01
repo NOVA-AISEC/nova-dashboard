@@ -36,12 +36,17 @@ export function AlertTable({
   const [sort, setSort] = useState<'priority' | 'latest'>('priority')
   const sorted = [...alerts].sort((a, b) =>
     sort === 'priority'
-      ? severityOrder[a.severity] - severityOrder[b.severity] || b.createdAt.localeCompare(a.createdAt)
+      ? severityOrder[a.severity] - severityOrder[b.severity] ||
+        b.createdAt.localeCompare(a.createdAt)
       : b.createdAt.localeCompare(a.createdAt),
   )
   const review = (alert: Alert) => (onReview ? onReview(alert) : setSelectedAlert(alert))
   return (
-    <div className={hideHeader ? 'incident-table-container' : 'workspace-panel incident-table-container'}>
+    <div
+      className={
+        hideHeader ? 'incident-table-container' : 'workspace-panel incident-table-container'
+      }
+    >
       {!hideHeader && (
         <div className="panel-header">
           <div>
@@ -109,16 +114,19 @@ export function AlertTable({
                 <td className="table-time mono">{formatTime(alert.createdAt)}</td>
                 <td>
                   <div className="table-actions">
-                    {onAcknowledge && alert.status === 'new' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={busyAlertId === alert.id}
-                        onClick={() => onAcknowledge(alert)}
-                      >
-                        {busyAlertId === alert.id ? 'Saving…' : 'Acknowledge'}
-                      </Button>
-                    )}
+                    {onAcknowledge &&
+                      alert.status === 'new' &&
+                      session &&
+                      ['guard', 'supervisor', 'admin'].includes(session.role) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busyAlertId === alert.id}
+                          onClick={() => onAcknowledge(alert)}
+                        >
+                          {busyAlertId === alert.id ? 'Saving…' : 'Acknowledge'}
+                        </Button>
+                      )}
                     {!compact && session && canAccessRoute(session.role, 'cases') && (
                       <Link
                         className="icon-button"

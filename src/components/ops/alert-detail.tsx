@@ -1,13 +1,26 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Camera, Check, CircleAlert, MapPin, ShieldCheck, UserRound } from 'lucide-react'
+import {
+  ArrowUpRight,
+  Camera,
+  Check,
+  CircleAlert,
+  MapPin,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react'
 import { api } from '@/api'
 import { canAccessRoute } from '@/app/access'
 import { WorkspaceDialog } from '@/components/shared/workspace-dialog'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { useAuth } from '@/lib/auth'
-import { formatShiftDate, formatTime, notifyOperationsChanged, statusLabels } from '@/lib/operations'
+import {
+  formatShiftDate,
+  formatTime,
+  notifyOperationsChanged,
+  statusLabels,
+} from '@/lib/operations'
 import type { Alert, Evidence } from '@/types/domain'
 
 export function AlertDetail({
@@ -32,7 +45,11 @@ export function AlertDetail({
       setAcknowledgedId(alert.id)
       notifyOperationsChanged()
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Unable to acknowledge this alert. Please try again.')
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to acknowledge this alert. Please try again.',
+      )
     } finally {
       setBusy(false)
     }
@@ -128,12 +145,15 @@ export function AlertDetail({
             </p>
           )}
           <div className="drawer-actions">
-            {alert.status === 'new' && !acknowledged && (
-              <Button onClick={() => void acknowledge()} disabled={busy}>
-                <Check size={16} />
-                {busy ? 'Acknowledging…' : 'Acknowledge incident'}
-              </Button>
-            )}
+            {alert.status === 'new' &&
+              !acknowledged &&
+              session &&
+              ['guard', 'supervisor', 'admin'].includes(session.role) && (
+                <Button onClick={() => void acknowledge()} disabled={busy}>
+                  <Check size={16} />
+                  {busy ? 'Acknowledging…' : 'Acknowledge incident'}
+                </Button>
+              )}
             {session && canAccessRoute(session.role, 'cases') && (
               <Link
                 to={`/cases/${alert.caseId}`}
