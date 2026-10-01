@@ -9,8 +9,8 @@ The product is demo-safe by design. It uses still snapshots plus metadata only, 
 - Redesigned operator workspace with local login and role-gated routes
 - Working local incident acknowledgement, case creation, reports, filters, and downloads; sample operational data
 - Default build mode uses in-browser mock data
-- Optional local Express API and simulator exist for richer local demos
-- No production auth, no real integrations, no live campus data sources
+- Optional Express API with account-backed sessions, server permissions, CSRF protection and atomic local storage
+- Browser preview remains sample data; campus SSO, shared storage and real integrations remain future deployment work
 
 ## Tech stack
 
@@ -72,6 +72,8 @@ Workflow regression checks:
 
 ```bash
 npm run test:operations
+npm run test:api
+npm run test:resilience
 ```
 
 ## Environment variables
@@ -85,7 +87,7 @@ Copy `.env.example` to `.env` if you want to override defaults.
 | `SIMULATOR_ENABLED` | Optional | No | Enables/disables the local alert-ingest simulator. |
 | `SIMULATOR_INTERVAL_MS` | Optional | No | Local simulator tick interval in milliseconds. |
 
-Auth is mocked/local-only. There are no auth secrets, OAuth keys, or backend identity providers in this repo.
+Browser mock sign-in is local-only. HTTP mode requires configured server accounts and never accepts browser role claims. Follow [account setup and deployment requirements](docs/03-auth-and-session.md) before setting `VITE_USE_MOCK=false`. The simulator defaults to disabled. `.env` and `.secrets/` are excluded from version control.
 
 ## Route map
 

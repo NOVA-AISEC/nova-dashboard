@@ -1,206 +1,64 @@
-# DAMA LTD API Contracts
+# NOVA API contracts
 
-Base path: `/api`
+Base path: `/api`. The API returns local sample snapshots and metadata. It keeps biometrics disabled and human review required. All data routes require a server session; see [authentication setup](../03-auth-and-session.md).
 
-Compliance rules:
+## Sessions
 
-- Evidence records store snapshots plus metadata only.
-- `snapshotUrl` references a still image in `public/evidence/`.
-- Raw video is not returned by the API.
-- `metadata.biometricsDisabled` is always `true`.
-- Human validation remains required before escalation or export.
+- `POST /auth/login`: JSON `{ "email": "operator@example.com", "password": "..." }`. Returns `{ name, email, role, shift, expiresAt, csrfToken }` and a scoped HttpOnly cookie. `expiresAt` is Unix milliseconds. Role input is rejected.
+- `GET /auth/session`: returns the validated user view and CSRF token.
+- `POST /auth/logout`: requires `X-Nova-CSRF`; returns 204 and clears/revokes the cookie.
+- `GET /health`: public `{ ok: true, product: "NOVA", dataSource: "local-sample" }`.
 
-## `GET /api/alerts`
+Writes require a configured Origin; data writes and logout also require `X-Nova-CSRF`. Use same-origin credentials. Production cookies require HTTPS.
 
-Query params:
+## Incidents
 
-- `status`
-- `severity`
-- `cameraId`
-- `from`
-- `to`
-- `q`
-- `page`
-- `pageSize`
+`GET /alerts` returns `{ items: Alert[], page, pageSize, total }`. Supported filters: `q`, `status`, `severity`, `cameraId`, `from`, `to`, `page`, `pageSize`. Pagination uses positive integers: page ≤ 1,000,000, pageSize ≤ 100. Status is one of `new`, `acknowledged`, `triaging`, `contained`, `closed`, `all`; severity is `critical`, `high`, `medium`, `low`, `all`.
 
-Response:
+`POST /alerts/:id/ack` allows guards, supervisors, and admins. Only a `new` incident transitions to `acknowledged`; a repeated acknowledgement is idempotent and creates no second audit event. Other states return 409. Missing IDs return 404. The response is the full Alert. Audit identity comes from the authenticated account.
+
+## Cases
+
+`GET /cases/:id` allows analysts, supervisors, and admins. Returns the Case with hydrated alerts, evidence, and audit records, including explicitly linked record IDs.
+
+`POST /cases` accepts only these fields:
 
 ```json
 {
-  "items": [
-    {
-      "id": "alt-931",
-      "title": "Restricted corridor handoff",
-      "severity": "critical",
-      "status": "triaging",
-      "zone": "Dock 7 Corridor",
-      "cameraId": "CAM-07",
-      "createdAt": "2026-02-28T06:14:00Z",
-      "updatedAt": "2026-02-28T06:22:00Z",
-      "assignee": "Shift Alpha",
-      "rule": "Restricted-zone object exchange",
-      "summary": "Cross-zone handoff with manifest mismatch on adjacent bay scan.",
-      "caseId": "case-dock-7",
-      "evidenceIds": ["ev-204", "ev-188"],
-      "requiresHumanValidation": true
-    }
-  ],
-  "page": 1,
-  "pageSize": 10,
-  "total": 1
-}
-```
-
-## `POST /api/alerts/:id/ack`
-
-Marks an alert as acknowledged and writes an `ALERT_ACKNOWLEDGED` audit event.
-
-Response:
-
-```json
-{
-  "id": "alt-931",
-  "status": "acknowledged",
-  "updatedAt": "2026-02-28T06:30:00Z"
-}
-```
-
-## `GET /api/cases/:id`
-
-Response:
-
-```json
-{
-  "id": "case-dock-7",
-  "title": "Dock 7 restricted handoff",
-  "priority": "priority-1",
-  "status": "active",
-  "location": "Dock 7 Corridor / Bay 3",
-  "openedAt": "2026-02-28T06:14:00Z",
-  "updatedAt": "2026-02-28T06:29:00Z",
-  "leadAnalyst": "M. Rivera",
-  "summary": "Correlated corridor handoff and manifest deviation indicate unscheduled material movement across a sealed logistics zone.",
-  "protocol": "Evidence-only review, export package for logistics compliance, no identity resolution.",
-  "alertIds": ["alt-931", "alt-866"],
-  "evidenceIds": ["ev-204", "ev-188"],
-  "timeline": [
-    {
-      "id": "dock-evt-1",
-      "kind": "alert",
-      "timestamp": "2026-02-28T06:14:00Z",
-      "title": "Primary alert triggered",
-      "detail": "Restricted-zone handoff rule fired against CAM-07 corridor snapshots.",
-      "operator": "DAMA LTD Core"
-    }
-  ],
-  "humanValidationRequired": true
-}
-```
-
-## `POST /api/cases`
-
-Request:
-
-```json
-{
-  "title": "New review",
+  "title": "Manual review",
   "priority": "priority-2",
   "status": "active",
-  "location": "South Gate",
-  "summary": "Manual follow-up case",
-  "protocol": "Snapshots and metadata only.",
-  "leadAnalyst": "T. Osei",
-  "alertIds": ["alt-918"],
-  "evidenceIds": ["ev-311"]
+  "location": "Library",
+  "summary": "Operator observations",
+  "protocol": "Snapshots and metadata; human review",
+  "leadAnalyst": "Assigned analyst",
+  "alertIds": [],
+  "evidenceIds": []
 }
 ```
 
-Response: created `Case`
+Returns 201 and the hydrated Case. Title, location and leadAnalyst are required trimmed text ≤ 200 characters; summary ≤ 5,000; protocol ≤ 2,000. Priorities: `priority-1`, `priority-2`, `priority-3`. States: `active`, `monitoring`, `escalated`, `closed`. Optional link arrays contain ≤ 100 valid existing record IDs, deduplicated on save. Unknown fields are rejected. Assignment labels do not control audit identity. Failed persistence returns 503 and rolls back the entire mutation and sequence.
 
-## `GET /api/search`
+## Search and audit
 
-Query params:
+`GET /search` supports `q`, `cameraId`, `class`, `from`, `to`, `status`, `severity`. Returns `{ alerts, cases, evidence, audit, cameras, zones }`. Direct case text search includes cases with no related incidents. Record filters restrict related cases. Guards receive empty case/audit arrays, while retaining incident snapshots for review.
 
-- `q`
-- `from`
-- `to`
-- `cameraId`
-- `class`
-- `severity`
-- `status`
+`GET /audit` allows analysts, supervisors, and admins. Supports `entityType`, `entityId`, `page`, `pageSize`. Returns a paginated audit list. Entity types: `alert`, `case`, `evidence`, `simulator`, `all`.
 
-Response:
+Date filters accept ISO dates or timestamps with timezone; invalid dates and reversed ranges return 400. `q` is at most 300 characters; other text filters at most 100. Repeated, structured, or unknown query parameters return 400. IDs use letters, numbers, hyphens and underscores, at most 100 characters.
 
-```json
-{
-  "alerts": [],
-  "cases": [],
-  "evidence": [
-    {
-      "id": "ev-204",
-      "title": "Dock 7 service corridor crossing",
-      "summary": "Two-frame corridor crossing with a flagged handoff near the sealed loading corridor.",
-      "snapshotUrl": "/evidence/placeholder-1.jpg",
-      "metadata": {
-        "cameraId": "CAM-07",
-        "zone": "Dock 7 Corridor",
-        "ts": "2026-02-28T06:14:00Z",
-        "bboxList": [{ "x": 0.18, "y": 0.24, "width": 0.21, "height": 0.46 }],
-        "classes": ["person", "service-cart"],
-        "confidence": 0.92,
-        "biometricsDisabled": true,
-        "humanValidationRequired": true,
-        "source": "snapshot"
-      },
-      "detections": [
-        {
-          "id": "det-204-1",
-          "label": "person",
-          "confidence": 0.92,
-          "bbox": { "x": 0.18, "y": 0.24, "width": 0.21, "height": 0.46 }
-        }
-      ],
-      "retention": "180-day export hold",
-      "chainOfCustody": "SHA256 verified / evidence locker E-17",
-      "redactions": "Faces blurred by policy, license regions masked",
-      "analyticsSummary": "Trajectory anomaly + restricted-zone rule overlap",
-      "relatedCaseId": "case-dock-7"
-    }
-  ],
-  "audit": [],
-  "cameras": ["CAM-07", "CAM-11", "THERM-3"],
-  "zones": ["Dock 7 Corridor", "North Perimeter"]
-}
-```
+## Errors and limits
 
-## `GET /api/audit`
+Error envelope: `{ message, code, requestId }`. Responses disable caching and include `X-Request-ID` and security headers. Internal paths, stack traces, password hashes and raw proxy HTML are not returned.
 
-Query params:
+- 400: invalid JSON, query, body, enum or reference
+- 401: invalid credentials, missing/revoked/expired session
+- 403: permission, Host, Origin or CSRF rejection
+- 404: unknown record or API route
+- 409: invalid incident transition
+- 413: JSON body over 32 KB
+- 415: non-JSON or unsupported encoding
+- 429: request/sign-in rate limit (`Retry-After`)
+- 503: authentication unconfigured, storage unavailable, session/database capacity reached
 
-- `entityType`
-- `entityId`
-- `page`
-- `pageSize`
-
-Response:
-
-```json
-{
-  "items": [
-    {
-      "id": "audit-001",
-      "entityType": "alert",
-      "entityId": "alt-931",
-      "action": "ALERT_INGESTED",
-      "actor": "simulator",
-      "timestamp": "2026-02-28T06:14:00Z",
-      "metadata": {
-        "source": "seed"
-      }
-    }
-  ],
-  "page": 1,
-  "pageSize": 10,
-  "total": 1
-}
-```
+Requests use 15-second server timeouts and a 12-second client timeout. The optional simulator is opt-in; intervals must be 1–3,600 seconds and a failed event save pauses it. It writes sample records only. Persistence and sessions are single-process; production infrastructure requirements are documented separately.

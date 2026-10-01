@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded for HTTP mode by [ADR 0005](0005-authenticated-local-api.md). Still applies to the browser mock preview, with expiring sessions.
 
 ## Context
 
