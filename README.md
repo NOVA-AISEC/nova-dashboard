@@ -102,7 +102,7 @@ Public:
 Authenticated shell:
 
 - `/command` — default landing; sample vision evidence and assessment
-- `/missions` — supervisor decisions and ordered outcome recording
+- `/missions` — team handovers, supervisor decisions, hold/resume/stop controls, and ordered outcomes
 - `/playbooks` — four built-in starter procedures
 - `/systems` — supervisor/admin pipeline readiness
 - `/ops`

@@ -57,7 +57,7 @@ Error envelope: `{ message, code, requestId }`. Responses disable caching and in
 - 401: invalid credentials, missing/revoked/expired session
 - 403: permission, Host, Origin or CSRF rejection
 - 404: unknown record or API route
-- 409: invalid incident transition
+- 409: invalid incident/mission transition, conflicting mission revision, duplicate open mission, or stale assessment
 - 413: JSON body over 32 KB
 - 415: non-JSON or unsupported encoding
 - 429: request/sign-in rate limit (`Retry-After`)
