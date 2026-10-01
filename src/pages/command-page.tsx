@@ -74,7 +74,12 @@ export function CommandPage() {
   const frames = run?.vision ?? (incident ? placeholderVision(data, incident.id) : [])
   const frame = frames.find((item) => item.evidenceId === frameId) ?? frames[0]
   const playbook = playbooks.find((item) => item.id === context?.playbookId)
-  const mission = security.data?.missions.find((item) => item.runId === run?.id)
+  const mission =
+    security.data?.missions.find(
+      (item) =>
+        item.incidentId === incident?.id &&
+        ['pending-approval', 'active', 'paused'].includes(item.status),
+    ) ?? security.data?.missions.find((item) => item.runId === run?.id)
   async function assess() {
     if (!incident || busy) return
     setBusy('assessment')

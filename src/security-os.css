@@ -799,6 +799,199 @@
   padding-bottom: 12px;
   flex-wrap: wrap;
 }
+.os-mission-toolbar,
+.os-mission-owner,
+.os-coordination-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.os-mission-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0 12px;
+  background: var(--panel);
+  color: var(--secondary);
+  max-width: 460px;
+  flex: 1;
+}
+.os-mission-search input {
+  background: transparent;
+  border: 0;
+  padding: 11px 0;
+  width: 100%;
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 12px;
+  outline: 0;
+}
+.os-mission-search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.os-mission-owner {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.os-mission-owner > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+}
+.os-mission-owner strong {
+  display: block;
+  color: var(--foreground);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.os-mission-owner small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  color: var(--secondary);
+}
+.os-coordination {
+  background: var(--panel-subtle);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 22px 0;
+}
+.os-coordination-heading h3 {
+  font-size: 12px;
+  margin: 0;
+}
+.os-coordination-heading > span {
+  font-size: 9px;
+  color: var(--secondary);
+}
+.os-coordination-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.os-coordination-buttons button {
+  font-size: 11px;
+}
+.os-coordination-buttons button[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.os-coordination-form {
+  display: grid;
+  gap: 9px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+.os-coordination-form label {
+  font-size: 11px;
+  color: var(--secondary);
+}
+.os-coordination-form input,
+.os-coordination-form textarea {
+  width: 100%;
+  padding: 11px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12px;
+}
+.os-coordination-form p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--secondary);
+  margin: 0;
+}
+.os-mission-status.status-paused {
+  color: #b68a51;
+  background: #dba45e0f;
+  border-color: #dba45e30;
+}
+.os-mission-status.status-cancelled {
+  color: #bf7474;
+  background: #b75b5b0f;
+  border-color: #b75b5b30;
+}
+.os-mission-history {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 24px 0;
+}
+.os-mission-history summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.os-mission-history summary > span {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--secondary);
+}
+.os-mission-history ol {
+  list-style: none;
+  padding: 0 16px 16px;
+  margin: 0;
+}
+.os-mission-history li {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+.os-mission-history li > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.os-mission-history strong {
+  font-size: 11px;
+}
+.os-mission-history small {
+  font-size: 9px;
+  color: var(--secondary);
+  overflow-wrap: anywhere;
+}
+.os-mission-history p {
+  font-size: 12px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+.os-mission-history .os-history-team {
+  color: var(--accent);
+  font-size: 10px;
+}
+.os-handover-confirmation {
+  color: #469e84 !important;
+  font-size: 11px !important;
+}
+@media (max-width: 600px) {
+  .os-mission-toolbar {
+    flex-wrap: wrap;
+  }
+  .os-mission-search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .os-mission-owner > div {
+    min-width: 0;
+  }
+}
 .os-filter-tabs button {
   background: transparent;
   color: var(--secondary);
