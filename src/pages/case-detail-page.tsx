@@ -1,174 +1,168 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowUpRight, ShieldBan } from 'lucide-react'
+import { ArrowLeft, ArrowDownToLine, Camera, FileText, MapPin, UserRound } from 'lucide-react'
 import { api } from '@/api'
-import { CaseTimeline } from '@/components/cases/case-timeline'
+import { canAccessRoute } from '@/app/access'
 import { EvidenceViewer } from '@/components/cases/evidence-viewer'
+import { CaseTimeline } from '@/components/cases/case-timeline'
 import { AlertTable } from '@/components/ops/alert-table'
-import { PageHeader } from '@/components/page-header'
-import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { MetricCard } from '@/components/shared/metric-card'
-import { SeverityBadge } from '@/components/shared/severity-badge'
+import { LoadingPanel } from '@/components/shared/async-state'
+import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { useAsyncData } from '@/hooks/use-async-data'
-import { getCasePriorityTone, getCaseStatusTone } from '@/lib/action-gradient'
-import { formatLongDateTime, titleCase } from '@/lib/formatters'
+import { useAuth } from '@/lib/auth'
+import { formatShiftDate, formatTime } from '@/lib/operations'
+import { downloadFile } from '@/lib/shift-brief'
 
 export function CaseDetailPage() {
   const { id = '' } = useParams()
-  const { data: caseRecord, error, isLoading } = useAsyncData(() => api.getCase(id), [id])
-
-  if (isLoading && !caseRecord) {
+  const { data: record, error, isLoading } = useAsyncData(() => api.getCase(id), [id])
+  const { session } = useAuth()
+  const [tab, setTab] = useState('overview')
+  if (isLoading && !record) return <LoadingPanel lines={10} />
+  if (error || !record)
     return (
-      <div className="space-y-6">
-        <LoadingPanel lines={4} />
-        <section className="grid gap-4 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <LoadingPanel key={index} lines={3} />
-          ))}
-        </section>
-        <LoadingPanel lines={10} />
+      <div className="workspace-panel empty-state">
+        <FileText size={30} />
+        <strong>Case unavailable</strong>
+        <p>{error ?? 'This case could not be found.'}</p>
+        <Link className={buttonVariants({ variant: 'outline' })} to="/cases">
+          Back to cases
+        </Link>
       </div>
     )
+  const evidence = record.evidence ?? []
+  const alerts = record.alerts ?? []
+  function exportCase() {
+    if (record)
+      downloadFile(
+        `nova-${record.id}-brief.json`,
+        JSON.stringify(
+          {
+            product: 'NOVA',
+            workspace: 'Sample campus workspace',
+            generatedAt: new Date().toISOString(),
+            generatedBy: session?.name,
+            case: record,
+          },
+          null,
+          2,
+        ),
+        'application/json',
+      )
   }
-
-  if (error || !caseRecord) {
-    return (
-      <Card className="bg-primaryDeep">
-        <CardHeader>
-          <CardTitle>Case not found</CardTitle>
-          <CardDescription>
-            {error ?? 'The requested case workspace is unavailable or was archived.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link className={buttonVariants({ variant: 'outline' })} to="/ops">
-            Return to operations
-          </Link>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const caseEvidence = caseRecord.evidence ?? []
-  const caseAlerts = caseRecord.alerts ?? []
-
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow={caseRecord.id}
-        title={caseRecord.title}
-        subtitle={caseRecord.summary}
-        meta={
-          <>
-            <SeverityBadge tone={getCaseStatusTone(caseRecord.status)}>
-              {caseRecord.status}
-            </SeverityBadge>
-            <SeverityBadge tone={getCasePriorityTone(caseRecord.priority)}>
-              {titleCase(caseRecord.priority)}
-            </SeverityBadge>
-          </>
-        }
-        actions={
-          <>
-            <Link className={buttonVariants({ variant: 'outline' })} to="/reports">
-              Add note
-            </Link>
-            <Link className={buttonVariants({ variant: 'action' })} to="/exports">
-              Export case brief
-            </Link>
-          </>
-        }
-      />
-
-      <section className="grid gap-4 xl:grid-cols-3">
-        <MetricCard
-          label="Status"
-          value={caseRecord.status.toUpperCase()}
-          delta={`Updated ${formatLongDateTime(caseRecord.updatedAt)}`}
-          tone="accent"
-        />
-        <MetricCard
-          label="Linked alerts"
-          value={String(caseAlerts.length).padStart(2, '0')}
-          delta={caseRecord.location}
-          tone="warning"
-        />
-        <MetricCard
-          label="Evidence snapshots"
-          value={String(caseEvidence.length).padStart(2, '0')}
-          delta="Snapshots + metadata only"
-          tone="success"
-        />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
-        <Card className="bg-primaryDeep">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Case overview</CardTitle>
-            <CardDescription>
-              Response summary and review protocol for this campus incident workspace.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-5 pt-5 sm:grid-cols-2">
-            <div className="space-y-4 border border-surfaceMuted/20 bg-primaryDark p-4">
-              <div className="space-y-1">
-                <p className="eyebrow text-[10px]">Lead analyst</p>
-                <p className="font-display text-xl font-bold">{caseRecord.leadAnalyst}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="eyebrow text-[10px]">Opened</p>
-                <p className="text-sm">{formatLongDateTime(caseRecord.openedAt)}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="eyebrow text-[10px]">Updated</p>
-                <p className="text-sm">{formatLongDateTime(caseRecord.updatedAt)}</p>
-              </div>
+    <div className="space-y-5">
+      <Link className="text-link" to="/cases">
+        <ArrowLeft size={14} />
+        All cases
+      </Link>
+      <div className="overview-heading">
+        <div>
+          <p className="page-kicker">{record.id.toUpperCase()}</p>
+          <h1 className="case-detail-heading">{record.title}</h1>
+          <p className="case-detail-location">
+            <MapPin size={13} />
+            {record.location}
+          </p>
+        </div>
+        <div className="page-actions">
+          <Button variant="outline" onClick={exportCase}>
+            <ArrowDownToLine size={15} />
+            Download case brief
+          </Button>
+        </div>
+      </div>
+      <div className="case-detail-summary">
+        <span
+          className={`signal-badge signal-${record.priority === 'priority-1' ? 'critical' : record.priority === 'priority-2' ? 'high' : 'low'}`}
+        >
+          {record.priority.replace('priority-', 'Priority ')}
+        </span>
+        <span className={`case-status case-status-${record.status}`}>
+          <i />
+          {record.status}
+        </span>
+        <span>
+          <UserRound size={13} />
+          {record.leadAnalyst}
+        </span>
+        <span>
+          <Camera size={13} />
+          {evidence.length} snapshots
+        </span>
+        <span>
+          Updated {formatShiftDate(record.updatedAt)} · {formatTime(record.updatedAt)} EAT
+        </span>
+      </div>
+      <div className="filter-tabs">
+        {[
+          { id: 'overview', label: 'Overview' },
+          { id: 'evidence', label: `Evidence (${evidence.length})` },
+          { id: 'alerts', label: `Linked alerts (${alerts.length})` },
+        ].map((item) => (
+          <button
+            key={item.id}
+            className={tab === item.id ? 'selected' : ''}
+            aria-pressed={tab === item.id}
+            onClick={() => setTab(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      {tab === 'overview' && (
+        <div className="case-detail-layout">
+          <section className="workspace-panel">
+            <div className="panel-header">
+              <h2>Investigation overview</h2>
             </div>
-
-            <div className="space-y-4 border border-surfaceMuted/20 bg-primaryDark p-4">
-              <div className="space-y-1">
-                <p className="eyebrow text-[10px]">Protocol</p>
-                <p className="text-sm text-textSecondary">{caseRecord.protocol}</p>
+            <div className="case-overview-content">
+              <h3>Situation</h3>
+              <p>{record.summary}</p>
+              <h3>Response protocol</h3>
+              <p>{record.protocol}</p>
+              <div className="case-dates">
+                <div>
+                  <span>Opened</span>
+                  <strong>
+                    {formatShiftDate(record.openedAt)} · {formatTime(record.openedAt)} EAT
+                  </strong>
+                </div>
+                <div>
+                  <span>Case lead</span>
+                  <strong>{record.leadAnalyst}</strong>
+                </div>
               </div>
-              <div className="notice-panel flex gap-3 border border-dashed p-3 text-sm">
-                <ShieldBan className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  Evidence review is limited to snapshots and metadata. Biometrics are
-                  disabled and human validation remains mandatory.
-                </span>
+              <div className="notice-panel">
+                <UserRound size={16} />
+                <p>
+                  Validate the evidence with the response team before escalating this case. All evidence in
+                  this workspace is sample snapshots and metadata.
+                </p>
               </div>
-              <Link
-                className="brand-link"
-                to="/search"
-              >
-                Continue in snapshot search
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
+              {session && canAccessRoute(session.role, 'search') && (
+                <Link
+                  className="text-link"
+                  to={`/search?q=${encodeURIComponent(record.location.split('/')[0].trim())}`}
+                >
+                  Search related evidence
+                  <ArrowLeft className="rotate-180" size={14} />
+                </Link>
+              )}
             </div>
-          </CardContent>
-        </Card>
-
-        {caseRecord.timeline.length ? (
-          <CaseTimeline events={caseRecord.timeline} />
-        ) : (
-          <ErrorPanel title="Timeline unavailable" message="No timeline events were found." />
-        )}
-      </section>
-
-      <EvidenceViewer snapshots={caseEvidence} />
-
-      <AlertTable
-        alerts={caseAlerts}
-        title="Linked alerts"
-        description="Underlying detections attached to this case file."
-      />
+          </section>
+          <CaseTimeline events={record.timeline} />
+        </div>
+      )}
+      {tab === 'evidence' && <EvidenceViewer snapshots={evidence} />}
+      {tab === 'alerts' && (
+        <AlertTable
+          alerts={alerts}
+          title="Linked incidents"
+          description="Open an incident to review its source evidence and response status."
+        />
+      )}
     </div>
   )
 }

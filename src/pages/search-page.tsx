@@ -1,209 +1,178 @@
-import { startTransition, useDeferredValue, useState } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowUpRight } from 'lucide-react'
-import { api } from '@/api'
+import { ArrowUpRight, Camera, Search, X } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
+import { WorkspaceDialog } from '@/components/shared/workspace-dialog'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { FiltersBar } from '@/components/shared/filters-bar'
-import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { useAsyncData } from '@/hooks/use-async-data'
-import { formatDateTime } from '@/lib/formatters'
+import { useOperations } from '@/hooks/use-operations'
+import { formatShiftDate, formatTime } from '@/lib/operations'
+import type { Evidence } from '@/types/domain'
 
 export function SearchPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [cameraId, setCameraId] = useState('all')
-  const [severity, setSeverity] = useState('all')
-  const [status, setStatus] = useState('all')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const query = searchParams.get('q') ?? ''
-  const deferredQuery = useDeferredValue(query)
-
-  const { data, error, isLoading } = useAsyncData(
-    () =>
-      api.search(deferredQuery, {
-        cameraId,
-        severity,
-        status,
-        from: dateFrom || undefined,
-        to: dateTo || undefined,
-      }),
-    [deferredQuery, cameraId, severity, status, dateFrom, dateTo],
+  const [params, setParams] = useSearchParams()
+  const query = params.get('q') ?? ''
+  const { data, error, isLoading } = useOperations()
+  const [camera, setCamera] = useState('all')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [selected, setSelected] = useState<Evidence | null>(null)
+  if (isLoading && !data) return <LoadingPanel lines={10} />
+  if (error || !data) return <ErrorPanel message={error ?? 'Evidence search unavailable.'} />
+  const filtered = data.evidence.filter(
+    (item) =>
+      (camera === 'all' || item.metadata.cameraId === camera) &&
+      (!from || item.metadata.ts.slice(0, 10) >= from) &&
+      (!to || item.metadata.ts.slice(0, 10) <= to) &&
+      `${item.title} ${item.metadata.zone} ${item.metadata.cameraId} ${item.metadata.classes.join(' ')} ${item.summary}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
   )
-
-  if (isLoading && !data) {
-    return (
-      <div className="space-y-6">
-        <LoadingPanel lines={4} />
-        <LoadingPanel lines={4} />
-        <LoadingPanel lines={10} />
-      </div>
-    )
-  }
-
-  if (error || !data) {
-    return <ErrorPanel message={error ?? 'Search data is unavailable.'} />
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        eyebrow="Snapshot index"
-        title="Search evidence metadata"
-        subtitle="Search zones, camera IDs, object classes, timestamps, and linked alerts for campus review. The index stores still images plus metadata only and keeps biometric functions disabled."
+        eyebrow="Investigation tools"
+        title="Evidence search"
+        subtitle="Find the snapshot that brings the full picture into focus."
       />
-
-      <FiltersBar
-        searchValue={query}
-        onSearchChange={(value) => {
-          startTransition(() => {
-            if (value) {
-              setSearchParams({ q: value })
-            } else {
-              setSearchParams({})
-            }
-          })
-        }}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        groups={[
-          {
-            id: 'camera',
-            label: 'Camera',
-            value: cameraId,
-            options: [
-              { label: 'All', value: 'all' },
-              ...data.cameras.map((item) => ({ label: item, value: item })),
-            ],
-          },
-          {
-            id: 'severity',
-            label: 'Severity',
-            value: severity,
-            options: [
-              { label: 'All', value: 'all' },
-              { label: 'Critical', value: 'critical' },
-              { label: 'High', value: 'high' },
-              { label: 'Medium', value: 'medium' },
-              { label: 'Low', value: 'low' },
-            ],
-          },
-          {
-            id: 'status',
-            label: 'Status',
-            value: status,
-            options: [
-              { label: 'All', value: 'all' },
-              { label: 'New', value: 'new' },
-              { label: 'Ack', value: 'acknowledged' },
-              { label: 'Triaging', value: 'triaging' },
-              { label: 'Contained', value: 'contained' },
-              { label: 'Closed', value: 'closed' },
-            ],
-          },
-        ]}
-        onGroupChange={(groupId, value) => {
-          if (groupId === 'camera') {
-            setCameraId(value)
-          }
-
-          if (groupId === 'severity') {
-            setSeverity(value)
-          }
-
-          if (groupId === 'status') {
-            setStatus(value)
-          }
-        }}
-      />
-
-      <Card className="bg-primaryDeep">
-        <CardHeader className="border-b border-surfaceMuted/20">
-          <CardTitle>Search results</CardTitle>
-          <CardDescription>
-            {data.evidence.length} snapshot{data.evidence.length === 1 ? '' : 's'},{' '}
-            {data.alerts.length} alert{data.alerts.length === 1 ? '' : 's'}, and{' '}
-            {data.cases.length} case{data.cases.length === 1 ? '' : 's'} matched the current
-            query across gates, hostels, parking, and perimeter watch.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5 pt-5">
-          {data.alerts.length ? (
-            <div className="flex flex-wrap gap-3">
-              {data.alerts.slice(0, 4).map((alert) => (
-                <Badge key={alert.id} className="badge-neutral">
-                  {alert.severity} / {alert.zone}
-                </Badge>
-              ))}
-            </div>
-          ) : null}
-
-          {data.evidence.length ? (
-            <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
-              {data.evidence.map((snapshot) => (
-                <article
-                  key={snapshot.id}
-                  className="overflow-hidden border border-surfaceMuted/20 bg-primaryDark"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden border-b border-surfaceMuted/20">
-                    <img
-                      alt={snapshot.title}
-                      className="h-full w-full object-cover"
-                      src={snapshot.snapshotUrl}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brandBlack via-brandBlack/55 to-transparent" />
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.22em] text-surfaceMuted">
-                      <span>{snapshot.metadata.cameraId}</span>
-                      <span>{snapshot.id}</span>
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 space-y-2 p-4 text-surfaceLight">
-                      <h3 className="font-display text-2xl font-bold">{snapshot.title}</h3>
-                      <p className="max-w-md text-sm text-surfaceMuted">
-                        {snapshot.analyticsSummary}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {snapshot.metadata.classes.map((tag) => (
-                        <Badge key={tag} className="badge-panel">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-sm text-textSecondary">{snapshot.summary}</p>
-                    <div className="flex items-center justify-between text-sm text-textSecondary">
-                      <span>{snapshot.metadata.zone}</span>
-                      <span>{formatDateTime(snapshot.metadata.ts)}</span>
-                    </div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-textSecondary">
-                      Biometrics disabled: {String(snapshot.metadata.biometricsDisabled)} / human validation required
-                    </p>
-                    <Link className="brand-link" to={`/cases/${snapshot.relatedCaseId}`}>
-                      Open linked case
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="border border-dashed border-surfaceMuted/20 bg-primaryDark p-10 text-center text-textSecondary">
-              No snapshots matched. Broaden the query or clear the active filters.
-            </div>
+      <section className="workspace-panel filter-panel">
+        <div className="queue-toolbar">
+          <label className="workspace-search-input">
+            <Search size={16} />
+            <input
+              aria-label="Search evidence"
+              placeholder="Search a location, object, camera, or description…"
+              value={query}
+              onChange={(event) => setParams(event.target.value ? { q: event.target.value } : {})}
+            />
+          </label>
+          <select
+            aria-label="Evidence camera"
+            value={camera}
+            onChange={(event) => setCamera(event.target.value)}
+          >
+            <option value="all">All cameras</option>
+            {data.cameras.map((camera) => (
+              <option key={camera}>{camera}</option>
+            ))}
+          </select>
+        </div>
+        <div className="evidence-date-filters">
+          <label>
+            From
+            <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
+          </label>
+          <label>
+            To
+            <input
+              type="date"
+              min={from || undefined}
+              value={to}
+              onChange={(event) => setTo(event.target.value)}
+            />
+          </label>
+          {(from || to || camera !== 'all' || query) && (
+            <button
+              className="text-link"
+              onClick={() => {
+                setParams({})
+                setFrom('')
+                setTo('')
+                setCamera('all')
+              }}
+            >
+              <X size={12} />
+              Clear filters
+            </button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+      <div className="results-meta">
+        <span>{filtered.length} snapshots found</span>
+        <span>Sample snapshots · Human review required</span>
+      </div>
+      <div className="evidence-search-grid">
+        {filtered.map((item) => (
+          <article className="workspace-panel evidence-result" key={item.id}>
+            <button
+              className="evidence-image-button"
+              aria-label={`View snapshot: ${item.title}`}
+              onClick={() => setSelected(item)}
+            >
+              <img src={item.snapshotUrl} alt={item.title} />
+              <span>
+                <Camera size={12} />
+                {item.metadata.cameraId}
+              </span>
+              <small>Sample snapshot</small>
+            </button>
+            <div>
+              <h2>{item.title}</h2>
+              <p>{item.metadata.zone}</p>
+              <div className="evidence-tags">
+                {item.metadata.classes.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+              <p className="evidence-result-summary">{item.summary}</p>
+              <footer>
+                <time>
+                  {formatShiftDate(item.metadata.ts)} · {formatTime(item.metadata.ts)} EAT
+                </time>
+                <Link className="text-link" to={`/cases/${item.relatedCaseId}`}>
+                  Case
+                  <ArrowUpRight size={13} />
+                </Link>
+              </footer>
+            </div>
+          </article>
+        ))}
+      </div>
+      {!filtered.length && (
+        <div className="workspace-panel empty-state">
+          <Camera size={30} />
+          <strong>No snapshots found</strong>
+          <p>Try a broader search or clear the camera and date filters.</p>
+        </div>
+      )}
+      <WorkspaceDialog
+        open={!!selected}
+        onOpenChange={(open) => {
+          if (!open) setSelected(null)
+        }}
+        title={selected?.title ?? 'Snapshot'}
+        description="Sample evidence snapshot with source metadata."
+      >
+        {selected && (
+          <div className="snapshot-modal">
+            <img src={selected.snapshotUrl} alt={selected.title} />
+            <p>{selected.summary}</p>
+            <dl>
+              <div>
+                <dt>Camera</dt>
+                <dd>{selected.metadata.cameraId}</dd>
+              </div>
+              <div>
+                <dt>Zone</dt>
+                <dd>{selected.metadata.zone}</dd>
+              </div>
+              <div>
+                <dt>Recorded</dt>
+                <dd>
+                  {formatShiftDate(selected.metadata.ts)} · {formatTime(selected.metadata.ts)} EAT
+                </dd>
+              </div>
+              <div>
+                <dt>Chain of custody</dt>
+                <dd>{selected.chainOfCustody}</dd>
+              </div>
+            </dl>
+            <Link className="text-link" to={`/cases/${selected.relatedCaseId}`}>
+              Open case
+              <ArrowUpRight size={14} />
+            </Link>
+          </div>
+        )}
+      </WorkspaceDialog>
     </div>
   )
 }
