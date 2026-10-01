@@ -18,7 +18,7 @@ const originalWindow = globalThis.window
 const originalDocument = globalThis.document
 const originalCreateUrl = URL.createObjectURL
 const originalRevokeUrl = URL.revokeObjectURL
-const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
+const server = await createServer({ server: { middlewareMode: true }, appType: 'custom', optimizeDeps: { noDiscovery: true, include: [] } })
 globalThis.window = windowStub
 try {
   const api = await server.ssrLoadModule('/src/api/mock-client.ts')

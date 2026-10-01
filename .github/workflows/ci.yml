@@ -27,6 +27,15 @@ jobs:
       - name: Test operator workflows
         run: npm run test:operations
 
+      - name: Test API security and persistence
+        run: npm run test:api
+
+      - name: Test browser resilience
+        run: npm run test:resilience
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
       - name: Check shared action tokens
         run: npm run test:action-gradient
 
