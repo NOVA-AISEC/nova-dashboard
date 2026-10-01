@@ -1,46 +1,79 @@
-import { campusZones } from '@/data/mock-data'
+import { useState } from 'react'
+import { Camera, Search } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDateTime } from '@/lib/formatters'
+import { campusZones } from '@/data/mock-data'
+import { useOperations } from '@/hooks/use-operations'
+import { isActiveAlert, formatShiftDate, formatTime } from '@/lib/operations'
 
 export function ZonesPage() {
+  const { data } = useOperations()
+  const [query, setQuery] = useState('')
+  const [status, setStatus] = useState('all')
+  const zones = campusZones.filter(
+    (zone) =>
+      (status === 'all' ||
+        (status === 'maintenance' ? zone.status === 'maintenance' : zone.status !== 'maintenance')) &&
+      `${zone.name} ${zone.cameraId}`.toLowerCase().includes(query.trim().toLowerCase()),
+  )
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        eyebrow="Campus Coverage"
-        title="Zones & Cameras"
-        subtitle="See which campus areas are healthy, on watch, or in maintenance before a dispatch or export decision is made."
+        eyebrow="Campus coverage"
+        title="Zones & cameras"
+        subtitle="Camera inventory and incident coverage across your campus. Availability reflects sample camera records."
       />
-
-      <div className="grid gap-5 xl:grid-cols-2">
-        {campusZones.map((zone) => (
-          <Card key={zone.id} className="bg-primaryDeep">
-            <CardHeader className="border-b border-surfaceMuted/20">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <CardTitle>{zone.name}</CardTitle>
-                  <CardDescription>{zone.cameraId}</CardDescription>
-                </div>
-                <Badge className="badge-panel">{zone.status}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-5">
-              <div className="text-sm text-textSecondary">{zone.coverage}</div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="border border-surfaceMuted/20 bg-primaryDark p-3">
-                  <div className="eyebrow text-[10px]">Open alerts</div>
-                  <div className="mt-1 font-display text-2xl font-bold">{zone.alertCount}</div>
-                </div>
-                <div className="border border-surfaceMuted/20 bg-primaryDark p-3">
-                  <div className="eyebrow text-[10px]">Last checked</div>
-                  <div className="mt-1 text-sm">{formatDateTime(zone.lastCheckedAt)}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="queue-toolbar">
+        <label className="workspace-search-input">
+          <Search size={16} />
+          <input
+            aria-label="Search cameras"
+            placeholder="Search a camera or zone…"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        <select
+          aria-label="Camera availability"
+          value={status}
+          onChange={(event) => setStatus(event.target.value)}
+        >
+          <option value="all">All cameras</option>
+          <option value="available">Available</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
       </div>
+      <section className="workspace-panel">
+        <div className="panel-header">
+          <h2>
+            Campus inventory <span className="count-pill">{zones.length}</span>
+          </h2>
+          <span className="panel-meta">Sample camera status</span>
+        </div>
+        <div className="camera-grid">
+          {zones.map((zone) => (
+            <div key={zone.id} className="camera-card">
+              <div>
+                <Camera size={21} />
+                <span className={`signal-badge signal-${zone.status === 'maintenance' ? 'high' : 'low'}`}>
+                  {zone.status === 'maintenance' ? 'Maintenance' : 'Available'}
+                </span>
+              </div>
+              <h3>{zone.name}</h3>
+              <span className="mono muted">{zone.cameraId}</span>
+              <p>{zone.coverage}</p>
+              <small>
+                {data?.alerts.filter((alert) => alert.cameraId === zone.cameraId && isActiveAlert(alert))
+                  .length ?? '—'}{' '}
+                active incidents
+              </small>
+              <p className="camera-last-checked">
+                Last checked {formatShiftDate(zone.lastCheckedAt)} · {formatTime(zone.lastCheckedAt)} EAT
+              </p>
+            </div>
+          ))}
+        </div>
+        {!zones.length && <div className="empty-state">No cameras match your filters.</div>}
+      </section>
     </div>
   )
 }
