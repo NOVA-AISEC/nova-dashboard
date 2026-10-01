@@ -1,401 +1,561 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Download, ShieldBan, Sparkles } from 'lucide-react'
-import { api } from '@/api'
-import { roleLabels } from '@/app/access'
-import { AlertTable } from '@/components/ops/alert-table'
-import { ActionButton } from '@/components/shared/action-button'
-import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { MetricCard } from '@/components/shared/metric-card'
-import { SeverityBadge } from '@/components/shared/severity-badge'
-import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button-variants'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
 import {
-  bottleneckSolutions,
-  campusContextAreas,
-  complianceNotices,
-} from '@/data/mock-data'
-import { useAsyncData } from '@/hooks/use-async-data'
-import { getCasePriorityTone } from '@/lib/action-gradient'
-import { formatDateTime, formatRelativeHours, titleCase } from '@/lib/formatters'
+  Activity,
+  ArrowDownToLine,
+  ArrowRight,
+  ArrowUpRight,
+  Camera,
+  Check,
+  Clock3,
+  FileText,
+  MapPin,
+  Plus,
+  Radio,
+  RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+  Users,
+} from 'lucide-react'
+import { canAccessRoute } from '@/app/access'
+import { AlertDetail } from '@/components/ops/alert-detail'
+import { CampusMap } from '@/components/ops/campus-map'
+import { AlertTable } from '@/components/ops/alert-table'
+import { WorkspaceDialog } from '@/components/shared/workspace-dialog'
+import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
+import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
+import { campusZones } from '@/data/mock-data'
+import { useOperations } from '@/hooks/use-operations'
+import { useAuth } from '@/lib/auth'
+import { formatShiftDate, formatTime, isActiveAlert, sortAlerts } from '@/lib/operations'
 import { readShiftNotes, writeShiftNotes } from '@/lib/operator-storage'
 import { exportShiftBrief } from '@/lib/shift-brief'
-import { useAuth } from '@/lib/auth'
-import type { SearchResults } from '@/types/domain'
+import type { Alert } from '@/types/domain'
 
-function getMetrics(results: SearchResults) {
-  const openAlerts = results.alerts.filter((alert) => alert.status !== 'closed')
-  const humanValidations = [
-    ...openAlerts.filter((alert) => alert.requiresHumanValidation).map((alert) => alert.id),
-    ...results.cases.filter((caseItem) => caseItem.humanValidationRequired).map((caseItem) => caseItem.id),
-  ]
-
-  return [
-    {
-      label: 'Open alerts by zone',
-      value: String(new Set(openAlerts.map((alert) => alert.zone)).size).padStart(2, '0'),
-      delta: 'Zones currently under watch',
-      tone: 'accent' as const,
-    },
-    {
-      label: 'Peak zones today',
-      value: String(openAlerts.filter((alert) => alert.severity === 'critical').length).padStart(2, '0'),
-      delta: 'Critical pressure points',
-      tone: 'warning' as const,
-    },
-    {
-      label: 'Average triage time',
-      value: '11m',
-      delta: 'Mock campus baseline',
-      tone: 'success' as const,
-    },
-    {
-      label: 'Pending human validations',
-      value: String(humanValidations.length).padStart(2, '0'),
-      delta: 'Required before escalation',
-      tone: 'ink' as const,
-    },
-  ]
-}
-
-function useOpsData() {
-  return useAsyncData(() => api.search(''), [])
+function Sparkline({ values, color = 'var(--accent)' }: { values: number[]; color?: string }) {
+  const max = Math.max(...values, 1)
+  const points = values
+    .map((value, index) => `${index * (100 / Math.max(values.length - 1, 1))},${30 - (value / max) * 25}`)
+    .join(' ')
+  return (
+    <svg viewBox="0 0 100 36" className="metric-sparkline" aria-hidden="true">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
 }
 
 export function OpsPage() {
   const { session } = useAuth()
-  const { data, error, isLoading } = useOpsData()
-  const [shiftNotes, setShiftNotes] = useState(() => readShiftNotes())
-
-  useEffect(() => {
-    writeShiftNotes(shiftNotes)
-  }, [shiftNotes])
-
-  const openAlerts = useMemo(
-    () => data?.alerts.filter((alert) => alert.status !== 'closed') ?? [],
-    [data],
-  )
-
-  if (!session) {
-    return null
+  const { data, error, isLoading, refresh } = useOperations()
+  const [view, setView] = useState('overview')
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
+  const [handoverOpen, setHandoverOpen] = useState(false)
+  const [briefDownloaded, setBriefDownloaded] = useState(false)
+  const [shiftNotes, setShiftNotes] = useState(readShiftNotes)
+  const [notesError, setNotesError] = useState('')
+  const [filter, setFilter] = useState('all')
+  function saveShiftNotes(value: string) {
+    setShiftNotes(value)
+    setBriefDownloaded(false)
+    try {
+      writeShiftNotes(value)
+      setNotesError('')
+    } catch {
+      setNotesError('Notes could not be saved. Check browser storage, or download the brief to keep a copy.')
+    }
   }
-
-  if (isLoading && !data) {
-    return (
-      <div className="space-y-6">
-        <LoadingPanel lines={4} />
-        <section className="grid gap-4 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <LoadingPanel key={index} lines={3} />
-          ))}
-        </section>
-        <LoadingPanel lines={10} />
-      </div>
-    )
-  }
-
-  if (error || !data) {
-    return <ErrorPanel message={error ?? 'Operations data is unavailable.'} />
-  }
-
-  const metrics = getMetrics(data)
-  const activeCases = [...data.cases].sort((left, right) =>
-    right.updatedAt.localeCompare(left.updatedAt),
+  if (isLoading && !data) return <LoadingPanel lines={10} />
+  if (error || !data) return <ErrorPanel message={error ?? 'Operations data is unavailable.'} />
+  if (!session) return null
+  const activeAlerts = sortAlerts(data.alerts.filter(isActiveAlert))
+  const critical = activeAlerts.filter((alert) => alert.severity === 'critical')
+  const needsReview = activeAlerts.filter((alert) => alert.status === 'new')
+  const activeCases = data.cases.filter((item) => item.status !== 'closed')
+  const sampleDate = data.alerts[0]?.createdAt
+  const teams = [...new Set(activeAlerts.map((alert) => alert.assignee))]
+  const availableCameras = campusZones.filter((zone) => zone.status !== 'maintenance').length
+  const hourCounts = Array.from(
+    { length: 12 },
+    (_, index) =>
+      data.alerts.filter((alert) => Number(formatTime(alert.createdAt).split(':')[0]) === index + 6).length,
   )
-  const pendingHumanValidations =
-    activeCases.filter((caseItem) => caseItem.humanValidationRequired).length +
-    openAlerts.filter((alert) => alert.requiresHumanValidation).length
-  const triageSlaTone =
-    openAlerts.length >= 6 ? 'critical' : openAlerts.length >= 3 ? 'elevated' : 'normal'
-  const validationTone =
-    pendingHumanValidations >= 6
-      ? 'critical'
-      : pendingHumanValidations >= 3
-        ? 'elevated'
-        : 'normal'
-  const zoneSummary = Object.entries(
-    openAlerts.reduce<Record<string, number>>((accumulator, alert) => {
-      accumulator[alert.zone] = (accumulator[alert.zone] ?? 0) + 1
-      return accumulator
-    }, {}),
+  const sortedActivity = [...data.audit].sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 5)
+  const visibleAlerts = activeAlerts.filter(
+    (alert) =>
+      filter === 'all' || (filter === 'new' ? alert.status === 'new' : alert.severity === 'critical'),
   )
-    .sort((left, right) => right[1] - left[1])
-    .slice(0, 4)
-
+  const can = (route: Parameters<typeof canAccessRoute>[1]) => canAccessRoute(session.role, route)
   return (
-    <div className="space-y-6">
-      <section className="ops-hero-panel overflow-hidden rounded-[2rem] border border-surfaceMuted/40">
-        <div className="ops-hero-grid grid gap-8 p-6 lg:grid-cols-[minmax(0,1.35fr)_22rem] lg:p-8">
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <div className="eyebrow">Campus Command Center</div>
-              <div className="space-y-3">
-                <h1 className="font-display text-4xl font-bold tracking-[-0.06em] text-ink sm:text-5xl">
-                  Ops Command
-                </h1>
-                <p className="max-w-3xl text-sm leading-7 text-textSecondary sm:text-[15px]">
-                  Run Strathmore-facing campus security operations across gates, hostels,
-                  library, parking, perimeter, and event flow. Work stays evidence-first
-                  with snapshots plus metadata only, biometrics disabled, and human
-                  validation required.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2.5">
-              <SeverityBadge tone={triageSlaTone}>Triage SLA watch</SeverityBadge>
-              <SeverityBadge tone={validationTone}>Pending validations</SeverityBadge>
-              <Badge className="chip-compliance">Biometrics disabled</Badge>
-              <Badge className="chip-compliance">Snapshots</Badge>
-              <Badge className="chip-compliance">Metadata only</Badge>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Link className={buttonVariants({ variant: 'action', size: 'lg' })} to="/queue">
-                Open live queue
-              </Link>
-              <ActionButton
-                intent="neutral"
-                size="lg"
-                onClick={() =>
-                  exportShiftBrief({
-                    generatedBy: session.name,
-                    notes: shiftNotes,
-                    alerts: openAlerts,
-                    cases: activeCases,
-                  })
-                }
-              >
-                <Download className="h-4 w-4" />
-                Export shift brief
-              </ActionButton>
-            </div>
-          </div>
-
-          <div className="ops-hero-aside space-y-4 rounded-[1.75rem] border border-surfaceMuted/40 p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="eyebrow text-[10px]">Shift Overview</div>
-                <div className="mt-2 font-display text-2xl font-bold tracking-[-0.04em] text-ink">
-                  {session.name}
-                </div>
-                <div className="mt-1 text-sm text-textSecondary">
-                  {roleLabels[session.role]} leading the current watch window.
-                </div>
-              </div>
-              <div className="rounded-full border border-brandGold/40 bg-brandGold/10 p-2 text-brandBlue">
-                <Sparkles className="h-4 w-4" />
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <div className="ops-mini-stat">
-                <span className="ops-mini-stat-label">Open alerts</span>
-                <span className="ops-mini-stat-value">{openAlerts.length}</span>
-              </div>
-              <div className="ops-mini-stat">
-                <span className="ops-mini-stat-label">Peak zone</span>
-                <span className="ops-mini-stat-value">{zoneSummary[0]?.[0] ?? 'Stable'}</span>
-              </div>
-              <div className="ops-mini-stat">
-                <span className="ops-mini-stat-label">Validations</span>
-                <span className="ops-mini-stat-value">{pendingHumanValidations}</span>
-              </div>
-            </div>
-          </div>
+    <div className="overview-page">
+      <div className="overview-heading">
+        <div>
+          <p className="page-kicker">
+            <span className="status-dot" />
+            COMMAND CENTER
+          </p>
+          <h1>
+            Campus overview<span className="heading-dot">.</span>
+          </h1>
+          <p>Your campus, connected. Every incident, in focus.</p>
         </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,1fr)]">
-        <Card className="overflow-hidden bg-primaryDeep">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Campus context</CardTitle>
-            <CardDescription>
-              Surfaces currently reflected in the command center without exposing sensitive campus detail.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 pt-5 sm:grid-cols-2 xl:grid-cols-3">
-            {campusContextAreas.map((area) => (
-              <div key={area.name} className="dashboard-tile">
-                <div className="font-display text-lg font-bold">{area.name}</div>
-                <div className="mt-2 text-sm text-textSecondary">{area.detail}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="surface-command">
-          <CardHeader className="surface-command-divider border-b">
-            <CardTitle className="text-ink">Operational guardrails</CardTitle>
-            <CardDescription className="surface-command-copy">
-              Compliance posture for every campus workflow in this shift.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5">
-            {complianceNotices.map((notice) => (
-              <div key={notice} className="guardrail-row surface-command-row flex gap-3 border p-4">
-                <ShieldBan className="mt-0.5 h-4 w-4 text-accentGlow" />
-                <p className="surface-command-copy text-sm">{notice}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.95fr)]">
-        <AlertTable
-          alerts={openAlerts}
-          title="Triage queue"
-          description="Prioritized campus alerts for guard dispatch, incident desk review, lost & found, parking control, and perimeter patrol."
-        />
-
-        <div className="space-y-6">
-          <Card className="bg-primaryDeep">
-            <CardHeader className="border-b border-surfaceMuted/20">
-              <CardTitle>Active cases</CardTitle>
-              <CardDescription>
-                Cases with pending human validation, admin review, or supervisor escalation.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-5">
-              {activeCases.map((caseItem) => (
-                <div key={caseItem.id} className="dashboard-tile space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="eyebrow text-[10px]">{caseItem.id}</p>
-                      <h3 className="font-display text-lg font-bold">{caseItem.title}</h3>
-                    </div>
-                    <SeverityBadge tone={getCasePriorityTone(caseItem.priority)}>
-                      {titleCase(caseItem.priority)}
-                    </SeverityBadge>
-                  </div>
-                  <p className="text-sm text-textSecondary">{caseItem.summary}</p>
-                  <div className="flex items-center justify-between text-sm text-textSecondary">
-                    <span>{caseItem.location}</span>
-                    <span>{formatRelativeHours(caseItem.updatedAt)}</span>
-                  </div>
-                  <Link className="brand-link" to={`/cases/${caseItem.id}`}>
-                    Open workspace
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Link>
-                </div>
+        <div className="page-actions">
+          <button className="quiet-button" onClick={() => setHandoverOpen(true)}>
+            <FileText size={16} />
+            Shift handover
+          </button>
+          {can('reports') && (
+            <Link to="/reports" className={buttonVariants()}>
+              <Plus size={16} />
+              New incident
+            </Link>
+          )}
+        </div>
+      </div>
+      <div className="overview-tabs">
+        <div role="tablist" aria-label="Overview sections">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'activity', label: 'Activity log' },
+            { id: 'coverage', label: 'Camera coverage' },
+          ].map((tab, index, tabs) => (
+            <button
+              key={tab.id}
+              role="tab"
+              tabIndex={view === tab.id ? 0 : -1}
+              aria-selected={view === tab.id}
+              aria-controls={`panel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              onClick={() => setView(tab.id)}
+              onKeyDown={(event) => {
+                if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+                event.preventDefault()
+                const next =
+                  event.key === 'Home'
+                    ? 0
+                    : event.key === 'End'
+                      ? tabs.length - 1
+                      : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length
+                setView(tabs[next].id)
+                document.getElementById(`tab-${tabs[next].id}`)?.focus()
+              }}
+            >
+              {tab.label}
+              {tab.id === 'overview' && <span>{activeAlerts.length}</span>}
+            </button>
+          ))}
+        </div>
+        <div className="shift-date">
+          <Clock3 size={13} />
+          <span>Sample shift · {sampleDate ? formatShiftDate(sampleDate) : 'No incidents'}</span>
+          <button aria-label="Refresh dashboard" className="icon-button" onClick={refresh}>
+            <RefreshCw size={14} />
+          </button>
+        </div>
+      </div>
+      <section className="overview-metrics" aria-label="Operations summary">
+        <div className="overview-metric">
+          <div className="metric-top">
+            <span>Active incidents</span>
+            <ShieldAlert size={17} />
+          </div>
+          <div className="metric-middle">
+            <strong>{String(activeAlerts.length).padStart(2, '0')}</strong>
+            <Sparkline values={hourCounts} />
+          </div>
+          <p>
+            <span className="metric-chip orange">{needsReview.length} need review</span>
+            <span>across {new Set(activeAlerts.map((alert) => alert.zone)).size} zones</span>
+          </p>
+        </div>
+        <div className="overview-metric">
+          <div className="metric-top">
+            <span>Critical alerts</span>
+            <Activity size={17} />
+          </div>
+          <div className="metric-middle">
+            <strong>{String(critical.length).padStart(2, '0')}</strong>
+            <div className="critical-bars">
+              {data.alerts.map((alert) => (
+                <i
+                  key={alert.id}
+                  className={alert.severity === 'critical' && isActiveAlert(alert) ? 'is-critical' : ''}
+                />
               ))}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-primaryDeep">
-            <CardHeader className="border-b border-surfaceMuted/20">
-              <CardTitle>Shift handover notes</CardTitle>
-              <CardDescription>
-                Save notes locally, then export a printable brief from the current queue and cases.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-5">
-              <Textarea
-                value={shiftNotes}
-                placeholder="Capture dispatch updates, unresolved library or hostel exceptions, parking bottlenecks, and who needs the next handoff."
-                onChange={(event) => setShiftNotes(event.target.value)}
-              />
-              <div className="flex items-center justify-between gap-4 text-sm text-textSecondary">
-                <span>Saved locally for this operator.</span>
-                <span>{shiftNotes.trim() ? `${shiftNotes.trim().split(/\s+/).length} words` : 'No notes yet'}</span>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+          <p>
+            <span className="metric-chip red">Priority 1</span>
+            <span>Immediate attention</span>
+          </p>
+        </div>
+        <div className="overview-metric">
+          <div className="metric-top">
+            <span>Camera availability</span>
+            <Camera size={17} />
+          </div>
+          <div className="metric-middle">
+            <strong>
+              {availableCameras}
+              <small> / {campusZones.length}</small>
+            </strong>
+            <span
+              className="mini-donut"
+              style={
+                { '--percentage': `${(availableCameras / campusZones.length) * 100}%` } as React.CSSProperties
+              }
+            >
+              <Camera size={14} />
+            </span>
+          </div>
+          <p>
+            <span className="metric-chip green">
+              {Math.round((availableCameras / campusZones.length) * 100)}% available
+            </span>
+            <span>Sample inventory</span>
+          </p>
+        </div>
+        <div className="overview-metric">
+          <div className="metric-top">
+            <span>Active cases</span>
+            <FileText size={17} />
+          </div>
+          <div className="metric-middle">
+            <strong>{String(activeCases.length).padStart(2, '0')}</strong>
+            <div className="metric-avatars">
+              {activeCases.slice(0, 3).map((item) => (
+                <span key={item.id} title={item.leadAnalyst}>
+                  {item.leadAnalyst
+                    .split(' ')
+                    .map((name) => name[0])
+                    .join('')
+                    .slice(0, 2)}
+                </span>
+              ))}
+            </div>
+          </div>
+          <p>
+            <span className="metric-chip neutral">
+              {activeCases.filter((item) => item.status === 'escalated').length} escalated
+            </span>
+            <span>Under investigation</span>
+          </p>
         </div>
       </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Card className="bg-primaryDeep">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Campus safety posture snapshot</CardTitle>
-            <CardDescription>
-              Where alert density is highest right now and which surfaces are driving response load.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5">
-            {zoneSummary.map(([zone, count]) => (
-              <div key={zone} className="dashboard-tile flex items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="font-display text-lg font-bold">{zone}</div>
-                  <div className="text-sm text-textSecondary">
-                    {count} alert{count === 1 ? '' : 's'} currently open
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-display text-2xl font-bold">
-                    {count === zoneSummary[0]?.[1] ? 'Peak' : `#${count}`}
-                  </div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
-                    Zone load
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="bg-primaryDeep">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Bottlenecks solved</CardTitle>
-            <CardDescription>
-              How the product reduces campus security and operations friction during a live shift.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 pt-5 sm:grid-cols-2">
-            {bottleneckSolutions.map((item) => (
-              <div key={item.title} className="dashboard-tile">
-                <div className="font-display text-lg font-bold">{item.title}</div>
-                <div className="mt-2 text-sm text-textSecondary">{item.detail}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Card className="bg-primaryDeep">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Open alerts by zone</CardTitle>
-            <CardDescription>Useful for perimeter patrol, parking response, and event crowd control handoff.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5">
-            {zoneSummary.map(([zone, count]) => (
-              <div key={zone} className="dashboard-tile flex items-center justify-between px-4 py-3">
-                <span className="font-medium">{zone}</span>
-                <Badge className="badge-panel">{count} open</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="bg-primaryDeep">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Latest analyst actions</CardTitle>
-            <CardDescription>Recent case updates for the incident desk and supervisor handoff.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5">
-            {activeCases.map((caseItem) => (
-              <div key={caseItem.id} className="dashboard-tile flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      {view === 'overview' && (
+        <div id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+          <div className="overview-primary-grid">
+            <section className="workspace-panel map-panel">
+              <div className="panel-header">
                 <div>
-                  <p className="eyebrow text-[10px]">{caseItem.leadAnalyst}</p>
-                  <div className="font-display text-lg font-bold">{caseItem.title}</div>
-                  <div className="text-sm text-textSecondary">{caseItem.protocol}</div>
+                  <h2>
+                    Campus pulse{' '}
+                    <span className="live-pill">
+                      <span />
+                      Sample
+                    </span>
+                  </h2>
+                  <p>A clear view of where attention is needed.</p>
                 </div>
-                <div className="text-sm text-textSecondary">{formatDateTime(caseItem.updatedAt)}</div>
+                <span className="panel-meta">
+                  <MapPin size={13} />
+                  Nairobi campus
+                </span>
+              </div>
+              <CampusMap alerts={data.alerts} onReview={setSelectedAlert} />
+            </section>
+            <section className="workspace-panel attention-panel">
+              <div className="panel-header">
+                <div>
+                  <h2>
+                    Needs attention <span className="count-pill">{needsReview.length}</span>
+                  </h2>
+                  <p>Your next actions, in priority order.</p>
+                </div>
+                <ShieldAlert size={18} className="muted" />
+              </div>
+              <div className="attention-list">
+                {needsReview.slice(0, 3).map((alert) => (
+                  <button
+                    className={`attention-card attention-${alert.severity}`}
+                    key={alert.id}
+                    onClick={() => setSelectedAlert(alert)}
+                  >
+                    <div>
+                      <span className={`signal-badge signal-${alert.severity}`}>
+                        <span />
+                        {alert.severity}
+                      </span>
+                      <span className="mono muted">{formatTime(alert.createdAt)}</span>
+                    </div>
+                    <h3>{alert.title}</h3>
+                    <p>
+                      <MapPin size={12} />
+                      {alert.zone}
+                    </p>
+                    <span className="attention-action">
+                      Review incident <ArrowUpRight size={15} />
+                    </span>
+                  </button>
+                ))}
+                {!needsReview.length && (
+                  <div className="empty-state">
+                    <ShieldCheck size={32} />
+                    <strong>You’re all caught up</strong>
+                    <p>All incidents have an owner.</p>
+                  </div>
+                )}
+              </div>
+              <Link to="/alerts" className="panel-footer-link">
+                View all alerts <ArrowRight size={15} />
+              </Link>
+            </section>
+          </div>
+          <div className="overview-secondary-grid">
+            <section className="workspace-panel queue-preview">
+              <div className="panel-header">
+                <div>
+                  <h2>
+                    Incident queue <span className="count-pill">{activeAlerts.length}</span>
+                  </h2>
+                  <p>Track, review, and move incidents forward.</p>
+                </div>
+                <select
+                  aria-label="Filter overview incidents"
+                  value={filter}
+                  onChange={(event) => setFilter(event.target.value)}
+                >
+                  <option value="all">All priorities</option>
+                  <option value="critical">Critical only</option>
+                  <option value="new">Needs review</option>
+                </select>
+              </div>
+              <AlertTable alerts={visibleAlerts.slice(0, 5)} compact hideHeader onReview={setSelectedAlert} />
+              {can('queue') && (
+                <Link to="/queue" className="panel-footer-link">
+                  Open live queue <ArrowUpRight size={15} />
+                </Link>
+              )}
+            </section>
+            <section className="workspace-panel teams-panel">
+              <div className="panel-header">
+                <div>
+                  <h2>Response teams</h2>
+                  <p>Incident ownership across campus.</p>
+                </div>
+                <Radio size={18} className="muted" />
+              </div>
+              <div className="team-list">
+                {teams.slice(0, 5).map((team, index) => (
+                  <div key={team}>
+                    <span className={`team-avatar team-color-${index % 3}`}>
+                      {team
+                        .split(' ')
+                        .map((part) => part[0])
+                        .join('')}
+                    </span>
+                    <div>
+                      <strong>{team}</strong>
+                      <span>{activeAlerts.find((alert) => alert.assignee === team)?.zone}</span>
+                    </div>
+                    <span className="team-load">
+                      {activeAlerts.filter((alert) => alert.assignee === team).length}
+                      <small>active</small>
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="team-footer">
+                <Users size={14} />
+                {teams.length} teams with active assignments
+              </div>
+            </section>
+          </div>
+          <section className="shift-strip">
+            <span className="shift-strip-icon">
+              <FileText size={20} />
+            </span>
+            <div>
+              <strong>A smooth shift starts with a clear handover.</strong>
+              <span>Keep the next team in the loop with incident context and your notes.</span>
+            </div>
+            <button className="quiet-button" onClick={() => setHandoverOpen(true)}>
+              Prepare handover
+              <ArrowRight size={15} />
+            </button>
+          </section>
+        </div>
+      )}
+      {view === 'activity' && (
+        <section
+          id="panel-activity"
+          role="tabpanel"
+          aria-labelledby="tab-activity"
+          className="workspace-panel activity-panel"
+        >
+          <div className="panel-header">
+            <div>
+              <h2>Incident activity</h2>
+              <p>Recorded events by hour · EAT</p>
+            </div>
+            <Activity size={19} />
+          </div>
+          <div className="activity-chart">
+            {hourCounts.map((count, index) => (
+              <div key={index}>
+                <span className="chart-count">{count || ''}</span>
+                <div style={{ height: `${Math.max(3, (count / Math.max(...hourCounts, 1)) * 140)}px` }} />
+                <span>{String(index + 6).padStart(2, '0')}:00</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
-      </section>
+          </div>
+          <div className="panel-header">
+            <h2>Latest operator actions</h2>
+            {can('audit') && (
+              <Link className="text-link" to="/audit">
+                Full audit log
+                <ArrowUpRight size={15} />
+              </Link>
+            )}
+          </div>
+          <div className="activity-list">
+            {sortedActivity.map((event) => (
+              <div key={event.id}>
+                <span className="activity-icon">
+                  <Check size={15} />
+                </span>
+                <div>
+                  <strong>{event.action.toLowerCase().replaceAll('_', ' ')}</strong>
+                  <span>
+                    {event.actor} · {event.entityId}
+                  </span>
+                </div>
+                <time>
+                  {formatShiftDate(event.timestamp)} · {formatTime(event.timestamp)}
+                </time>
+              </div>
+            ))}
+            {!sortedActivity.length && <div className="empty-state">No recorded activity.</div>}
+          </div>
+        </section>
+      )}
+      {view === 'coverage' && (
+        <section
+          id="panel-coverage"
+          role="tabpanel"
+          aria-labelledby="tab-coverage"
+          className="workspace-panel"
+        >
+          <div className="panel-header">
+            <div>
+              <h2>Camera coverage</h2>
+              <p>Sample camera inventory. Select an incident from the map to review its evidence.</p>
+            </div>
+            {can('zones') && (
+              <Link to="/zones" className="text-link">
+                Manage zones
+                <ArrowUpRight size={15} />
+              </Link>
+            )}
+          </div>
+          <div className="camera-grid">
+            {campusZones.map((zone) => (
+              <div key={zone.id} className="camera-card">
+                <div>
+                  <Camera size={20} />
+                  <span
+                    className={`signal-badge ${zone.status === 'maintenance' ? 'signal-high' : 'signal-low'}`}
+                  >
+                    {zone.status === 'maintenance' ? 'Maintenance' : 'Available'}
+                  </span>
+                </div>
+                <h3>{zone.name}</h3>
+                <span className="mono muted">{zone.cameraId}</span>
+                <p>{zone.coverage}</p>
+                <small>
+                  {
+                    data.alerts.filter((alert) => alert.cameraId === zone.cameraId && isActiveAlert(alert))
+                      .length
+                  }{' '}
+                  active incidents · Checked {formatShiftDate(zone.lastCheckedAt)}
+                </small>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+      <WorkspaceDialog
+        open={handoverOpen}
+        onOpenChange={setHandoverOpen}
+        title="Prepare shift handover"
+        description="Capture what the incoming team needs to know."
+      >
+        <div className="handover-content">
+          <div className="handover-summary">
+            <span>
+              <ShieldAlert size={17} />
+              <strong>{activeAlerts.length}</strong> active incidents
+            </span>
+            <span>
+              <FileText size={17} />
+              <strong>{activeCases.length}</strong> active cases
+            </span>
+          </div>
+          <label htmlFor="handover-notes">Shift notes</label>
+          <textarea
+            id="handover-notes"
+            value={shiftNotes}
+            onChange={(event) => {
+              saveShiftNotes(event.target.value)
+            }}
+            placeholder="Outstanding actions, patrol updates, and context for the next team…"
+            rows={7}
+          />
+          {notesError ? (
+            <p className="action-error" role="alert">
+              {notesError}
+            </p>
+          ) : (
+            <p className="muted">
+              <Check size={13} />
+              Notes saved in this browser.
+            </p>
+          )}
+          <Button
+            onClick={() => {
+              exportShiftBrief({
+                generatedBy: session.name,
+                notes: shiftNotes,
+                alerts: activeAlerts,
+                cases: activeCases,
+              })
+              setBriefDownloaded(true)
+            }}
+          >
+            <ArrowDownToLine size={16} />
+            Download shift brief
+          </Button>
+          {briefDownloaded && (
+            <p role="status">
+              Shift brief prepared. Check your browser downloads for the printable HTML file.
+            </p>
+          )}
+        </div>
+      </WorkspaceDialog>
+      <AlertDetail
+        alert={
+          selectedAlert ? (data.alerts.find((alert) => alert.id === selectedAlert.id) ?? selectedAlert) : null
+        }
+        evidence={data.evidence}
+        onClose={() => setSelectedAlert(null)}
+      />
     </div>
   )
 }
