@@ -10,6 +10,7 @@ import {
   completeMissionStep,
 } from '../shared/security-engine.js'
 import { placeholderVision, visionEngineStatus } from '../shared/vision-engine.js'
+import { assertMissionRevision, coordinateMission } from '../shared/mission-control.js'
 
 export function createSecurityOS({ database, now = Date.now }) {
   const requestObject = (payload, keys) => {
@@ -29,6 +30,15 @@ export function createSecurityOS({ database, now = Date.now }) {
     }
   }
   const timestamp = () => new Date(now()).toISOString()
+  const revision = (mission, value) => {
+    if (!Number.isSafeInteger(value) || value < 1)
+      throw new ApiError(400, 'A valid mission revision is required.')
+    try {
+      assertMissionRevision(mission, value)
+    } catch (error) {
+      throw new ApiError(409, error.message, 'STALE_MISSION')
+    }
+  }
   const view = (user) => {
     const state = database.securityState()
     const visibleRuns =
@@ -95,6 +105,20 @@ export function createSecurityOS({ database, now = Date.now }) {
       if (!run) throw new ApiError(404, 'Assessment not found.', 'NOT_FOUND')
       const existing = view(user).missions.find((item) => item.runId === run.id)
       if (existing) return existing
+      if (
+        database
+          .securityState()
+          .missions.some(
+            (item) =>
+              item.incidentId === run.context.incident.id &&
+              ['pending-approval', 'active', 'paused'].includes(item.status),
+          )
+      )
+        throw new ApiError(
+          409,
+          'An open mission already exists for this incident. Review or finish it before preparing another response.',
+          'OPEN_MISSION_EXISTS',
+        )
       fresh(run)
       return database.saveMission(
         missionFromRun(run, user.email, timestamp(), `mission-${randomUUID()}`),
@@ -103,11 +127,12 @@ export function createSecurityOS({ database, now = Date.now }) {
       )
     },
     decide(id, payload, user) {
-      requestObject(payload, ['decision', 'note'])
+      requestObject(payload, ['decision', 'note', 'expectedRevision'])
       if (!['supervisor', 'admin'].includes(user.role))
         throw new ApiError(403, 'Supervisor approval is required.', 'FORBIDDEN')
       const mission = view(user).missions.find((item) => item.id === identifier(id))
       if (!mission) throw new ApiError(404, 'Mission not found.', 'NOT_FOUND')
+      revision(mission, payload.expectedRevision)
       if (payload.decision === 'approve')
         fresh(database.securityState().runs.find((run) => run.id === mission.runId))
       try {
@@ -122,9 +147,10 @@ export function createSecurityOS({ database, now = Date.now }) {
       }
     },
     complete(id, stepId, payload, user) {
-      requestObject(payload, ['note'])
+      requestObject(payload, ['note', 'expectedRevision'])
       const mission = view(user).missions.find((item) => item.id === identifier(id))
       if (!mission) throw new ApiError(404, 'Mission not found.', 'NOT_FOUND')
+      revision(mission, payload.expectedRevision)
       activeIncident(mission.incidentId)
       try {
         return database.saveMission(
@@ -135,6 +161,35 @@ export function createSecurityOS({ database, now = Date.now }) {
       } catch (error) {
         if (error instanceof ApiError) throw error
         throw new ApiError(409, error.message, 'INVALID_MISSION_STEP')
+      }
+    },
+    coordinate(id, payload, user) {
+      requestObject(payload, ['action', 'team', 'note', 'expectedRevision'])
+      if (!['supervisor', 'admin'].includes(user.role))
+        throw new ApiError(403, 'Supervisor coordination is required.', 'FORBIDDEN')
+      const mission = view(user).missions.find((item) => item.id === identifier(id))
+      if (!mission) throw new ApiError(404, 'Mission not found.', 'NOT_FOUND')
+      revision(mission, payload.expectedRevision)
+      if (payload.action === 'resume') activeIncident(mission.incidentId)
+      if (payload.action !== 'assign' && payload.team !== undefined)
+        throw new ApiError(400, 'Team applies only to assignment.')
+      try {
+        const updated = coordinateMission(
+          mission,
+          payload.action,
+          payload.note,
+          user.email,
+          timestamp(),
+          payload.team,
+        )
+        return database.saveMission(
+          updated,
+          `MISSION_${updated.activity.at(-1).action.toUpperCase()}`,
+          user.email,
+        )
+      } catch (error) {
+        if (error instanceof ApiError) throw error
+        throw new ApiError(409, error.message, 'INVALID_MISSION_COORDINATION')
       }
     },
   }

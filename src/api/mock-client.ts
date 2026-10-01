@@ -20,6 +20,7 @@ export {
   proposeMission,
   decideMission,
   completeMissionStep,
+  coordinateMission,
 } from '@/api/mock-security'
 
 function includesText(haystack: string, query?: string) {

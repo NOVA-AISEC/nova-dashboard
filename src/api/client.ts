@@ -81,15 +81,42 @@ export function proposeMission(runId: string) {
     body: JSON.stringify({ runId }),
   })
 }
-export function decideMission(id: string, decision: string, note: string) {
+export function decideMission(
+  id: string,
+  decision: string,
+  note: string,
+  expectedRevision: number,
+) {
   return request<Mission>(`/api/security/missions/${encodeURIComponent(id)}/decision`, {
     method: 'POST',
-    body: JSON.stringify({ decision, note }),
+    body: JSON.stringify({ decision, note, expectedRevision }),
   })
 }
-export function completeMissionStep(id: string, stepId: string, note: string) {
+export function completeMissionStep(
+  id: string,
+  stepId: string,
+  note: string,
+  expectedRevision: number,
+) {
   return request<Mission>(
     `/api/security/missions/${encodeURIComponent(id)}/steps/${encodeURIComponent(stepId)}`,
-    { method: 'POST', body: JSON.stringify({ note }) },
+    { method: 'POST', body: JSON.stringify({ note, expectedRevision }) },
   )
+}
+export function coordinateMission(
+  id: string,
+  action: string,
+  note: string,
+  expectedRevision: number,
+  team?: string,
+) {
+  return request<Mission>(`/api/security/missions/${encodeURIComponent(id)}/coordination`, {
+    method: 'POST',
+    body: JSON.stringify({
+      action,
+      note,
+      expectedRevision,
+      ...(team !== undefined ? { team } : {}),
+    }),
+  })
 }

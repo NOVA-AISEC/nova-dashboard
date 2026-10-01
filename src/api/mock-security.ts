@@ -16,6 +16,10 @@ import {
   type SecurityState,
 } from '../../shared/security-engine.js'
 import { placeholderVision, visionEngineStatus } from '../../shared/vision-engine.js'
+import {
+  assertMissionRevision,
+  coordinateMission as coordinate,
+} from '../../shared/mission-control.js'
 
 const key = 'nova.security-os.v1'
 interface StoredState {
@@ -108,92 +112,161 @@ export async function getSecurityState() {
 export function securityAudit() {
   return read().audit
 }
+function mutate<T>(action: () => T): Promise<T> {
+  return window.navigator?.locks
+    ? window.navigator.locks.request(key, action)
+    : Promise.resolve().then(action)
+}
 export async function runAssessment(payload: { incidentId: string; intent: string }) {
-  if (!['assess', 'response', 'handover'].includes(payload.intent))
-    throw new Error('Invalid assessment intent.')
-  const user = actor(),
-    saved = read(),
-    records = searchDataset({ q: '' })
-  if (saved.runs.length >= 500)
-    throw new Error('Assessment capacity reached. Archive records before continuing.')
-  const context = buildContext(records, payload.incidentId, user.role)
-  const run: EngineRun = {
-    id: `run-${crypto.randomUUID()}`,
-    createdAt: new Date().toISOString(),
-    actor: user.email,
-    intent: payload.intent,
-    question: '',
-    provider: 'placeholder',
-    model: 'YOLOv8n',
-    context,
-    assessment: validateAssessment(sampleAssessment(context, payload.intent), context),
-    vision: placeholderVision(records, payload.incidentId),
-  }
-  saved.runs.unshift(run)
-  write(saved, 'ENGINE_ASSESSED', payload.incidentId, {
-    runId: run.id,
-    provider: 'placeholder',
-    model: 'YOLOv8n',
+  return mutate(() => {
+    if (!['assess', 'response', 'handover'].includes(payload.intent))
+      throw new Error('Invalid assessment intent.')
+    const user = actor(),
+      saved = read(),
+      records = searchDataset({ q: '' })
+    if (saved.runs.length >= 500)
+      throw new Error('Assessment capacity reached. Archive records before continuing.')
+    const context = buildContext(records, payload.incidentId, user.role)
+    const run: EngineRun = {
+      id: `run-${crypto.randomUUID()}`,
+      createdAt: new Date().toISOString(),
+      actor: user.email,
+      intent: payload.intent,
+      question: '',
+      provider: 'placeholder',
+      model: 'YOLOv8n',
+      context,
+      assessment: validateAssessment(sampleAssessment(context, payload.intent), context),
+      vision: placeholderVision(records, payload.incidentId),
+    }
+    saved.runs.unshift(run)
+    write(saved, 'ENGINE_ASSESSED', payload.incidentId, {
+      runId: run.id,
+      provider: 'placeholder',
+      model: 'YOLOv8n',
+    })
+    return run
   })
-  return run
 }
 export async function proposeMission(runId: string) {
-  const saved = read(),
-    run = visible(saved).runs.find((item) => item.id === runId)
-  if (!run) throw new Error('Assessment not found.')
-  const existing = saved.missions.find((item) => item.runId === runId)
-  if (existing) return existing
-  assertFreshRun(run, searchDataset({ q: '' }))
-  if (saved.missions.length >= 500)
-    throw new Error('Mission capacity reached. Archive records before continuing.')
-  const mission = missionFromRun(
-    run,
-    actor().email,
-    new Date().toISOString(),
-    `mission-${crypto.randomUUID()}`,
-  )
-  saved.missions.unshift(mission)
-  write(saved, 'MISSION_PROPOSED', mission.incidentId, { missionId: mission.id, runId })
-  return mission
-}
-export async function decideMission(id: string, decision: string, note: string) {
-  const user = actor(),
-    saved = read()
-  if (!['supervisor', 'admin'].includes(user.role))
-    throw new Error('Supervisor approval is required.')
-  const mission = visible(saved).missions.find((item) => item.id === id)
-  if (!mission) throw new Error('Mission not found.')
-  if (decision === 'approve')
-    assertFreshRun(
-      saved.runs.find((run) => run.id === mission.runId)!,
-      searchDataset({ q: '' }),
+  return mutate(() => {
+    const saved = read(),
+      run = visible(saved).runs.find((item) => item.id === runId)
+    if (!run) throw new Error('Assessment not found.')
+    const existing = saved.missions.find((item) => item.runId === runId)
+    if (existing) return existing
+    if (
+      saved.missions.some(
+        (item) =>
+          item.incidentId === run.context.incident.id &&
+          ['pending-approval', 'active', 'paused'].includes(item.status),
+      )
     )
-  const updated = decide(mission, decision, note, user.email, new Date().toISOString())
-  saved.missions[saved.missions.findIndex((item) => item.id === id)] = updated
-  write(
-    saved,
-    decision === 'approve' ? 'MISSION_APPROVED' : 'MISSION_REJECTED',
-    mission.incidentId,
-    { missionId: id, runId: mission.runId },
-  )
-  return updated
-}
-export async function completeMissionStep(id: string, stepId: string, note: string) {
-  const user = actor(),
-    saved = read(),
-    mission = visible(saved).missions.find((item) => item.id === id)
-  if (!mission) throw new Error('Mission not found.')
-  const incident = searchDataset({ q: '' }).alerts.find((item) => item.id === mission.incidentId)
-  if (!incident || ['closed', 'contained'].includes(incident.status))
-    throw new Error('This incident is resolved. Mission progression is disabled.')
-  const updated = complete(mission, stepId, note, user.email, new Date().toISOString())
-  saved.missions[saved.missions.findIndex((item) => item.id === id)] = updated
-  write(saved, 'MISSION_STEP_RECORDED', mission.incidentId, {
-    missionId: id,
-    runId: mission.runId,
-    stepId,
+      throw new Error(
+        'An open mission already exists for this incident. Review or finish it before preparing another response.',
+      )
+    assertFreshRun(run, searchDataset({ q: '' }))
+    if (saved.missions.length >= 500)
+      throw new Error('Mission capacity reached. Archive records before continuing.')
+    const mission = missionFromRun(
+      run,
+      actor().email,
+      new Date().toISOString(),
+      `mission-${crypto.randomUUID()}`,
+    )
+    saved.missions.unshift(mission)
+    write(saved, 'MISSION_PROPOSED', mission.incidentId, { missionId: mission.id, runId })
+    return mission
   })
-  return updated
+}
+export async function decideMission(
+  id: string,
+  decision: string,
+  note: string,
+  expectedRevision: number,
+) {
+  return mutate(() => {
+    const user = actor(),
+      saved = read()
+    if (!['supervisor', 'admin'].includes(user.role))
+      throw new Error('Supervisor approval is required.')
+    const mission = visible(saved).missions.find((item) => item.id === id)
+    if (!mission) throw new Error('Mission not found.')
+    assertMissionRevision(mission, expectedRevision)
+    if (decision === 'approve')
+      assertFreshRun(
+        saved.runs.find((run) => run.id === mission.runId)!,
+        searchDataset({ q: '' }),
+      )
+    const updated = decide(mission, decision, note, user.email, new Date().toISOString())
+    saved.missions[saved.missions.findIndex((item) => item.id === id)] = updated
+    write(
+      saved,
+      decision === 'approve' ? 'MISSION_APPROVED' : 'MISSION_REJECTED',
+      mission.incidentId,
+      { missionId: id, runId: mission.runId },
+    )
+    return updated
+  })
+}
+export async function completeMissionStep(
+  id: string,
+  stepId: string,
+  note: string,
+  expectedRevision: number,
+) {
+  return mutate(() => {
+    const user = actor(),
+      saved = read(),
+      mission = visible(saved).missions.find((item) => item.id === id)
+    if (!mission) throw new Error('Mission not found.')
+    assertMissionRevision(mission, expectedRevision)
+    const incident = searchDataset({ q: '' }).alerts.find((item) => item.id === mission.incidentId)
+    if (!incident || ['closed', 'contained'].includes(incident.status))
+      throw new Error('This incident is resolved. Mission progression is disabled.')
+    const updated = complete(mission, stepId, note, user.email, new Date().toISOString())
+    saved.missions[saved.missions.findIndex((item) => item.id === id)] = updated
+    write(saved, 'MISSION_STEP_RECORDED', mission.incidentId, {
+      missionId: id,
+      runId: mission.runId,
+      stepId,
+    })
+    return updated
+  })
+}
+export async function coordinateMission(
+  id: string,
+  action: string,
+  note: string,
+  expectedRevision: number,
+  team?: string,
+) {
+  return mutate(() => {
+    const user = actor(),
+      saved = read()
+    if (!['supervisor', 'admin'].includes(user.role))
+      throw new Error('Supervisor coordination is required.')
+    const mission = visible(saved).missions.find((item) => item.id === id)
+    if (!mission) throw new Error('Mission not found.')
+    assertMissionRevision(mission, expectedRevision)
+    if (action !== 'assign' && team !== undefined)
+      throw new Error('Team applies only to assignment.')
+    if (action === 'resume') {
+      const incident = searchDataset({ q: '' }).alerts.find(
+        (item) => item.id === mission.incidentId,
+      )
+      if (!incident || ['closed', 'contained'].includes(incident.status))
+        throw new Error('This incident is resolved. Mission progression is disabled.')
+    }
+    const updated = coordinate(mission, action, note, user.email, new Date().toISOString(), team)
+    saved.missions[saved.missions.findIndex((item) => item.id === id)] = updated
+    write(saved, `MISSION_${updated.activity.at(-1)!.action.toUpperCase()}`, mission.incidentId, {
+      missionId: id,
+      revision: updated.revision,
+      team: updated.assignedTeam,
+    })
+    return updated
+  })
 }
 if (typeof window !== 'undefined') {
   const sync = (event: StorageEvent) => {

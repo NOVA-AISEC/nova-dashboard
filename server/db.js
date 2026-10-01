@@ -559,6 +559,8 @@ export function createDatabase({
       missionId: mission.id,
       runId: mission.runId,
       status: mission.status,
+      revision: mission.revision,
+      team: mission.assignedTeam,
       ...(recordedStep ? { stepId: recordedStep.id } : {}),
     })
     persist()

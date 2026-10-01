@@ -145,6 +145,15 @@ export function createApp({
         ),
       ),
   )
+  app.post(
+    '/api/security/missions/:id/coordination',
+    auth.allow(['supervisor', 'admin']),
+    auth.requireCsrf,
+    requireJson,
+    json,
+    (request, response) =>
+      response.json(security.coordinate(request.params.id, request.body, request.session.user)),
+  )
   app.use('/api', (_request, _response) => {
     throw new ApiError(404, 'API route not found.', 'NOT_FOUND')
   })
