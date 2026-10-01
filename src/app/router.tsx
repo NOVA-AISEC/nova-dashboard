@@ -40,7 +40,41 @@ export const router = createBrowserRouter([
         path: '/',
         element: <AppShell />,
         children: [
-          { index: true, element: <Navigate replace to="/ops" /> },
+          { index: true, element: <Navigate replace to="/command" /> },
+          {
+            path: 'command',
+            lazy: async () => {
+              const { CommandPage } = await import('@/pages/command-page')
+              return { Component: CommandPage }
+            },
+          },
+          {
+            path: 'missions',
+            lazy: async () => {
+              const { MissionsPage } = await import('@/pages/missions-page')
+              return { Component: MissionsPage }
+            },
+          },
+          {
+            path: 'playbooks',
+            lazy: async () => {
+              const { PlaybooksPage } = await import('@/pages/security-system-pages')
+              return { Component: PlaybooksPage }
+            },
+          },
+          {
+            path: 'systems',
+            lazy: async () => {
+              const { SystemsPage } = await import('@/pages/security-system-pages')
+              return {
+                Component: () => (
+                  <RequireRole allowed={routeAccess.systems}>
+                    <SystemsPage />
+                  </RequireRole>
+                ),
+              }
+            },
+          },
           {
             path: 'ops',
             element: (

@@ -25,6 +25,10 @@ import { cn } from '@/lib/utils'
 import type { Alert } from '@/types/domain'
 
 const navigationLabels: Record<string, string> = {
+  command: 'Command',
+  missions: 'Missions',
+  playbooks: 'Playbooks',
+  systems: 'Systems',
   ops: 'Overview',
   queue: 'Live queue',
   alerts: 'Alerts',
@@ -62,9 +66,9 @@ export function AppShell() {
     navigation?.querySelector<HTMLButtonElement>('.mobile-nav-close')?.focus()
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== 'Tab' || !navigation) return
-      const elements = [...navigation.querySelectorAll<HTMLElement>('a[href],button:not([disabled])')].filter(
-        (element) => element.getClientRects().length > 0,
-      )
+      const elements = [
+        ...navigation.querySelectorAll<HTMLElement>('a[href],button:not([disabled])'),
+      ].filter((element) => element.getClientRects().length > 0)
       const first = elements[0],
         last = elements.at(-1)
       if (event.shiftKey && document.activeElement === first) {
@@ -128,7 +132,11 @@ export function AppShell() {
         Skip to workspace
       </a>
       {navOpen && (
-        <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setNavOpen(false)} />
+        <button
+          className="mobile-scrim"
+          aria-label="Close navigation"
+          onClick={() => setNavOpen(false)}
+        />
       )}
       <aside
         ref={navigationRef}
@@ -136,14 +144,18 @@ export function AppShell() {
         className={cn('nova-sidebar', navOpen && 'is-open')}
         aria-label="Main navigation"
       >
-        <Link to={getDefaultRoute(session.role)} className="nova-wordmark" onClick={closeNavigation}>
+        <Link
+          to={getDefaultRoute(session.role)}
+          className="nova-wordmark"
+          onClick={closeNavigation}
+        >
           <span className="nova-symbol">
             n<span />
           </span>
           <span>
             NOVA<span className="wordmark-dot">.</span>
           </span>
-          <small>OPERATIONS</small>
+          <small>SECURITY OS</small>
         </Link>
         <button
           className="icon-button mobile-nav-close"
@@ -210,8 +222,8 @@ export function AppShell() {
           </button>
           <div className="sidebar-system">
             <span className="status-dot" />
-            <span>Demo workspace</span>
-            <span className="mono">v2.0</span>
+            <span>YOLOv8n placeholder</span>
+            <span className="mono">OS</span>
           </div>
           <div className="sidebar-user">
             <span className="avatar">{initials}</span>
@@ -238,7 +250,7 @@ export function AppShell() {
             <Menu size={20} />
           </button>
           <div className="breadcrumb">
-            <span>Workspace</span>
+            <span>Security OS</span>
             <ChevronRight size={13} />
             <strong>
               {location.pathname.startsWith('/settings')
@@ -356,7 +368,9 @@ export function AppShell() {
             </button>
           ))}
           {!matchingRoutes.length && !matchingAlerts.length && (
-            <div className="empty-state">No results for “{query}”. Try a zone or incident name.</div>
+            <div className="empty-state">
+              No results for “{query}”. Try a zone or incident name.
+            </div>
           )}
         </div>
         <div className="command-footer">
@@ -412,22 +426,25 @@ export function AppShell() {
             <kbd>Esc</kbd>
             <p>Close incident review, search, or a dialog.</p>
           </div>
-          <h3>Review → acknowledge → coordinate</h3>
+          <h3>Assess → approve → record</h3>
           <p>
-            Open an incident to inspect its snapshot and assigned team. Acknowledge a new incident to record
-            ownership, then use the case file for investigation context.
+            Use Command to assemble source records and a response procedure. Prepare a mission for
+            supervisor approval, then record each human-led step in order. Use cases for
+            investigation context.
           </p>
           <h3>About this workspace</h3>
           <p>
-            This is a local demo using sample campus records. Acknowledgements, cases, reports, and shift
-            notes are stored in this browser. The campus map is a schematic; camera status is sample data.
-            Production authentication and campus integrations are still required.
+            YOLOv8n inference and live cameras are placeholders. Sample detections illustrate the
+            workflow. Browser mode saves operations locally; API mode uses verified server accounts
+            and durable local records. Campus integrations are still disconnected.
           </p>
         </div>
       </WorkspaceDialog>
       <AlertDetail
         alert={
-          selectedAlert ? (data?.alerts.find((item) => item.id === selectedAlert.id) ?? selectedAlert) : null
+          selectedAlert
+            ? (data?.alerts.find((item) => item.id === selectedAlert.id) ?? selectedAlert)
+            : null
         }
         evidence={data?.evidence}
         onClose={() => setSelectedAlert(null)}

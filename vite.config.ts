@@ -15,6 +15,11 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: { manualChunks: (id) => (id.includes('node_modules') ? 'vendor' : undefined) },
+      },
+    },
     server: {
       host: '127.0.0.1',
       proxy: {

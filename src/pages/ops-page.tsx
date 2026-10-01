@@ -36,7 +36,10 @@ import type { Alert } from '@/types/domain'
 function Sparkline({ values, color = 'var(--accent)' }: { values: number[]; color?: string }) {
   const max = Math.max(...values, 1)
   const points = values
-    .map((value, index) => `${index * (100 / Math.max(values.length - 1, 1))},${30 - (value / max) * 25}`)
+    .map(
+      (value, index) =>
+        `${index * (100 / Math.max(values.length - 1, 1))},${30 - (value / max) * 25}`,
+    )
     .join(' ')
   return (
     <svg viewBox="0 0 100 36" className="metric-sparkline" aria-hidden="true">
@@ -69,7 +72,9 @@ export function OpsPage() {
       writeShiftNotes(value)
       setNotesError('')
     } catch {
-      setNotesError('Notes could not be saved. Check browser storage, or download the brief to keep a copy.')
+      setNotesError(
+        'Notes could not be saved. Check browser storage, or download the brief to keep a copy.',
+      )
     }
   }
   if (isLoading && !data) return <LoadingPanel lines={10} />
@@ -85,12 +90,16 @@ export function OpsPage() {
   const hourCounts = Array.from(
     { length: 12 },
     (_, index) =>
-      data.alerts.filter((alert) => Number(formatTime(alert.createdAt).split(':')[0]) === index + 6).length,
+      data.alerts.filter((alert) => Number(formatTime(alert.createdAt).split(':')[0]) === index + 6)
+        .length,
   )
-  const sortedActivity = [...data.audit].sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 5)
+  const sortedActivity = [...data.audit]
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    .slice(0, 5)
   const visibleAlerts = activeAlerts.filter(
     (alert) =>
-      filter === 'all' || (filter === 'new' ? alert.status === 'new' : alert.severity === 'critical'),
+      filter === 'all' ||
+      (filter === 'new' ? alert.status === 'new' : alert.severity === 'critical'),
   )
   const can = (route: Parameters<typeof canAccessRoute>[1]) => canAccessRoute(session.role, route)
   return (
@@ -107,6 +116,10 @@ export function OpsPage() {
           <p>Your campus, connected. Every incident, in focus.</p>
         </div>
         <div className="page-actions">
+          <Link to="/command" className="quiet-button">
+            <ArrowUpRight size={16} />
+            Open Command
+          </Link>
           <button className="quiet-button" onClick={() => setHandoverOpen(true)}>
             <FileText size={16} />
             Shift handover
@@ -186,7 +199,9 @@ export function OpsPage() {
               {data.alerts.map((alert) => (
                 <i
                   key={alert.id}
-                  className={alert.severity === 'critical' && isActiveAlert(alert) ? 'is-critical' : ''}
+                  className={
+                    alert.severity === 'critical' && isActiveAlert(alert) ? 'is-critical' : ''
+                  }
                 />
               ))}
             </div>
@@ -209,7 +224,9 @@ export function OpsPage() {
             <span
               className="mini-donut"
               style={
-                { '--percentage': `${(availableCameras / campusZones.length) * 100}%` } as React.CSSProperties
+                {
+                  '--percentage': `${(availableCameras / campusZones.length) * 100}%`,
+                } as React.CSSProperties
               }
             >
               <Camera size={14} />
@@ -337,7 +354,12 @@ export function OpsPage() {
                   <option value="new">Needs review</option>
                 </select>
               </div>
-              <AlertTable alerts={visibleAlerts.slice(0, 5)} compact hideHeader onReview={setSelectedAlert} />
+              <AlertTable
+                alerts={visibleAlerts.slice(0, 5)}
+                compact
+                hideHeader
+                onReview={setSelectedAlert}
+              />
               {can('queue') && (
                 <Link to="/queue" className="panel-footer-link">
                   Open live queue <ArrowUpRight size={15} />
@@ -411,7 +433,9 @@ export function OpsPage() {
             {hourCounts.map((count, index) => (
               <div key={index}>
                 <span className="chart-count">{count || ''}</span>
-                <div style={{ height: `${Math.max(3, (count / Math.max(...hourCounts, 1)) * 140)}px` }} />
+                <div
+                  style={{ height: `${Math.max(3, (count / Math.max(...hourCounts, 1)) * 140)}px` }}
+                />
                 <span>{String(index + 6).padStart(2, '0')}:00</span>
               </div>
             ))}
@@ -456,7 +480,9 @@ export function OpsPage() {
           <div className="panel-header">
             <div>
               <h2>Camera coverage</h2>
-              <p>Sample camera inventory. Select an incident from the map to review its evidence.</p>
+              <p>
+                Sample camera inventory. Select an incident from the map to review its evidence.
+              </p>
             </div>
             {can('zones') && (
               <Link to="/zones" className="text-link">
@@ -481,8 +507,9 @@ export function OpsPage() {
                 <p>{zone.coverage}</p>
                 <small>
                   {
-                    data.alerts.filter((alert) => alert.cameraId === zone.cameraId && isActiveAlert(alert))
-                      .length
+                    data.alerts.filter(
+                      (alert) => alert.cameraId === zone.cameraId && isActiveAlert(alert),
+                    ).length
                   }{' '}
                   active incidents · Checked {formatShiftDate(zone.lastCheckedAt)}
                 </small>
@@ -551,7 +578,9 @@ export function OpsPage() {
       </WorkspaceDialog>
       <AlertDetail
         alert={
-          selectedAlert ? (data.alerts.find((alert) => alert.id === selectedAlert.id) ?? selectedAlert) : null
+          selectedAlert
+            ? (data.alerts.find((alert) => alert.id === selectedAlert.id) ?? selectedAlert)
+            : null
         }
         evidence={data.evidence}
         onClose={() => setSelectedAlert(null)}

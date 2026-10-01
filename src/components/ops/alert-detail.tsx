@@ -79,6 +79,13 @@ export function AlertDetail({
             <span className="mono muted">{alert.id.toUpperCase()}</span>
           </div>
           <h2 className="incident-detail-title">{alert.title}</h2>
+          <Link
+            className="text-link"
+            to={`/command?incident=${encodeURIComponent(alert.id)}`}
+            onClick={onClose}
+          >
+            Assess in Command <ArrowUpRight size={14} />
+          </Link>
           <p className="muted leading-relaxed">{alert.summary}</p>
           <div className="incident-facts">
             <div>

@@ -13,11 +13,19 @@ import {
   ShieldAlert,
   TrafficCone,
   Users,
+  Command,
+  Workflow,
+  BookOpen,
+  Cpu,
 } from 'lucide-react'
 
 export type UserRole = 'guard' | 'analyst' | 'supervisor' | 'admin'
 
 export type AppRouteId =
+  | 'command'
+  | 'missions'
+  | 'playbooks'
+  | 'systems'
   | 'ops'
   | 'queue'
   | 'alerts'
@@ -61,6 +69,10 @@ export const roleShifts: Record<UserRole, string> = {
 }
 
 export const routePaths: Record<AppRouteId, string> = {
+  command: '/command',
+  missions: '/missions',
+  playbooks: '/playbooks',
+  systems: '/systems',
   ops: '/ops',
   queue: '/queue',
   alerts: '/alerts',
@@ -78,6 +90,10 @@ export const routePaths: Record<AppRouteId, string> = {
 }
 
 export const routeAccess: Record<AppRouteId, UserRole[]> = {
+  command: ['guard', 'analyst', 'supervisor', 'admin'],
+  missions: ['guard', 'analyst', 'supervisor', 'admin'],
+  playbooks: ['guard', 'analyst', 'supervisor', 'admin'],
+  systems: ['supervisor', 'admin'],
   ops: ['guard', 'analyst', 'supervisor', 'admin'],
   queue: ['guard', 'supervisor', 'admin'],
   alerts: ['guard', 'analyst', 'supervisor', 'admin'],
@@ -95,6 +111,39 @@ export const routeAccess: Record<AppRouteId, UserRole[]> = {
 }
 
 export const navigationGroups: NavigationGroup[] = [
+  {
+    label: 'Security OS',
+    items: [
+      {
+        id: 'command',
+        to: '/command',
+        label: 'Command',
+        description: 'Vision evidence and incident assessment',
+        icon: Command,
+      },
+      {
+        id: 'missions',
+        to: '/missions',
+        label: 'Missions',
+        description: 'Approve and track human-led response',
+        icon: Workflow,
+      },
+      {
+        id: 'playbooks',
+        to: '/playbooks',
+        label: 'Playbooks',
+        description: 'Ordered response procedures',
+        icon: BookOpen,
+      },
+      {
+        id: 'systems',
+        to: '/systems',
+        label: 'Systems',
+        description: 'YOLOv8n pipeline and connection readiness',
+        icon: Cpu,
+      },
+    ],
+  },
   {
     label: 'Operations',
     items: [
