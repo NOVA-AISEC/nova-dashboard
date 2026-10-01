@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { createApp } from './app.js'
 import { loadUsers } from './auth.js'
 import { createDatabase } from './db.js'
@@ -45,13 +46,12 @@ if (
 const users = loadUsers(process.env.DAMA_AUTH_USERS_FILE)
 if (secureCookies && !users.length)
   throw new Error('Production startup requires configured API accounts.')
-const releaseDatabase = acquireDatabaseLock(
-  process.env.DAMA_DB_FILE ?? path.resolve('server/data/db.json'),
+const dbFile = path.resolve(
+  process.env.DAMA_DB_FILE ?? fileURLToPath(new URL('./data/db.json', import.meta.url)),
 )
+const releaseDatabase = acquireDatabaseLock(dbFile)
 process.once('exit', releaseDatabase)
-const database = createDatabase({
-  ...(process.env.DAMA_DB_FILE ? { dbFile: process.env.DAMA_DB_FILE } : {}),
-})
+const database = createDatabase({ dbFile })
 database.initDb()
 const app = createApp({ database, users, origins, secureCookies, sessionMs })
 const stopSimulator = startSimulator({ ingest: database.ingestSimulatedAlert })
