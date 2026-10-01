@@ -6,6 +6,8 @@ NOVA has two explicit modes. `VITE_USE_MOCK=true` is a browser demo with sample 
 
 Local sessions expire after eight hours. Invalid, expired, and legacy sessions are ignored. Sign-out synchronizes across tabs. Blocked storage keeps sign-in and theme switching usable for the current tab, with a visible persistence message. The demo password gate is a presentation gate: its build-time password is visible to clients and is not a security boundary. It is disabled in API mode.
 
+The authenticated workspace remounts when the account, role, or session expiry changes. Cross-tab account switching and role changes therefore clear cached records, open source dialogs, local assessments, and action drafts before loading the next account's permitted data. Ordinary record refreshes keep the current operator's work in place.
+
 ## Account-backed API
 
 Provision an operator interactively from the repository root:
@@ -48,4 +50,4 @@ Remaining production work includes campus SSO/MFA, shared sessions and transacti
 
 ## Verification
 
-`npm run test:api` exercises direct HTTP authentication, role forgery, CSRF, origin/Host rejection, expiry, rate limits, input errors, idempotency, standalone case discovery, linked records, safe errors, atomic persistence and failed-save rollback against temporary files. `npm run test:resilience` covers client sessions, safe navigation, API errors, transport and invalid local caches. CI runs these alongside the existing operator tests, lint, dependency audit and build.
+`npm run test:api` exercises direct HTTP authentication, role forgery, CSRF, origin/Host rejection, expiry, rate limits, input errors, idempotency, standalone case discovery, linked records, safe errors, atomic persistence and failed-save rollback against temporary files. `npm run test:resilience` covers client sessions, safe navigation, API errors, transport and invalid local caches. `npm run test:account-boundary` mounts the real React authentication, data hooks, Command, and Missions in jsdom and dispatches browser storage events to verify account/role/session changes clear prior data, dialogs, and drafts. CI runs these alongside the existing operator tests, lint, dependency audit and build.
