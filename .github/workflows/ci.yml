@@ -33,6 +33,9 @@ jobs:
       - name: Test browser resilience
         run: npm run test:resilience
 
+      - name: Test security OS workflows
+        run: npm run test:security-os
+
       - name: Audit dependencies
         run: npm audit --audit-level=moderate
 

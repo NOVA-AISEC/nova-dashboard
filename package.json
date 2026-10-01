@@ -15,6 +15,7 @@
     "test:operations": "node scripts/test-operations.mjs",
     "test:api": "node scripts/test-api.mjs",
     "test:resilience": "node scripts/test-resilience.mjs",
+    "test:security-os": "node scripts/test-security-os.mjs",
     "auth:add-user": "node scripts/add-api-user.mjs"
   },
   "dependencies": {
