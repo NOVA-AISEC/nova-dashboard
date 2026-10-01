@@ -10,6 +10,10 @@ lerna-debug.log*
 node_modules
 dist
 server/data/db.json
+server/data/*.tmp
+server/data/*.lock
+.env
+.secrets/
 dist-ssr
 *.local
 *.lnk
