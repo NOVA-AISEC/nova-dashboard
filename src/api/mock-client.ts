@@ -13,6 +13,14 @@ import {
 } from '@/data/mock-data'
 import type { CreateCasePayload, ListAlertsParams, Paginated, SearchParams } from '@/types/domain'
 import { persistMockOperations } from '@/lib/mock-persistence'
+import { securityAudit } from '@/api/mock-security'
+export {
+  getSecurityState,
+  runAssessment,
+  proposeMission,
+  decideMission,
+  completeMissionStep,
+} from '@/api/mock-security'
 
 function includesText(haystack: string, query?: string) {
   return !query || haystack.toLowerCase().includes(query.trim().toLowerCase())
@@ -47,12 +55,21 @@ function paginate<T>(items: T[], page = 1, pageSize = 10): Paginated<T> {
 
 export async function listAlerts(params: ListAlertsParams = {}) {
   const filtered = alerts.filter((alert) => {
-    const matchesStatus = !params.status || params.status === 'all' || alert.status === params.status
+    const matchesStatus =
+      !params.status || params.status === 'all' || alert.status === params.status
     const matchesSeverity =
       !params.severity || params.severity === 'all' || alert.severity === params.severity
-    const matchesCamera = !params.cameraId || params.cameraId === 'all' || alert.cameraId === params.cameraId
+    const matchesCamera =
+      !params.cameraId || params.cameraId === 'all' || alert.cameraId === params.cameraId
     const matchesRange = inDateRange(alert.createdAt, params.from, params.to)
-    const haystack = [alert.id, alert.title, alert.zone, alert.summary, alert.rule, alert.cameraId].join(' ')
+    const haystack = [
+      alert.id,
+      alert.title,
+      alert.zone,
+      alert.summary,
+      alert.rule,
+      alert.cameraId,
+    ].join(' ')
     const matchesQuery = includesText(haystack, params.q)
 
     return matchesStatus && matchesSeverity && matchesCamera && matchesRange && matchesQuery
@@ -92,7 +109,9 @@ export async function ackAlert(id: string) {
   if (!current) throw new Error('Alert not found')
   if (current.status === 'acknowledged') return current
   if (current.status !== 'new')
-    throw new Error('Only a new incident can be acknowledged. This incident already has a response status.')
+    throw new Error(
+      'Only a new incident can be acknowledged. This incident already has a response status.',
+    )
   const previous = { status: current.status, updatedAt: current.updatedAt }
   const alert = updateAlertAck(id)
 
@@ -125,13 +144,16 @@ export async function listAudit(
     pageSize?: number
   } = {},
 ) {
-  const filtered = auditEvents.filter((event) => {
-    const matchesType =
-      !params.entityType || params.entityType === 'all' || event.entityType === params.entityType
-    const matchesId = !params.entityId || params.entityId === 'all' || event.entityId === params.entityId
+  const filtered = [...securityAudit(), ...auditEvents]
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+    .filter((event) => {
+      const matchesType =
+        !params.entityType || params.entityType === 'all' || event.entityType === params.entityType
+      const matchesId =
+        !params.entityId || params.entityId === 'all' || event.entityId === params.entityId
 
-    return matchesType && matchesId
-  })
+      return matchesType && matchesId
+    })
 
   return paginate(filtered, params.page, params.pageSize)
 }

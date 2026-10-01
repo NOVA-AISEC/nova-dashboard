@@ -10,6 +10,7 @@ import type {
 } from '@/types/domain'
 
 import { request } from '@/api/transport'
+import type { EngineRun, Mission, SecurityState } from '../../shared/security-engine'
 
 function withQuery<T extends object>(path: string, params?: T) {
   const searchParams = new URLSearchParams()
@@ -63,4 +64,32 @@ export function listAudit(
   } = {},
 ) {
   return request<Paginated<AuditEvent>>(withQuery('/api/audit', params))
+}
+
+export function getSecurityState() {
+  return request<SecurityState>('/api/security')
+}
+export function runAssessment(payload: { incidentId: string; intent: string }) {
+  return request<EngineRun>('/api/security/assessments', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+export function proposeMission(runId: string) {
+  return request<Mission>('/api/security/missions', {
+    method: 'POST',
+    body: JSON.stringify({ runId }),
+  })
+}
+export function decideMission(id: string, decision: string, note: string) {
+  return request<Mission>(`/api/security/missions/${encodeURIComponent(id)}/decision`, {
+    method: 'POST',
+    body: JSON.stringify({ decision, note }),
+  })
+}
+export function completeMissionStep(id: string, stepId: string, note: string) {
+  return request<Mission>(
+    `/api/security/missions/${encodeURIComponent(id)}/steps/${encodeURIComponent(stepId)}`,
+    { method: 'POST', body: JSON.stringify({ note }) },
+  )
 }
