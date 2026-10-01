@@ -23,12 +23,9 @@ function readJson<T>(key: string, fallback: T): T {
     return fallback
   }
 
-  const raw = window.localStorage.getItem(key)
-  if (!raw) {
-    return fallback
-  }
-
   try {
+    const raw = window.localStorage.getItem(key)
+    if (!raw) return fallback
     return JSON.parse(raw) as T
   } catch {
     return fallback
@@ -44,7 +41,8 @@ function writeJson<T>(key: string, value: T) {
 }
 
 export function readShiftNotes() {
-  return readJson(shiftNotesKey, '')
+  const notes = readJson<unknown>(shiftNotesKey, '')
+  return typeof notes === 'string' ? notes : ''
 }
 
 export function writeShiftNotes(value: string) {
@@ -52,7 +50,16 @@ export function writeShiftNotes(value: string) {
 }
 
 export function readIncidentReports() {
-  return readJson<IncidentReportRecord[]>(incidentReportsKey, [])
+  const records = readJson<unknown>(incidentReportsKey, [])
+  return Array.isArray(records)
+    ? records.filter(
+        (record): record is IncidentReportRecord =>
+          record &&
+          ['id', 'reporter', 'category', 'zone', 'priority', 'summary', 'createdAt'].every(
+            (key) => typeof record[key] === 'string',
+          ),
+      )
+    : []
 }
 
 export function writeIncidentReports(value: IncidentReportRecord[]) {
@@ -60,11 +67,17 @@ export function writeIncidentReports(value: IncidentReportRecord[]) {
 }
 
 export function readOperatorPreferences() {
-  return readJson<OperatorPreferences>(preferencesKey, {
+  const defaults: OperatorPreferences = {
     defaultZone: 'Main Gate  Lane 1',
     autoPrintShiftBrief: false,
     compactTables: true,
-  })
+  }
+  const saved = readJson<Partial<OperatorPreferences> | null>(preferencesKey, null)
+  return {
+    defaultZone: typeof saved?.defaultZone === 'string' ? saved.defaultZone : defaults.defaultZone,
+    compactTables: typeof saved?.compactTables === 'boolean' ? saved.compactTables : defaults.compactTables,
+    autoPrintShiftBrief: false,
+  }
 }
 
 export function writeOperatorPreferences(value: OperatorPreferences) {
