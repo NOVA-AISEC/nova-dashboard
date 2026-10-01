@@ -1,35 +1,31 @@
 import { useState } from 'react'
+import { Check, FileText, MapPin, Send } from 'lucide-react'
 import { campusAlertCategories, campusZones } from '@/data/mock-data'
 import { PageHeader } from '@/components/page-header'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { formatDateTime } from '@/lib/formatters'
 import {
   readIncidentReports,
   writeIncidentReports,
+  readOperatorPreferences,
   type IncidentReportRecord,
 } from '@/lib/operator-storage'
 import { useAuth } from '@/lib/auth'
+import { formatShiftDate, formatTime } from '@/lib/operations'
 
 export function ReportsPage() {
   const { session } = useAuth()
   const [category, setCategory] = useState<string>(campusAlertCategories[0])
-  const [zone, setZone] = useState<string>(campusZones[0]?.name ?? 'Main Gate  Lane 1')
+  const [zone, setZone] = useState(() => readOperatorPreferences().defaultZone)
   const [priority, setPriority] = useState('medium')
   const [summary, setSummary] = useState('')
-  const [reports, setReports] = useState<IncidentReportRecord[]>(() => readIncidentReports())
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [reports, setReports] = useState(readIncidentReports)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+  function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!summary.trim()) {
-      return
-    }
-
-    const nextReport: IncidentReportRecord = {
+    if (!summary.trim()) return
+    setError('')
+    const record: IncidentReportRecord = {
       id: `rep-${Date.now()}`,
       reporter: session?.name ?? 'Operator',
       category,
@@ -38,126 +34,144 @@ export function ReportsPage() {
       summary: summary.trim(),
       createdAt: new Date().toISOString(),
     }
-
-    const nextReports = [nextReport, ...reports]
-    setReports(nextReports)
-    writeIncidentReports(nextReports)
-    setSummary('')
+    try {
+      const next = [record, ...reports]
+      writeIncidentReports(next)
+      setReports(next)
+      setSummary('')
+      setSaved(true)
+    } catch {
+      setError('This report could not be saved. Check browser storage and try again.')
+    }
   }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        eyebrow="Manual Intake"
-        title="Reports"
-        subtitle="Capture guard notes, lost & found handoffs, and suspicious-item reports for the incident desk. Every report remains human-reviewed."
-        actions={
-          <Button onClick={() => document.getElementById('new-report-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-            New report
-          </Button>
-        }
+        eyebrow="Incident management"
+        title="Incident reports"
+        subtitle="Log what you observed and give the incident desk a clear starting point."
       />
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.9fr)]">
-        <Card className="bg-primaryDeep" id="new-report-form">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Create manual report</CardTitle>
-            <CardDescription>
-              Use this when a guard, hostel desk, or library desk needs to log an
-              incident outside the automated queue.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-5">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
-                  <span className="eyebrow text-[10px]">Category</span>
-                  <Select value={category} onChange={(event) => setCategory(event.target.value)}>
-                    {campusAlertCategories.map((item) => (
-                      <option key={item} value={item}>
-                        {item.replaceAll('-', ' ')}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label className="space-y-2">
-                  <span className="eyebrow text-[10px]">Zone</span>
-                  <Select value={zone} onChange={(event) => setZone(event.target.value)}>
-                    {campusZones.map((item) => (
-                      <option key={item.id} value={item.name}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
-                  <span className="eyebrow text-[10px]">Priority</span>
-                  <Select value={priority} onChange={(event) => setPriority(event.target.value)}>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </Select>
-                </label>
-                <label className="space-y-2">
-                  <span className="eyebrow text-[10px]">Reporter</span>
-                  <Input value={session?.name ?? 'Operator'} readOnly />
-                </label>
-              </div>
-
-              <label className="space-y-2">
-                <span className="eyebrow text-[10px]">Summary</span>
-                <Textarea
-                  value={summary}
-                  placeholder="Describe what the guard observed, what was checked manually, and whether admin or Student Affairs follow-up may be needed."
-                  onChange={(event) => setSummary(event.target.value)}
-                />
+      <div className="reports-layout">
+        <section className="workspace-panel">
+          <div className="panel-header">
+            <div>
+              <h2>Log an incident</h2>
+              <p>Capture the location, priority, and what happened.</p>
+            </div>
+            <FileText size={18} className="muted" />
+          </div>
+          <form className="product-form" onSubmit={submit}>
+            <div className="form-row">
+              <label>
+                Category
+                <select value={category} onChange={(event) => setCategory(event.target.value)}>
+                  {campusAlertCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category.replaceAll('-', ' ')}
+                    </option>
+                  ))}
+                </select>
               </label>
-
-              <div className="flex items-center justify-between gap-4">
-                <Badge className="badge-compliance">
-                  Human-in-the-loop validation required
-                </Badge>
-                <Button type="submit">Save report</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-primaryDeep">
-          <CardHeader className="border-b border-surfaceMuted/20">
-            <CardTitle>Recent reports</CardTitle>
-            <CardDescription>
-              Locally stored manual submissions for the current operator session.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-5">
-            {reports.length ? (
-              reports.map((report) => (
-                <div key={report.id} className="space-y-2 border border-surfaceMuted/20 bg-primaryDark p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <Badge className="badge-high">{report.priority}</Badge>
-                    <span className="text-xs uppercase tracking-[0.18em] text-textSecondary">
-                      {formatDateTime(report.createdAt)}
-                    </span>
-                  </div>
-                  <div className="font-display text-lg font-bold">{report.zone}</div>
-                  <div className="text-sm text-textSecondary">{report.summary}</div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
-                    {report.category.replaceAll('-', ' ')} / {report.reporter}
-                  </div>
+              <label>
+                Campus zone
+                <select value={zone} onChange={(event) => setZone(event.target.value)}>
+                  {campusZones.map((zone) => (
+                    <option key={zone.id}>{zone.name}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="form-row">
+              <label>
+                Priority
+                <select value={priority} onChange={(event) => setPriority(event.target.value)}>
+                  {['low', 'medium', 'high', 'critical'].map((value) => (
+                    <option value={value} key={value}>
+                      {value[0].toUpperCase() + value.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Reported by
+                <input value={session?.name ?? 'Operator'} readOnly />
+              </label>
+            </div>
+            <label>
+              What happened?
+              <textarea
+                required
+                rows={7}
+                maxLength={4000}
+                value={summary}
+                onChange={(event) => {
+                  setSummary(event.target.value)
+                  setSaved(false)
+                }}
+                placeholder="Describe what you observed, any action taken, and what requires follow-up."
+              />
+            </label>
+            {error && (
+              <p className="action-error" role="alert">
+                {error}
+              </p>
+            )}
+            {saved && (
+              <p className="action-success" role="status">
+                <Check size={15} />
+                Report saved to this workspace.
+              </p>
+            )}
+            <div className="form-actions">
+              <Button type="submit" disabled={!summary.trim()}>
+                <Send size={15} />
+                Save report
+              </Button>
+            </div>
+            <p className="muted report-note">
+              This report is stored in your browser. It requires human review and does not send an external
+              dispatch.
+            </p>
+          </form>
+        </section>
+        <section className="workspace-panel">
+          <div className="panel-header">
+            <div>
+              <h2>
+                Recent reports <span className="count-pill">{reports.length}</span>
+              </h2>
+              <p>Your locally recorded observations.</p>
+            </div>
+          </div>
+          <div className="reports-list">
+            {reports.map((report) => (
+              <article key={report.id}>
+                <div>
+                  <span className={`signal-badge signal-${report.priority}`}>{report.priority}</span>
+                  <time>
+                    {formatShiftDate(report.createdAt)} · {formatTime(report.createdAt)}
+                  </time>
                 </div>
-              ))
-            ) : (
-              <div className="border border-dashed border-surfaceMuted/20 bg-primaryDark p-8 text-center text-sm text-textSecondary">
-                No manual reports yet.
+                <h3>
+                  <MapPin size={13} />
+                  {report.zone}
+                </h3>
+                <p>{report.summary}</p>
+                <small>
+                  {report.category.replaceAll('-', ' ')} · {report.reporter}
+                </small>
+              </article>
+            ))}
+            {!reports.length && (
+              <div className="empty-state">
+                <FileText size={30} />
+                <strong>A clear record starts here</strong>
+                <p>Your incident reports will appear after you save them.</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </section>
+          </div>
+        </section>
+      </div>
     </div>
   )
 }

@@ -1,3 +1,7 @@
+# Current Security OS workspace
+
+The October 2026 redesign introduces Command, Missions, Playbooks and Systems. See [Security OS workflows](09-security-os.md), [product direction](product-redesign.md), [features](05-features.md), and [UI system](04-ui-system.md). YOLOv8n is a placeholder; live inference and cameras remain disconnected. An authenticated local API supports sessions and atomic operations; shared production storage and campus integrations remain future work. The historical descriptions below describe the earlier mockup.
+
 # NOVA Overview
 
 ## What this repo is

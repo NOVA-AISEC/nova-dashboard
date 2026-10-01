@@ -1,5 +1,6 @@
 export function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Nairobi',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -9,6 +10,7 @@ export function formatDateTime(value: string) {
 
 export function formatLongDateTime(value: string) {
   return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Nairobi',
     month: 'long',
     day: 'numeric',
     year: 'numeric',

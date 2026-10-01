@@ -1,117 +1,174 @@
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Radio, Users } from 'lucide-react'
-import { api } from '@/api'
+import { ListFilter, Plus, RefreshCw, Search, ShieldCheck } from 'lucide-react'
+import { canAccessRoute } from '@/app/access'
+import { AlertDetail } from '@/components/ops/alert-detail'
 import { AlertTable } from '@/components/ops/alert-table'
-import { PageHeader } from '@/components/page-header'
-import { AlertCardAccent } from '@/components/shared/alert-card-accent'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { LiveIndicatorDot } from '@/components/shared/live-indicator-dot'
-import { MetricCard } from '@/components/shared/metric-card'
-import { SeverityBadge } from '@/components/shared/severity-badge'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAsyncData } from '@/hooks/use-async-data'
-import { getAlertSeverityTone, getCaseStatusTone } from '@/lib/action-gradient'
-import { formatDateTime } from '@/lib/formatters'
+import { buttonVariants } from '@/components/ui/button-variants'
+import { useOperations } from '@/hooks/use-operations'
+import { useAuth } from '@/lib/auth'
+import { formatShiftDate, formatTime, isActiveAlert, sortAlerts } from '@/lib/operations'
+import type { Alert } from '@/types/domain'
 
 export function QueuePage() {
-  const { data, error, isLoading } = useAsyncData(() => api.search(''), [])
-
-  if (isLoading && !data) {
-    return <LoadingPanel lines={8} />
-  }
-
-  if (error || !data) {
-    return <ErrorPanel message={error ?? 'Live queue is unavailable.'} />
-  }
-
-  const openAlerts = data.alerts.filter((alert) => alert.status !== 'closed')
-  const pendingDispatch = openAlerts.filter((alert) => alert.status === 'new')
-  const pendingValidation = openAlerts.filter((alert) => alert.requiresHumanValidation)
-  const latestCases = [...data.cases].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).slice(0, 3)
-
+  const { data, error, isLoading, refresh } = useOperations()
+  const { session } = useAuth()
+  const [tab, setTab] = useState('all')
+  const [query, setQuery] = useState('')
+  const [priority, setPriority] = useState('all')
+  const [layout, setLayout] = useState('list')
+  const [selected, setSelected] = useState<Alert | null>(null)
+  const active = useMemo(() => sortAlerts(data?.alerts.filter(isActiveAlert) ?? []), [data])
+  if (isLoading && !data) return <LoadingPanel lines={10} />
+  if (error || !data) return <ErrorPanel message={error ?? 'Queue unavailable.'} />
+  const filtered = active.filter(
+    (alert) =>
+      (tab === 'all' || alert.status === tab) &&
+      (priority === 'all' || alert.severity === priority) &&
+      `${alert.title} ${alert.zone} ${alert.assignee}`.toLowerCase().includes(query.trim().toLowerCase()),
+  )
+  const lanes = [
+    { id: 'new', label: 'Needs review' },
+    { id: 'acknowledged', label: 'Acknowledged' },
+    { id: 'triaging', label: 'In progress' },
+  ]
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow="Guard Dispatch"
-        title="Live Queue"
-        subtitle="Run the campus triage queue with dispatch context, incident desk ownership, and human-validation checkpoints."
-        meta={<LiveIndicatorDot label={`${pendingDispatch.length} live dispatch items`} />}
-      />
-
-      <section className="grid gap-4 xl:grid-cols-4">
-        <MetricCard label="Open queue" value={String(openAlerts.length).padStart(2, '0')} delta="Active triage items" tone="accent" />
-        <MetricCard label="Pending dispatch" value={String(pendingDispatch.length).padStart(2, '0')} delta="Awaiting radio assignment" tone="warning" />
-        <MetricCard label="Human validations" value={String(pendingValidation.length).padStart(2, '0')} delta="Cannot auto-escalate" tone="success" />
-        <MetricCard label="Resolved this shift" value="03" delta="Contained or redirected" tone="ink" />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(20rem,0.9fr)]">
-        <AlertTable
-          alerts={openAlerts}
-          title="Dispatch-ready queue"
-          description="Highest-pressure items across gates, hostels, perimeter, and crowd control."
-        />
-
-        <div className="space-y-6">
-          <Card className="bg-primaryDeep">
-            <CardHeader className="border-b border-surfaceMuted/20">
-              <CardTitle>Dispatch board</CardTitle>
-              <CardDescription>Current desk assignments and next recommended action.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-5">
-              {openAlerts.slice(0, 4).map((alert) => (
-                <AlertCardAccent
-                  key={alert.id}
-                  className="space-y-2 border border-surfaceMuted/20 bg-primaryDark p-4"
-                  tone={getAlertSeverityTone(alert.severity)}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="font-display text-lg font-bold">{alert.zone}</div>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      <SeverityBadge tone={getAlertSeverityTone(alert.severity)}>
-                        {alert.severity}
-                      </SeverityBadge>
-                      <Badge className="badge-panel">{alert.assignee}</Badge>
-                    </div>
-                  </div>
-                  <p className="text-sm text-textSecondary">{alert.summary}</p>
-                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-textSecondary">
-                    <span>{alert.category.replaceAll('-', ' ')}</span>
-                    <span>{formatDateTime(alert.updatedAt)}</span>
-                  </div>
-                </AlertCardAccent>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="surface-command">
-            <CardHeader className="surface-command-divider border-b">
-              <CardTitle className="text-ink">Incident desk watch</CardTitle>
-              <CardDescription className="surface-command-copy">
-                Cases needing the next supervisor or admin decision.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-5">
-              {latestCases.map((caseItem) => (
-                <Link key={caseItem.id} to={`/cases/${caseItem.id}`} className="surface-command-row flex items-start gap-3 border p-4 transition-colors hover:bg-primaryDeep">
-                  <Users className="mt-0.5 h-4 w-4 text-accentGlow" />
-                  <div className="space-y-1">
-                    <div className="font-display text-lg font-bold">{caseItem.title}</div>
-                    <div className="surface-command-copy text-sm">{caseItem.location}</div>
-                    <div className="surface-command-copy flex items-center gap-2 text-xs uppercase tracking-[0.18em]">
-                      <Radio className="h-3.5 w-3.5" />
-                      <SeverityBadge tone={getCaseStatusTone(caseItem.status)}>
-                        {caseItem.status}
-                      </SeverityBadge>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
+    <div className="space-y-5">
+      <div className="overview-heading">
+        <div>
+          <p className="page-kicker">
+            <span className="status-dot" />
+            OPERATIONS
+          </p>
+          <h1>
+            Live queue<span className="heading-dot">.</span>
+          </h1>
+          <p>Review, take ownership, and coordinate your campus response.</p>
         </div>
-      </section>
+        <div className="page-actions">
+          <button className="quiet-button" onClick={refresh}>
+            <RefreshCw size={14} />
+            Refresh
+          </button>
+          {session && canAccessRoute(session.role, 'reports') && (
+            <Link to="/reports" className={buttonVariants()}>
+              <Plus size={15} />
+              New incident
+            </Link>
+          )}
+        </div>
+      </div>
+      <div className="queue-summary">
+        {[
+          { label: 'Active incidents', value: active.length },
+          { label: 'Needs review', value: active.filter((alert) => alert.status === 'new').length },
+          { label: 'In progress', value: active.filter((alert) => alert.status === 'triaging').length },
+          { label: 'Contained', value: data.alerts.filter((alert) => alert.status === 'contained').length },
+        ].map((metric, index) => (
+          <div key={metric.label}>
+            <span className={`summary-dot summary-tone-${index}`} />
+            <span>{metric.label}</span>
+            <strong>{metric.value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="queue-toolbar">
+        <label className="workspace-search-input">
+          <Search size={16} />
+          <input
+            aria-label="Search queue"
+            placeholder="Search incidents, teams, or zones…"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        <label className="select-filter">
+          <ListFilter size={14} />
+          <select
+            aria-label="Queue priority"
+            value={priority}
+            onChange={(event) => setPriority(event.target.value)}
+          >
+            <option value="all">All priorities</option>
+            {['critical', 'high', 'medium', 'low'].map((value) => (
+              <option key={value} value={value}>
+                {value[0].toUpperCase() + value.slice(1)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="segmented-control" aria-label="Queue layout">
+          <button aria-pressed={layout === 'list'} onClick={() => setLayout('list')}>
+            List
+          </button>
+          <button aria-pressed={layout === 'board'} onClick={() => setLayout('board')}>
+            Board
+          </button>
+        </div>
+      </div>
+      <div className="filter-tabs" aria-label="Queue status filters">
+        {[{ id: 'all', label: 'All active' }, ...lanes].map((item) => (
+          <button
+            key={item.id}
+            aria-pressed={tab === item.id}
+            className={tab === item.id ? 'selected' : ''}
+            onClick={() => setTab(item.id)}
+          >
+            {item.label}
+            <span>{active.filter((alert) => item.id === 'all' || alert.status === item.id).length}</span>
+          </button>
+        ))}
+        <span className="filter-caption">
+          Sample data · {data.alerts[0] ? formatShiftDate(data.alerts[0].createdAt) : 'No alerts'}
+        </span>
+      </div>
+      {layout === 'list' ? (
+        <AlertTable
+          alerts={filtered}
+          title="Dispatch queue"
+          description={`${filtered.length} incidents · Sorted by priority, then time`}
+          onReview={setSelected}
+        />
+      ) : (
+        <div className="dispatch-board">
+          {lanes.map((lane) => (
+            <section key={lane.id}>
+              <h2>
+                <span className={`status-dot lane-${lane.id}`} />
+                {lane.label}
+                <span>{filtered.filter((alert) => alert.status === lane.id).length}</span>
+              </h2>
+              <div>
+                {filtered
+                  .filter((alert) => alert.status === lane.id)
+                  .map((alert) => (
+                    <button key={alert.id} className="dispatch-card" onClick={() => setSelected(alert)}>
+                      <span className={`signal-badge signal-${alert.severity}`}>{alert.severity}</span>
+                      <h3>{alert.title}</h3>
+                      <p>{alert.zone}</p>
+                      <div>
+                        <span>{alert.assignee}</span>
+                        <time>{formatTime(alert.createdAt)}</time>
+                      </div>
+                    </button>
+                  ))}
+                {!filtered.some((alert) => alert.status === lane.id) && (
+                  <div className="board-empty">
+                    <ShieldCheck size={20} />
+                    No incidents in this lane.
+                  </div>
+                )}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+      <AlertDetail
+        alert={selected ? (data.alerts.find((alert) => alert.id === selected.id) ?? selected) : null}
+        evidence={data.evidence}
+        onClose={() => setSelected(null)}
+      />
     </div>
   )
 }

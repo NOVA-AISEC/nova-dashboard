@@ -1,19 +1,13 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight } from 'lucide-react'
-import { ActionButton } from '@/components/shared/action-button'
-import { SeverityBadge } from '@/components/shared/severity-badge'
-import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { getAlertAccentClassName } from '@/lib/alert-accent'
-import { getAlertSeverityTone, getAlertStatusTone } from '@/lib/action-gradient'
-import { formatDateTime } from '@/lib/formatters'
-import { cn } from '@/lib/utils'
+import { ArrowUpDown, ArrowUpRight, ChevronRight, ShieldCheck } from 'lucide-react'
+import { canAccessRoute } from '@/app/access'
+import { AlertDetail } from '@/components/ops/alert-detail'
+import { Button } from '@/components/ui/button'
+import { useOperations } from '@/hooks/use-operations'
+import { useAuth } from '@/lib/auth'
+import { formatTime, severityOrder, statusLabels } from '@/lib/operations'
+import { readOperatorPreferences } from '@/lib/operator-storage'
 import type { Alert } from '@/types/domain'
 
 interface AlertTableProps {
@@ -22,138 +16,162 @@ interface AlertTableProps {
   description?: string
   onAcknowledge?: (alert: Alert) => void
   busyAlertId?: string | null
+  onReview?: (alert: Alert) => void
+  compact?: boolean
+  hideHeader?: boolean
 }
-
 export function AlertTable({
   alerts,
-  title = 'Alert queue',
-  description = 'Prioritized detections backed by snapshots and chain-of-custody metadata.',
+  title = 'Incident queue',
+  description = 'Review incidents and coordinate the response.',
   onAcknowledge,
   busyAlertId,
+  onReview,
+  compact = false,
+  hideHeader = false,
 }: AlertTableProps) {
+  const { session } = useAuth()
+  const { data } = useOperations()
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
+  const [sort, setSort] = useState<'priority' | 'latest'>('priority')
+  const sorted = [...alerts].sort((a, b) =>
+    sort === 'priority'
+      ? severityOrder[a.severity] - severityOrder[b.severity] ||
+        b.createdAt.localeCompare(a.createdAt)
+      : b.createdAt.localeCompare(a.createdAt),
+  )
+  const review = (alert: Alert) => (onReview ? onReview(alert) : setSelectedAlert(alert))
   return (
-    <Card className="overflow-hidden bg-primaryDeep">
-      <CardHeader className="border-b border-surfaceMuted/20">
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="sticky top-0 z-10 bg-primaryDark/95 backdrop-blur">
-              <tr className="text-[11px] uppercase tracking-[0.22em] text-textSecondary">
-                <th className="px-4 py-3 font-semibold">Alert</th>
-                <th className="px-4 py-3 font-semibold">Category</th>
-                <th className="px-4 py-3 font-semibold">Severity</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Zone</th>
-                <th className="px-4 py-3 font-semibold">Evidence</th>
-                <th className="px-4 py-3 font-semibold">Updated</th>
-                <th className="px-4 py-3 font-semibold">Case</th>
-                <th className="px-4 py-3 font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {alerts.map((alert, index) => (
-                <tr
-                  key={alert.id}
-                  className={cn(
-                    'border-t border-surfaceMuted/20 align-top',
-                    index % 2 === 0 ? 'bg-primaryDark/45' : 'bg-transparent',
-                    getAlertAccentClassName(getAlertSeverityTone(alert.severity)),
-                  )}
-                >
-                  <td className="px-4 py-3.5">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={cn(
-                            'font-display text-base font-bold tracking-[-0.02em]',
-                            alert.severity === 'critical' && 'alert-title-critical',
-                            alert.severity === 'high' && 'alert-title-high',
-                          )}
-                        >
-                          {alert.title}
-                        </span>
-                        <span className="text-xs text-textSecondary">{alert.id}</span>
-                      </div>
-                      <p className="max-w-lg text-textSecondary">{alert.summary}</p>
-                      <p className="text-xs uppercase tracking-[0.18em] text-textSecondary">
-                        {alert.rule}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <Badge className="badge-neutral">
-                      {alert.category.replaceAll('-', ' ')}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <SeverityBadge tone={getAlertSeverityTone(alert.severity)}>
-                      {alert.severity}
-                    </SeverityBadge>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <SeverityBadge tone={getAlertStatusTone(alert.status)}>
-                      {alert.status}
-                    </SeverityBadge>
-                  </td>
-                  <td className="px-4 py-3.5 text-textSecondary">
-                    <div>{alert.zone}</div>
-                    <div className="text-xs uppercase tracking-[0.18em]">{alert.cameraId}</div>
-                  </td>
-                  <td className="px-4 py-3.5 text-textSecondary">
-                    {alert.evidenceIds.length} snapshot
-                    {alert.evidenceIds.length > 1 ? 's' : ''}
-                  </td>
-                  <td className="px-4 py-3.5 text-textSecondary">
-                    <div>{formatDateTime(alert.updatedAt)}</div>
-                    <div className="text-xs uppercase tracking-[0.18em]">
-                      {alert.assignee}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <Link
-                      className="brand-link underline"
-                      to={`/cases/${alert.caseId}`}
-                    >
-                      Open case
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {onAcknowledge ? (
-                      <ActionButton
-                        intent="action"
-                        loading={busyAlertId === alert.id}
-                        size="sm"
-                        disabled={
-                          alert.status === 'acknowledged' ||
-                          alert.status === 'closed'
-                        }
-                        onClick={() => onAcknowledge(alert)}
-                      >
-                        {busyAlertId === alert.id ? 'Saving...' : 'Acknowledge'}
-                      </ActionButton>
-                    ) : (
-                      <span className="text-xs uppercase tracking-[0.18em] text-textSecondary">
-                        Human review
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {!alerts.length ? (
-                <tr>
-                  <td className="px-5 py-10 text-center text-textSecondary" colSpan={9}>
-                    No alerts match the current filter set.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
+    <div
+      className={
+        hideHeader ? 'incident-table-container' : 'workspace-panel incident-table-container'
+      }
+    >
+      {!hideHeader && (
+        <div className="panel-header">
+          <div>
+            <h2>
+              {title} <span className="count-pill">{alerts.length}</span>
+            </h2>
+            <p>{description}</p>
+          </div>
+          <button
+            className="quiet-button"
+            onClick={() => setSort((value) => (value === 'priority' ? 'latest' : 'priority'))}
+          >
+            <ArrowUpDown size={14} />
+            {sort === 'priority' ? 'Priority' : 'Latest'}
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      )}
+      <div className="table-scroll">
+        <table
+          className={`incident-table ${compact ? 'compact' : ''} ${readOperatorPreferences().compactTables ? 'dense' : ''}`}
+        >
+          <thead>
+            <tr>
+              <th>Incident</th>
+              <th>Priority</th>
+              <th>Status</th>
+              {!compact && <th>Assigned team</th>}
+              <th>
+                Time <span className="muted">EAT</span>
+              </th>
+              <th>
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((alert) => (
+              <tr key={alert.id}>
+                <td>
+                  <button className="incident-title-button" onClick={() => review(alert)}>
+                    {alert.title}
+                  </button>
+                  <span className="incident-location">
+                    {alert.zone}
+                    {!compact && <span> · {alert.cameraId}</span>}
+                  </span>
+                </td>
+                <td>
+                  <span className={`signal-badge signal-${alert.severity}`}>
+                    <span />
+                    {alert.severity}
+                  </span>
+                </td>
+                <td>
+                  <span className={`status-label status-${alert.status}`}>
+                    <i />
+                    {statusLabels[alert.status]}
+                  </span>
+                </td>
+                {!compact && (
+                  <td>
+                    <span className="table-assignee">{alert.assignee}</span>
+                  </td>
+                )}
+                <td className="table-time mono">{formatTime(alert.createdAt)}</td>
+                <td>
+                  <div className="table-actions">
+                    {onAcknowledge &&
+                      alert.status === 'new' &&
+                      session &&
+                      ['guard', 'supervisor', 'admin'].includes(session.role) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busyAlertId === alert.id}
+                          onClick={() => onAcknowledge(alert)}
+                        >
+                          {busyAlertId === alert.id ? 'Saving…' : 'Acknowledge'}
+                        </Button>
+                      )}
+                    {!compact && session && canAccessRoute(session.role, 'cases') && (
+                      <Link
+                        className="icon-button"
+                        to={`/cases/${alert.caseId}`}
+                        aria-label={`Open case for ${alert.title}`}
+                      >
+                        <ArrowUpRight size={15} />
+                      </Link>
+                    )}
+                    <button
+                      className="icon-button"
+                      aria-label={`Review ${alert.title}`}
+                      onClick={() => review(alert)}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {!sorted.length && (
+              <tr>
+                <td colSpan={compact ? 5 : 6}>
+                  <div className="empty-state">
+                    <ShieldCheck size={28} />
+                    <strong>No incidents here</strong>
+                    <p>Try adjusting your filters.</p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {!onReview && (
+        <AlertDetail
+          alert={
+            selectedAlert
+              ? (data?.alerts.find((item) => item.id === selectedAlert.id) ?? selectedAlert)
+              : null
+          }
+          evidence={data?.evidence}
+          onClose={() => setSelectedAlert(null)}
+        />
+      )}
+    </div>
   )
 }

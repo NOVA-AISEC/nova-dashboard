@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { routeAccess } from '@/app/access'
 import { AppShell } from '@/components/layout/app-shell'
+import { RouteError } from '@/components/shared/route-error'
 import { AlertsPage } from '@/pages/alerts-page'
 import { AuditPage } from '@/pages/audit-page'
 import { CaseDetailPage } from '@/pages/case-detail-page'
@@ -23,6 +24,7 @@ import { PublicOnlyRoute, RequireAuth, RequireRole } from '@/lib/auth'
 export const router = createBrowserRouter([
   {
     element: <PublicOnlyRoute />,
+    errorElement: <RouteError />,
     children: [
       {
         path: '/login',
@@ -32,12 +34,47 @@ export const router = createBrowserRouter([
   },
   {
     element: <RequireAuth />,
+    errorElement: <RouteError />,
     children: [
       {
         path: '/',
         element: <AppShell />,
         children: [
-          { index: true, element: <Navigate replace to="/ops" /> },
+          { index: true, element: <Navigate replace to="/command" /> },
+          {
+            path: 'command',
+            lazy: async () => {
+              const { CommandPage } = await import('@/pages/command-page')
+              return { Component: CommandPage }
+            },
+          },
+          {
+            path: 'missions',
+            lazy: async () => {
+              const { MissionsPage } = await import('@/pages/missions-page')
+              return { Component: MissionsPage }
+            },
+          },
+          {
+            path: 'playbooks',
+            lazy: async () => {
+              const { PlaybooksPage } = await import('@/pages/security-system-pages')
+              return { Component: PlaybooksPage }
+            },
+          },
+          {
+            path: 'systems',
+            lazy: async () => {
+              const { SystemsPage } = await import('@/pages/security-system-pages')
+              return {
+                Component: () => (
+                  <RequireRole allowed={routeAccess.systems}>
+                    <SystemsPage />
+                  </RequireRole>
+                ),
+              }
+            },
+          },
           {
             path: 'ops',
             element: (

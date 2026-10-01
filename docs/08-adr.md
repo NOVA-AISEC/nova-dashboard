@@ -8,3 +8,5 @@ This repo already embodies several architectural decisions even though formal AD
 | [0002](./adr/0002-dual-data-source-with-mock-default.md) | Dual data source with mock mode as the default | Accepted |
 | [0003](./adr/0003-evidence-first-compliance-constraints.md) | Evidence-first compliance constraints across UI and data contracts | Accepted |
 | [0004](./adr/0004-single-authenticated-shell-with-role-gated-routes.md) | Single authenticated shell with role-gated routes | Accepted |
+| [0005](./adr/0005-authenticated-local-api.md) | Authenticated local API | Accepted |
+| [0006](./adr/0006-placeholder-vision-security-os.md) | YOLOv8n placeholder and human-led mission orchestration | Accepted |

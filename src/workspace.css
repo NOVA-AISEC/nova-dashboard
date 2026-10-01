@@ -1,0 +1,445 @@
+@import './dashboard.css';
+@import './dialogs.css';
+.nova-workspace {
+  min-height: 100vh;
+  background: var(--page);
+}
+.muted {
+  color: var(--secondary);
+}
+.mono {
+  font-family: 'DM Sans', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #5caa8a;
+}
+.nova-sidebar {
+  width: 236px;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background: #20242c;
+  color: #b6bac3;
+  border-right: 1px solid #2b3039;
+}
+.nova-wordmark {
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  color: #f8f8fa;
+  position: relative;
+  flex-shrink: 0;
+}
+.nova-brand-asset {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid #e7e9ed;
+  border-radius: 7px;
+}
+.nova-brand-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.nova-wordmark small {
+  font-size: 10px;
+  letter-spacing: 3px;
+  font-weight: 500;
+  color: #787e8b;
+}
+.workspace-switcher {
+  margin: 6px 14px 15px;
+  padding: 12px 10px;
+  background: #292e37;
+  border: 1px solid #373c45;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.workspace-icon {
+  width: 32px;
+  height: 32px;
+  background: #363c45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  color: #d6d8df;
+  flex-shrink: 0;
+}
+.workspace-switcher > div {
+  flex: 1;
+  min-width: 0;
+}
+.workspace-switcher strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 550;
+  color: #e7e9ee;
+  white-space: nowrap;
+}
+.workspace-switcher > div > span {
+  display: block;
+  font-size: 12px;
+  color: #8c929e;
+  margin-top: 3px;
+}
+.workspace-switcher > svg {
+  color: #797f8b;
+}
+.sidebar-navigation {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 13px 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #3a414c transparent;
+}
+.sidebar-navigation section {
+  margin-top: 19px;
+}
+.nav-group-label {
+  margin: 0 12px 9px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #727986;
+  font-weight: 600;
+}
+.nova-nav-link {
+  min-height: 38px;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 9px 11px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #a5abb7;
+  gap: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  margin: 2px 0;
+  text-align: left;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+.nova-nav-link svg,
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #858c99;
+  stroke-width: 1.65;
+}
+.nova-nav-link > span:not(.nav-count) {
+  flex: 1;
+}
+.nova-nav-link:hover {
+  background: #2c323c;
+  color: #fff;
+}
+.nova-nav-link.active {
+  color: #f39a6a;
+  background: #45342e;
+  border-color: #74483330;
+}
+.nova-nav-link.active svg {
+  color: #f39a6a;
+}
+.nav-count {
+  min-width: 19px;
+  height: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #acb2bc;
+  background: #3a414c;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.alert-count {
+  color: #f29c80;
+  background: #513631;
+}
+.sidebar-bottom {
+  margin: 0 13px;
+  flex-shrink: 0;
+  padding-top: 5px;
+  border-top: 1px solid #343943;
+}
+.sidebar-system {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  padding: 15px 11px;
+  color: #777f8d;
+  border-bottom: 1px solid #343943;
+}
+.sidebar-system .status-dot {
+  background: #df9463;
+}
+.sidebar-system .mono {
+  margin-left: auto;
+  font-size: 11px;
+}
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 8px;
+}
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 33px;
+  height: 33px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #d9e3df;
+  color: #496453;
+  font-size: 13px;
+  font-weight: 650;
+}
+.sidebar-user .avatar {
+  background: #4b4640;
+  color: #d0b49b;
+}
+.sidebar-user > div {
+  flex: 1;
+  min-width: 0;
+}
+.sidebar-user strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 550;
+  color: #dee1e7;
+}
+.sidebar-user div > span {
+  display: block;
+  color: #7c8492;
+  font-size: 12px;
+  margin-top: 3px;
+}
+.icon-button {
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--secondary);
+  border-radius: 6px;
+}
+.icon-button:hover {
+  background: var(--panel-subtle);
+  color: var(--foreground);
+}
+.nova-sidebar .icon-button:hover {
+  background: #343b47;
+  color: #fff;
+}
+.workspace-content {
+  margin-left: 236px;
+}
+.nova-topbar {
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 29px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  gap: 15px;
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--secondary);
+  white-space: nowrap;
+}
+.breadcrumb strong {
+  font-weight: 500;
+  color: var(--foreground);
+}
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.global-search {
+  width: 248px;
+  height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--secondary);
+  background: var(--panel-subtle);
+  font-size: 13px;
+}
+.global-search > span {
+  flex: 1;
+  text-align: left;
+}
+.global-search:hover {
+  border-color: #b9bec7;
+}
+kbd {
+  font-size: 11px;
+  font-family: inherit;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 3px 5px;
+  color: var(--secondary);
+  background: var(--panel);
+  white-space: nowrap;
+}
+.topbar-divider {
+  height: 23px;
+  width: 1px;
+  background: var(--line);
+  margin: 0 3px;
+}
+.topbar-theme {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  min-width: 30px;
+  padding: 0;
+  width: 30px;
+}
+.notification-button {
+  position: relative;
+}
+.notification-button > span {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  right: 5px;
+  top: 5px;
+  border: 1px solid var(--panel);
+}
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--secondary);
+}
+.avatar-small {
+  width: 29px;
+  height: 29px;
+  font-size: 11px;
+}
+.topbar-profile {
+  position: relative;
+}
+.profile-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: transparent;
+  border: 0;
+}
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: 43px;
+  z-index: 21;
+  width: 225px;
+  border: 1px solid var(--line);
+  padding: 16px;
+  border-radius: 9px;
+  background: var(--panel);
+  box-shadow: 0 12px 35px #0002;
+}
+.profile-menu > strong,
+.profile-menu > small {
+  display: block;
+  font-size: 13px;
+}
+.profile-menu > small {
+  color: var(--secondary);
+  margin: 5px 0 13px;
+}
+.profile-menu button {
+  padding: 10px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  font-size: 13px;
+}
+.nova-main {
+  padding: 28px 29px 24px;
+  max-width: 1700px;
+  margin: 0 auto;
+  min-height: calc(100vh - 116px);
+}
+.workspace-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 29px;
+  padding: 16px 0 20px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--secondary);
+}
+.workspace-footer > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.skip-link {
+  position: fixed;
+  top: -80px;
+  left: 260px;
+  z-index: 100;
+  border-radius: 6px;
+  background: var(--panel);
+  padding: 12px;
+  color: var(--foreground);
+}
+.skip-link:focus {
+  top: 8px;
+}
+.mobile-menu-button,
+.mobile-nav-close {
+  display: none;
+}

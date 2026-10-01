@@ -49,67 +49,67 @@ type SemanticPalette = {
 }
 
 const lightSemanticColors: SemanticPalette = {
-  primaryDark: STRATHMORE.offwhite,
-  primaryDeep: STRATHMORE.white,
-  accentBlue: STRATHMORE.blue,
-  accentGlow: STRATHMORE.gold,
-  surfaceLight: STRATHMORE.white,
-  surfaceMuted: STRATHMORE.border,
-  textPrimary: STRATHMORE.ink,
-  textSecondary: STRATHMORE.muted,
-  success: STRATHMORE.blue,
-  warning: STRATHMORE.gold,
-  danger: STRATHMORE.red,
-  brandBlue: STRATHMORE.blue,
-  brandGold: STRATHMORE.gold,
-  brandRed: STRATHMORE.red,
-  brandBlack: STRATHMORE.black,
-  brandWhite: STRATHMORE.white,
-  surface: STRATHMORE.offwhite,
-  ink: STRATHMORE.ink,
-  muted: STRATHMORE.muted,
-  border: STRATHMORE.border,
-  sidebarBg: STRATHMORE.blue,
-  sidebarAlt: STRATHMORE.navy2,
-  sidebarInk: STRATHMORE.offwhite,
-  sidebarBorder: '#365EAF',
-  sidebarHover: '#0A4DB8',
-  sidebarActive: '#145FCC',
-  sidebarAccent: STRATHMORE.offwhite,
-  sidebarNotification: STRATHMORE.red,
-  sidebarNotificationInk: STRATHMORE.white,
+  "primaryDark": "#f8f9fa",
+  "primaryDeep": "#ffffff",
+  "accentBlue": "#eb743b",
+  "accentGlow": "#eb743b",
+  "surfaceLight": "#ffffff",
+  "surfaceMuted": "#e8e9ed",
+  "textPrimary": "#252a34",
+  "textSecondary": "#777e8b",
+  "success": "#359679",
+  "warning": "#d79645",
+  "danger": "#dc5856",
+  "brandBlue": "#003A8C",
+  "brandGold": "#F2C230",
+  "brandRed": "#B1121B",
+  "brandBlack": "#0B0D10",
+  "brandWhite": "#FFFFFF",
+  "surface": "#f7f8fa",
+  "ink": "#252a34",
+  "muted": "#777e8b",
+  "border": "#e8e9ed",
+  "sidebarBg": "#20242c",
+  "sidebarAlt": "#292e37",
+  "sidebarInk": "#b6bac3",
+  "sidebarBorder": "#343943",
+  "sidebarHover": "#2c323c",
+  "sidebarActive": "#45342e",
+  "sidebarAccent": "#f39a6a",
+  "sidebarNotification": "#f29c80",
+  "sidebarNotificationInk": "#513631"
 }
 
 const darkSemanticColors: SemanticPalette = {
-  primaryDark: '#07142D',
-  primaryDeep: '#0D2148',
-  accentBlue: STRATHMORE.blue,
-  accentGlow: STRATHMORE.gold,
-  surfaceLight: '#F4F7FF',
-  surfaceMuted: '#2D4777',
-  textPrimary: '#F4F7FF',
-  textSecondary: '#C7D4EC',
-  success: STRATHMORE.blue,
-  warning: STRATHMORE.gold,
-  danger: STRATHMORE.red,
-  brandBlue: STRATHMORE.blue,
-  brandGold: STRATHMORE.gold,
-  brandRed: STRATHMORE.red,
-  brandBlack: STRATHMORE.black,
-  brandWhite: STRATHMORE.white,
-  surface: '#061126',
-  ink: '#F4F7FF',
-  muted: '#C7D4EC',
-  border: '#28416D',
-  sidebarBg: '#04102A',
-  sidebarAlt: '#082050',
-  sidebarInk: '#F4F7FF',
-  sidebarBorder: '#28416D',
-  sidebarHover: '#0E347A',
-  sidebarActive: '#1452B5',
-  sidebarAccent: '#F2C230',
-  sidebarNotification: STRATHMORE.red,
-  sidebarNotificationInk: STRATHMORE.white,
+  "primaryDark": "#222730",
+  "primaryDeep": "#1c2027",
+  "accentBlue": "#ef8b59",
+  "accentGlow": "#ef8b59",
+  "surfaceLight": "#e7e9ee",
+  "surfaceMuted": "#30353e",
+  "textPrimary": "#e7e9ee",
+  "textSecondary": "#939aa7",
+  "success": "#359679",
+  "warning": "#d79645",
+  "danger": "#dc5856",
+  "brandBlue": "#003A8C",
+  "brandGold": "#F2C230",
+  "brandRed": "#B1121B",
+  "brandBlack": "#0B0D10",
+  "brandWhite": "#FFFFFF",
+  "surface": "#15191f",
+  "ink": "#e7e9ee",
+  "muted": "#939aa7",
+  "border": "#30353e",
+  "sidebarBg": "#20242c",
+  "sidebarAlt": "#292e37",
+  "sidebarInk": "#b6bac3",
+  "sidebarBorder": "#343943",
+  "sidebarHover": "#2c323c",
+  "sidebarActive": "#45342e",
+  "sidebarAccent": "#f39a6a",
+  "sidebarNotification": "#f29c80",
+  "sidebarNotificationInk": "#513631"
 }
 
 export const strathmoreThemeModes: Record<ThemeMode, SemanticPalette> = {
@@ -166,8 +166,8 @@ function buildThemeVariables(mode: ThemeMode) {
     '--success': palette.success,
     '--warning': palette.warning,
     '--danger': palette.danger,
-    '--ring': STRATHMORE.gold,
-    '--link': STRATHMORE.blue,
+    '--ring': palette.accentGlow,
+    '--link': palette.accentBlue,
     '--color-primary-dark': hexToRgbChannels(palette.primaryDark),
     '--color-primary-deep': hexToRgbChannels(palette.primaryDeep),
     '--color-accent-blue': hexToRgbChannels(palette.accentBlue),
@@ -201,8 +201,12 @@ export function getStoredThemeMode(): ThemeMode {
     return 'light'
   }
 
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-  return stored === 'dark' ? 'dark' : 'light'
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
+    return stored === 'dark' ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
 }
 
 export function setStoredThemeMode(mode: ThemeMode) {
@@ -210,7 +214,11 @@ export function setStoredThemeMode(mode: ThemeMode) {
     return
   }
 
-  window.localStorage.setItem(THEME_STORAGE_KEY, mode)
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, mode)
+  } catch {
+    // Theme remains usable for this tab when storage is unavailable.
+  }
   window.dispatchEvent(new CustomEvent<ThemeMode>(THEME_CHANGE_EVENT, { detail: mode }))
 }
 

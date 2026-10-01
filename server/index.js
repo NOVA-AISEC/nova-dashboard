@@ -1,111 +1,82 @@
-import express from 'express'
-import {
-  ackAlert,
-  createCase,
-  getCaseById,
-  initDb,
-  listAlerts,
-  listAuditEvents,
-  searchRecords,
-} from './db.js'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createApp } from './app.js'
+import { loadUsers } from './auth.js'
+import { createDatabase } from './db.js'
 import { startSimulator } from './simulator.js'
+import { boundedInteger } from './validation.js'
+import { acquireDatabaseLock } from './file-lock.js'
 
-const app = express()
-const port = Number(process.env.DAMA_API_PORT ?? 8787)
-
-initDb()
-
-app.use(express.json({ limit: '200kb' }))
-
-app.get('/api/health', (_request, response) => {
-  response.json({
-    ok: true,
-    product: 'DAMA LTD',
-    company: 'DAMA LTD',
+if (fs.existsSync('.env')) process.loadEnvFile('.env')
+const port = boundedInteger(process.env.DAMA_API_PORT, 8787, 1, 65535, 'DAMA_API_PORT')
+const sessionMs =
+  boundedInteger(process.env.DAMA_SESSION_HOURS, 8, 1, 24, 'DAMA_SESSION_HOURS') * 60 * 60 * 1000
+const secureCookies = process.env.NODE_ENV === 'production'
+const defaultOrigins = [
+  `http://127.0.0.1:${port}`,
+  `http://localhost:${port}`,
+  'http://127.0.0.1:5173',
+  'http://localhost:5173',
+  'http://127.0.0.1:5175',
+  'http://localhost:5175',
+]
+const origins =
+  process.env.DAMA_ALLOWED_ORIGINS?.split(',')
+    .map((value) => value.trim())
+    .filter(Boolean) ?? (secureCookies ? [] : defaultOrigins)
+if (
+  !origins.length ||
+  origins.some((value) => {
+    try {
+      const url = new URL(value)
+      return (
+        url.origin !== value ||
+        !['http:', 'https:'].includes(url.protocol) ||
+        (secureCookies && url.protocol !== 'https:')
+      )
+    } catch {
+      return true
+    }
   })
-})
-
-app.get('/api/alerts', (request, response) => {
-  response.json(listAlerts(request.query))
-})
-
-app.post('/api/alerts/:id/ack', (request, response) => {
-  const alert = ackAlert(request.params.id)
-
-  if (!alert) {
-    response.status(404).json({ message: 'Alert not found' })
-    return
-  }
-
-  response.json(alert)
-})
-
-app.get('/api/cases/:id', (request, response) => {
-  const caseRecord = getCaseById(request.params.id)
-
-  if (!caseRecord) {
-    response.status(404).json({ message: 'Case not found' })
-    return
-  }
-
-  response.json(caseRecord)
-})
-
-app.post('/api/cases', (request, response) => {
-  const {
-    title,
-    priority,
-    status,
-    location,
-    summary,
-    protocol,
-    leadAnalyst,
-    alertIds,
-    evidenceIds,
-  } = request.body ?? {}
-
-  if (!title || !priority || !status || !location || !summary || !protocol || !leadAnalyst) {
-    response.status(400).json({ message: 'Missing required case fields' })
-    return
-  }
-
-  response.status(201).json(
-    createCase({
-      title,
-      priority,
-      status,
-      location,
-      summary,
-      protocol,
-      leadAnalyst,
-      alertIds,
-      evidenceIds,
-    }),
+)
+  throw new Error(
+    'Configure DAMA_ALLOWED_ORIGINS with exact web/API origins. Production requires HTTPS.',
+  )
+const users = loadUsers(process.env.DAMA_AUTH_USERS_FILE)
+if (secureCookies && !users.length)
+  throw new Error('Production startup requires configured API accounts.')
+const dbFile = path.resolve(
+  process.env.DAMA_DB_FILE ?? fileURLToPath(new URL('./data/db.json', import.meta.url)),
+)
+const releaseDatabase = acquireDatabaseLock(dbFile)
+process.once('exit', releaseDatabase)
+const database = createDatabase({ dbFile })
+database.initDb()
+const app = createApp({ database, users, origins, secureCookies, sessionMs })
+const stopSimulator = startSimulator({ ingest: database.ingestSimulatedAlert })
+const server = app.listen(port, '127.0.0.1', () => {
+  console.log(
+    `NOVA API listening on http://127.0.0.1:${port}; ${users.length ? 'account authentication enabled' : 'accounts unconfigured, data access locked'}`,
   )
 })
-
-app.get('/api/search', (request, response) => {
-  response.json(searchRecords(request.query))
+server.requestTimeout = 15000
+server.headersTimeout = 10000
+server.keepAliveTimeout = 5000
+server.maxHeadersCount = 50
+server.on('error', (error) => {
+  stopSimulator()
+  console.error(error.message)
+  process.exitCode = 1
 })
-
-app.get('/api/audit', (request, response) => {
-  response.json(listAuditEvents(request.query))
-})
-
-app.use((error, _request, response, _next) => {
-  const message = error instanceof Error ? error.message : 'Unknown server error'
-  response.status(500).json({ message })
-})
-
-const stopSimulator = startSimulator()
-const server = app.listen(port, () => {
-  console.log(`DAMA LTD API listening on http://localhost:${port}`)
-})
-
+let shuttingDown = false
 function shutdown() {
+  if (shuttingDown) return
+  shuttingDown = true
   stopSimulator()
   server.close(() => process.exit(0))
+  server.closeIdleConnections()
+  setTimeout(() => process.exit(1), 10000).unref()
 }
-
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)

@@ -1,45 +1,77 @@
-import { evidenceExports } from '@/data/mock-data'
 import { Link } from 'react-router-dom'
+import { ArrowDownToLine, ArrowUpRight, FileArchive } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
-import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button-variants'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDateTime } from '@/lib/formatters'
+import { Button } from '@/components/ui/button'
+import { evidenceExports } from '@/data/mock-data'
+import { useOperations } from '@/hooks/use-operations'
+import { formatShiftDate } from '@/lib/operations'
+import { downloadFile } from '@/lib/shift-brief'
 
 export function ExportsPage() {
+  const { data } = useOperations()
+  function download(id: string) {
+    const record = evidenceExports.find((item) => item.id === id)
+    if (!record || !data) return
+    const caseRecord = data.cases.find((item) => item.id === record.caseId)
+    const manifest = {
+      product: 'NOVA',
+      workspace: 'Sample data',
+      generatedAt: new Date().toISOString(),
+      export: record,
+      case: caseRecord,
+      evidence: data.evidence.filter((item) => caseRecord?.evidenceIds.includes(item.id)),
+      scope:
+        'Evidence manifest with snapshot references and metadata. Snapshot image files are not bundled. This download does not release or transmit evidence.',
+    }
+    downloadFile(`nova-${id}-manifest.json`, JSON.stringify(manifest, null, 2), 'application/json')
+  }
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        eyebrow="Chain Of Custody"
-        title="Evidence Exports"
-        subtitle="Release evidence packs for admin review only after human validation. Every package remains snapshots plus metadata only."
-        actions={
-          <Link className={buttonVariants({ variant: 'default' })} to="/search">
-            New export
-          </Link>
-        }
+        eyebrow="Evidence management"
+        title="Evidence exports"
+        subtitle="Review sample evidence packages and download their metadata manifests."
       />
-
-      <div className="grid gap-5 xl:grid-cols-3">
+      <div className="exports-grid">
         {evidenceExports.map((item) => (
-          <Card key={item.id} className="bg-primaryDeep">
-            <CardHeader className="border-b border-surfaceMuted/20">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <CardTitle>{item.packageType}</CardTitle>
-                  <CardDescription>{item.destination}</CardDescription>
-                </div>
-                <Badge className="badge-panel">{item.status}</Badge>
+          <section className="workspace-panel export-card" key={item.id}>
+            <div className="export-icon">
+              <FileArchive size={24} />
+            </div>
+            <span className="signal-badge signal-medium">{item.status.replaceAll('-', ' ')}</span>
+            <h2>{item.packageType}</h2>
+            <p>{item.destination}</p>
+            <dl>
+              <div>
+                <dt>Requested by</dt>
+                <dd>{item.requestedBy}</dd>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-5 text-sm text-textSecondary">
-              <div>Case: {item.caseId}</div>
-              <div>Requested by: {item.requestedBy}</div>
-              <div>Requested at: {formatDateTime(item.requestedAt)}</div>
-              <div className="text-xs uppercase tracking-[0.18em]">Snapshots + metadata only</div>
-            </CardContent>
-          </Card>
+              <div>
+                <dt>Requested</dt>
+                <dd>{formatShiftDate(item.requestedAt)}</dd>
+              </div>
+              <div>
+                <dt>Package ID</dt>
+                <dd>{item.id}</dd>
+              </div>
+            </dl>
+            <Link className="text-link" to={`/cases/${item.caseId}`}>
+              Review case
+              <ArrowUpRight size={14} />
+            </Link>
+            <Button variant="outline" disabled={!data} onClick={() => download(item.id)}>
+              <ArrowDownToLine size={14} />
+              Download manifest
+            </Button>
+          </section>
         ))}
+      </div>
+      <div className="notice-panel">
+        <FileArchive size={17} />
+        <p>
+          Manifests include metadata and snapshot references. Downloading a sample manifest does not release
+          evidence or notify a recipient.
+        </p>
       </div>
     </div>
   )

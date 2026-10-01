@@ -1,16 +1,19 @@
-# NOVA Dashboard
+# NOVA Security OS
 
-NOVA is a minimum working dashboard for DAMA LTD's Strathmore-facing security operations workflow. The current build includes a local login flow, a shared operator shell, and placeholder-backed modules for Ops Command, Live Queue, Alerts, Cases, Reports, Search, Mobility, Campus, and Administration.
+NOVA is a campus security operating workspace for DAMA LTD's Strathmore-facing workflow. Command assembles incident records and annotated vision evidence, matches a response playbook, and prepares a mission for supervisor approval. Missions track human-led steps and recorded outcomes alongside cases, evidence search, reports, and shift handover.
+
+The vision foundation is **YOLOv8n**, currently a **placeholder**. It reads labeled sample metadata; there is no model inference, model download, cloud model, or live camera ingestion. See [Security OS workflows and adapter contract](docs/09-security-os.md).
 
 The product is demo-safe by design. It uses still snapshots plus metadata only, keeps biometrics disabled, and does not connect to real CCTV, PII, or identity-resolution services.
 
 ## Current status
 
-- Minimum working dashboard with local login and role-gated routes
-- Frontend pages are implemented, but most module data is placeholder/mock data
+- Redesigned operator workspace with local login and role-gated routes
+- Command, Missions, Playbooks, and Systems with source-linked assessments and durable approval/outcome records
+- Working local incident acknowledgement, case creation, reports, filters, and downloads; sample operational data
 - Default build mode uses in-browser mock data
-- Optional local Express API and simulator exist for richer local demos
-- No production auth, no real integrations, no live campus data sources
+- Optional Express API with account-backed sessions, server permissions, CSRF protection and atomic local storage
+- Browser preview remains sample data; campus SSO, shared storage and real integrations remain future deployment work
 
 ## Tech stack
 
@@ -68,10 +71,13 @@ Lint:
 npm run lint
 ```
 
-Optional repo test script:
+Workflow regression checks:
 
 ```bash
-npm run test:action-gradient
+npm run test:operations
+npm run test:api
+npm run test:resilience
+npm run test:security-os
 ```
 
 ## Environment variables
@@ -85,7 +91,7 @@ Copy `.env.example` to `.env` if you want to override defaults.
 | `SIMULATOR_ENABLED` | Optional | No | Enables/disables the local alert-ingest simulator. |
 | `SIMULATOR_INTERVAL_MS` | Optional | No | Local simulator tick interval in milliseconds. |
 
-Auth is mocked/local-only. There are no auth secrets, OAuth keys, or backend identity providers in this repo.
+Browser mock sign-in is local-only. HTTP mode requires configured server accounts and never accepts browser role claims. Follow [account setup and deployment requirements](docs/03-auth-and-session.md) before setting `VITE_USE_MOCK=false`. The simulator defaults to disabled. `.env` and `.secrets/` are excluded from version control.
 
 ## Route map
 
@@ -95,6 +101,10 @@ Public:
 
 Authenticated shell:
 
+- `/command` — default landing; sample vision evidence and assessment
+- `/missions` — team handovers, supervisor decisions, hold/resume/stop controls, and ordered outcomes
+- `/playbooks` — four built-in starter procedures
+- `/systems` — supervisor/admin pipeline readiness
 - `/ops`
 - `/queue`
 - `/alerts`
@@ -111,7 +121,7 @@ Authenticated shell:
 - `/settings`
 - `/search`
 
-Role access is enforced in the router. Guards, analysts, supervisors, and admins land on different allowed surfaces after login.
+Role access is enforced in the router. All roles land on Command; navigation and actions respect their permissions. API mode enforces those permissions on the server.
 
 ## Deployment preview
 
@@ -142,7 +152,7 @@ If you want API-backed previews, you need a separate Node deployment for `server
 - No facial recognition
 - No biometric identification
 - No real CCTV or campus integrations
-- No production session backend
+- Account-backed local API sessions; campus SSO and managed production storage remain integration work
 - Demo-safe placeholder imagery only under `public/evidence/`
 
 ## Repo map
@@ -168,6 +178,10 @@ docs/
   adr/         architecture decision records
   api/         endpoint contracts
 ```
+
+## Product direction
+
+Control-room operators lead the redesign. See [product decisions](docs/product-redesign.md), [UI system](docs/04-ui-system.md), and [feature behavior](docs/05-features.md). Mock actions persist in this browser; production authentication, authorization, shared storage, CCTV, and dispatch services are still required.
 
 ## Documentation
 

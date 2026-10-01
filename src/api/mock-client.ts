@@ -11,12 +11,17 @@ import {
   searchDataset,
   updateAlertAck,
 } from '@/data/mock-data'
-import type {
-  CreateCasePayload,
-  ListAlertsParams,
-  Paginated,
-  SearchParams,
-} from '@/types/domain'
+import type { CreateCasePayload, ListAlertsParams, Paginated, SearchParams } from '@/types/domain'
+import { persistMockOperations } from '@/lib/mock-persistence'
+import { securityAudit } from '@/api/mock-security'
+export {
+  getSecurityState,
+  runAssessment,
+  proposeMission,
+  decideMission,
+  completeMissionStep,
+  coordinateMission,
+} from '@/api/mock-security'
 
 function includesText(haystack: string, query?: string) {
   return !query || haystack.toLowerCase().includes(query.trim().toLowerCase())
@@ -68,13 +73,7 @@ export async function listAlerts(params: ListAlertsParams = {}) {
     ].join(' ')
     const matchesQuery = includesText(haystack, params.q)
 
-    return (
-      matchesStatus &&
-      matchesSeverity &&
-      matchesCamera &&
-      matchesRange &&
-      matchesQuery
-    )
+    return matchesStatus && matchesSeverity && matchesCamera && matchesRange && matchesQuery
   })
 
   return paginate(filtered, params.page, params.pageSize)
@@ -91,40 +90,80 @@ export async function getCase(id: string) {
 }
 
 export async function createCase(payload: CreateCasePayload) {
-  return createCaseRecord(payload)
+  if (!payload.title.trim() || !payload.summary.trim() || !payload.location.trim()) {
+    throw new Error('Add a title, location, and summary before creating a case.')
+  }
+  const record = createCaseRecord(payload)
+  try {
+    persistMockOperations()
+  } catch (error) {
+    cases.splice(cases.indexOf(record), 1)
+    const auditIndex = auditEvents.findIndex((item) => item.entityId === record.id)
+    if (auditIndex !== -1) auditEvents.splice(auditIndex, 1)
+    throw error
+  }
+  return record
 }
 
 export async function ackAlert(id: string) {
+  const current = alerts.find((item) => item.id === id)
+  if (!current) throw new Error('Alert not found')
+  if (current.status === 'acknowledged') return current
+  if (current.status !== 'new')
+    throw new Error(
+      'Only a new incident can be acknowledged. This incident already has a response status.',
+    )
+  const previous = { status: current.status, updatedAt: current.updatedAt }
   const alert = updateAlertAck(id)
 
   if (!alert) {
     throw new Error('Alert not found')
   }
 
+  try {
+    persistMockOperations()
+  } catch (error) {
+    Object.assign(current, previous)
+    auditEvents.shift()
+    throw error
+  }
   return alert
 }
 
 export async function search(query: string, filters: Omit<SearchParams, 'q'> = {}) {
-  return searchDataset({
+  const results = searchDataset({
     q: query,
     ...filters,
   })
+  const unfiltered =
+    !query.trim() && Object.values(filters).every((value) => !value || value === 'all')
+  const relatedIds = new Set(
+    [...results.alerts, ...results.cases, ...results.evidence].map((item) => item.id),
+  )
+  results.audit = [...securityAudit(), ...auditEvents]
+    .filter((event) => unfiltered || relatedIds.has(event.entityId))
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+  return results
 }
 
-export async function listAudit(params: {
-  entityType?: string
-  entityId?: string
-  page?: number
-  pageSize?: number
-} = {}) {
-  const filtered = auditEvents.filter((event) => {
-    const matchesType =
-      !params.entityType || params.entityType === 'all' || event.entityType === params.entityType
-    const matchesId =
-      !params.entityId || params.entityId === 'all' || event.entityId === params.entityId
+export async function listAudit(
+  params: {
+    entityType?: string
+    entityId?: string
+    page?: number
+    pageSize?: number
+  } = {},
+) {
+  const filtered = [...securityAudit(), ...auditEvents]
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+    .filter((event) => {
+      const matchesType =
+        !params.entityType || params.entityType === 'all' || event.entityType === params.entityType
+      const matchesId =
+        !params.entityId || params.entityId === 'all' || event.entityId === params.entityId
 
-    return matchesType && matchesId
-  })
+      return matchesType && matchesId
+    })
 
   return paginate(filtered, params.page, params.pageSize)
 }

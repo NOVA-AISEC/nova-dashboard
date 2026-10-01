@@ -1,188 +1,165 @@
-import { useDeferredValue, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { api } from '@/api'
+import { useState } from 'react'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { AlertTable } from '@/components/ops/alert-table'
-import { PageHeader } from '@/components/page-header'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
-import { FiltersBar } from '@/components/shared/filters-bar'
-import { MetricCard } from '@/components/shared/metric-card'
-import { buttonVariants } from '@/components/ui/button-variants'
-import { useAsyncData } from '@/hooks/use-async-data'
+import { useOperations } from '@/hooks/use-operations'
+import { isActiveAlert, statusLabels } from '@/lib/operations'
 
 export function AlertsPage() {
+  const { data, error, isLoading, refresh } = useOperations()
+  const [query, setQuery] = useState('')
   const [severity, setSeverity] = useState('all')
   const [status, setStatus] = useState('all')
-  const [cameraId, setCameraId] = useState('all')
-  const [query, setQuery] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [busyAlertId, setBusyAlertId] = useState<string | null>(null)
-  const deferredQuery = useDeferredValue(query)
-
-  const metadataState = useAsyncData(() => api.search(''), [])
-  const alertsState = useAsyncData(
-    () =>
-      api.listAlerts({
-        severity,
-        status,
-        cameraId,
-        q: deferredQuery,
-        from: dateFrom || undefined,
-        to: dateTo || undefined,
-        page: 1,
-        pageSize: 50,
-      }),
-    [severity, status, cameraId, deferredQuery, dateFrom, dateTo, refreshKey],
+  const [camera, setCamera] = useState('all')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [advanced, setAdvanced] = useState(false)
+  if (isLoading && !data) return <LoadingPanel lines={10} />
+  if (error || !data) return <ErrorPanel message={error ?? 'Alerts unavailable.'} />
+  const active = data.alerts.filter(isActiveAlert)
+  const filterCount = [severity !== 'all', status !== 'all', camera !== 'all', !!from, !!to].filter(
+    Boolean,
+  ).length
+  const filtered = data.alerts.filter(
+    (alert) =>
+      (severity === 'all' || alert.severity === severity) &&
+      (status === 'all' || alert.status === status) &&
+      (camera === 'all' || alert.cameraId === camera) &&
+      (!from || alert.createdAt.slice(0, 10) >= from) &&
+      (!to || alert.createdAt.slice(0, 10) <= to) &&
+      `${alert.title} ${alert.zone} ${alert.id} ${alert.cameraId}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
   )
-
-  async function handleAcknowledge(alertId: string) {
-    try {
-      setBusyAlertId(alertId)
-      await api.ackAlert(alertId)
-      setRefreshKey((value) => value + 1)
-    } finally {
-      setBusyAlertId(null)
-    }
+  function reset() {
+    setQuery('')
+    setSeverity('all')
+    setStatus('all')
+    setCamera('all')
+    setFrom('')
+    setTo('')
   }
-
-  if (alertsState.isLoading && !alertsState.data) {
-    return (
-      <div className="space-y-6">
-        <LoadingPanel lines={4} />
-        <section className="grid gap-4 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <LoadingPanel key={index} lines={3} />
-          ))}
-        </section>
-        <LoadingPanel lines={8} />
-      </div>
-    )
-  }
-
-  if (alertsState.error || !alertsState.data) {
-    return <ErrorPanel message={alertsState.error ?? 'Alert data is unavailable.'} />
-  }
-
-  const alerts = alertsState.data.items
-  const cameras =
-    metadataState.data?.cameras ??
-    Array.from(new Set(alerts.map((alert) => alert.cameraId))).sort()
-
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow="Incident Desk"
-        title="Campus alert queue"
-        subtitle="Filter the triage queue by severity, state, camera, date range, and free-text query. Acknowledgement supports guard dispatch and still requires human validation."
-        actions={
-          <>
-            <Link className={buttonVariants({ variant: 'action' })} to="/cases">
-              Create case from selection
-            </Link>
-            <Link className={buttonVariants({ variant: 'outline' })} to="/exports">
-              Export evidence pack
-            </Link>
-          </>
-        }
-      />
-
-      <section className="grid gap-4 xl:grid-cols-3">
-        <MetricCard
-          label="Critical open"
-          value={String(
-            alerts.filter((alert) => alert.severity === 'critical').length,
-          ).padStart(2, '0')}
-          delta="Immediate analyst review"
-          tone="warning"
-        />
-        <MetricCard
-          label="Triaging"
-          value={String(
-            alerts.filter((alert) => alert.status === 'triaging').length,
-          ).padStart(2, '0')}
-          delta="Analyst-owned work"
-          tone="accent"
-        />
-        <MetricCard
-          label="Acknowledged"
-          value={String(
-            alerts.filter((alert) => alert.status === 'acknowledged').length,
-          ).padStart(2, '0')}
-          delta="Awaiting next action"
-          tone="success"
-        />
+    <div className="space-y-5">
+      <div className="overview-heading">
+        <div>
+          <p className="page-kicker">
+            <span className="status-dot" />
+            INCIDENT MANAGEMENT
+          </p>
+          <h1>
+            Alert inbox<span className="heading-dot">.</span>
+          </h1>
+          <p>Every campus signal, with the context to make a decision.</p>
+        </div>
+        <button className="quiet-button" onClick={refresh}>
+          Refresh alerts
+        </button>
+      </div>
+      <div className="queue-summary">
+        {[
+          { label: 'All alerts', value: data.alerts.length },
+          { label: 'Critical active', value: active.filter((alert) => alert.severity === 'critical').length },
+          { label: 'Needs review', value: active.filter((alert) => alert.status === 'new').length },
+          { label: 'Contained / closed', value: data.alerts.length - active.length },
+        ].map((metric, index) => (
+          <div key={metric.label}>
+            <span className={`summary-dot summary-tone-${index}`} />
+            <span>{metric.label}</span>
+            <strong>{metric.value}</strong>
+          </div>
+        ))}
+      </div>
+      <section className="workspace-panel filter-panel">
+        <div className="queue-toolbar">
+          <label className="workspace-search-input">
+            <Search size={16} />
+            <input
+              aria-label="Search alerts"
+              placeholder="Search by incident, location, camera, or ID…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <select
+            aria-label="Alert priority"
+            value={severity}
+            onChange={(event) => setSeverity(event.target.value)}
+          >
+            <option value="all">All priorities</option>
+            {['critical', 'high', 'medium', 'low'].map((value) => (
+              <option key={value} value={value}>
+                {value[0].toUpperCase() + value.slice(1)}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Alert status"
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
+            <option value="all">All statuses</option>
+            {Object.entries(statusLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <button
+            className="quiet-button"
+            aria-expanded={advanced}
+            onClick={() => setAdvanced((value) => !value)}
+          >
+            <SlidersHorizontal size={14} />
+            Filters{!!filterCount && <span>{filterCount}</span>}
+          </button>
+        </div>
+        {advanced && (
+          <div className="advanced-filters">
+            <label>
+              Camera
+              <select value={camera} onChange={(event) => setCamera(event.target.value)}>
+                <option value="all">All cameras</option>
+                {data.cameras.map((camera) => (
+                  <option key={camera}>{camera}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              From date
+              <input type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
+            </label>
+            <label>
+              To date
+              <input
+                type="date"
+                min={from || undefined}
+                value={to}
+                onChange={(event) => setTo(event.target.value)}
+              />
+            </label>
+            <button className="text-link" onClick={reset}>
+              <X size={13} />
+              Clear filters
+            </button>
+          </div>
+        )}
       </section>
-
-      <FiltersBar
-        searchValue={query}
-        onSearchChange={setQuery}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        groups={[
-          {
-            id: 'severity',
-            label: 'Severity',
-            value: severity,
-            options: [
-              { label: 'All', value: 'all' },
-              { label: 'Critical', value: 'critical' },
-              { label: 'High', value: 'high' },
-              { label: 'Medium', value: 'medium' },
-              { label: 'Low', value: 'low' },
-            ],
-          },
-          {
-            id: 'status',
-            label: 'Status',
-            value: status,
-            options: [
-              { label: 'All', value: 'all' },
-              { label: 'New', value: 'new' },
-              { label: 'Ack', value: 'acknowledged' },
-              { label: 'Triaging', value: 'triaging' },
-              { label: 'Contained', value: 'contained' },
-              { label: 'Closed', value: 'closed' },
-            ],
-          },
-          {
-            id: 'camera',
-            label: 'Camera',
-            value: cameraId,
-            options: [
-              { label: 'All', value: 'all' },
-              ...cameras.map((item) => ({ label: item, value: item })),
-            ],
-          },
-        ]}
-        onGroupChange={(groupId, value) => {
-          if (groupId === 'severity') {
-            setSeverity(value)
-          }
-
-          if (groupId === 'status') {
-            setStatus(value)
-          }
-
-          if (groupId === 'camera') {
-            setCameraId(value)
-          }
-        }}
-      />
-
-      {alertsState.error ? (
-        <ErrorPanel message={alertsState.error} />
-      ) : (
-        <AlertTable
-          alerts={alerts}
-          busyAlertId={busyAlertId}
-          onAcknowledge={(alert) => void handleAcknowledge(alert.id)}
-          title="Filtered queue"
-          description="Open a case to inspect snapshots, metadata, audit, and human-validation history."
-        />
+      {(!!filterCount || query) && (
+        <div className="results-meta">
+          <span>
+            {filtered.length} of {data.alerts.length} alerts match your filters
+          </span>
+          <button className="text-link" onClick={reset}>
+            Clear filters
+          </button>
+        </div>
       )}
+      <AlertTable
+        alerts={filtered}
+        title="Campus alerts"
+        description="Select an incident to review its evidence, assignment, and next steps."
+      />
     </div>
   )
 }
