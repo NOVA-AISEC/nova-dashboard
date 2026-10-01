@@ -24,6 +24,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test operator workflows
+        run: npm run test:operations
+
+      - name: Check shared action tokens
+        run: npm run test:action-gradient
+
       - name: Build
         env:
           VITE_USE_MOCK: true
