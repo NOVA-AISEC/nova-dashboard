@@ -1,0 +1,513 @@
+@media (min-width: 1550px) {
+  .nova-main {
+    padding: 35px 42px;
+  }
+  .nova-topbar {
+    padding: 0 42px;
+  }
+  .overview-primary-grid,
+  .overview-secondary-grid {
+    grid-template-columns: minmax(0, 1fr) 345px;
+  }
+  .campus-map {
+    min-height: 419px;
+  }
+  .campus-svg {
+    height: 357px;
+  }
+  .attention-list {
+    min-height: 366px;
+  }
+  .attention-card {
+    padding: 14px;
+  }
+  .panel-header {
+    padding: 20px 22px;
+  }
+  .overview-heading h1 {
+    font-size: 34px;
+  }
+  .overview-metric {
+    padding: 21px 24px;
+  }
+  .metric-top {
+    font-size: 13px;
+  }
+  .metric-middle {
+    min-height: 72px;
+  }
+}
+@media (max-width: 1200px) {
+  .nova-sidebar {
+    width: 210px;
+  }
+  .workspace-content {
+    margin-left: 210px;
+  }
+  .nova-main {
+    padding: 23px 22px;
+  }
+  .nova-topbar {
+    padding: 0 22px;
+  }
+  .nova-wordmark {
+    padding-left: 20px;
+  }
+  .nova-wordmark small {
+    left: 63px;
+  }
+  .workspace-switcher {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .workspace-switcher strong {
+    font-size: 11px;
+  }
+  .workspace-switcher > svg {
+    display: none;
+  }
+  .overview-metrics {
+    gap: 10px;
+  }
+  .overview-metric {
+    padding: 15px 13px;
+  }
+  .metric-top {
+    font-size: 12px;
+  }
+  .overview-metric > p {
+    flex-wrap: wrap;
+    font-size: 10px;
+    gap: 4px;
+  }
+  .overview-primary-grid,
+  .overview-secondary-grid {
+    grid-template-columns: minmax(0, 1fr) 270px;
+    gap: 13px;
+  }
+  .panel-header {
+    padding: 15px;
+  }
+  .panel-meta {
+    display: none;
+  }
+  .campus-map {
+    min-height: 377px;
+  }
+  .campus-svg {
+    height: 315px;
+  }
+  .attention-list {
+    min-height: 324px;
+  }
+  .incident-table.compact th,
+  .incident-table.compact td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .incident-table.compact .table-time {
+    display: none;
+  }
+  .incident-table.compact th:nth-child(4) {
+    display: none;
+  }
+  .global-search {
+    width: 220px;
+  }
+  .topbar-tools {
+    gap: 9px;
+  }
+  .shift-date {
+    font-size: 10px;
+  }
+  .metric-sparkline {
+    width: 54px;
+  }
+  .metric-middle > strong {
+    font-size: 30px;
+  }
+}
+@media (max-width: 1023px) {
+  .nova-sidebar {
+    width: 236px;
+    transform: translateX(-100%);
+    transition: transform 170ms ease;
+    z-index: 60;
+  }
+  .nova-sidebar.is-open {
+    transform: translateX(0);
+  }
+  .workspace-content {
+    margin-left: 0;
+  }
+  .mobile-menu-button,
+  .mobile-nav-close {
+    display: flex;
+  }
+  .mobile-nav-close {
+    position: absolute;
+    right: 8px;
+    top: 12px;
+    color: #9ba2ae;
+  }
+  .mobile-scrim {
+    position: fixed;
+    inset: 0;
+    background: #171c235e;
+    z-index: 55;
+    border: 0;
+  }
+  .nova-topbar {
+    gap: 12px;
+  }
+  .breadcrumb {
+    margin-right: auto;
+  }
+  .overview-primary-grid,
+  .overview-secondary-grid {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+  .skip-link {
+    left: 20px;
+  }
+  .workspace-switcher strong {
+    font-size: 12px;
+  }
+}
+@media (max-width: 760px) {
+  .nova-main {
+    padding: 22px 16px;
+  }
+  .nova-topbar {
+    padding: 0 16px;
+    height: 59px;
+  }
+  .global-search {
+    width: 30px;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    justify-content: center;
+  }
+  .global-search > span,
+  .global-search kbd,
+  .topbar-divider {
+    display: none;
+  }
+  .topbar-tools {
+    gap: 6px;
+  }
+  .breadcrumb {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .breadcrumb > span {
+    display: none;
+  }
+  .breadcrumb > svg {
+    display: none;
+  }
+  .overview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .overview-heading h1 {
+    font-size: 28px;
+  }
+  .overview-tabs {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .overview-tabs > div:first-child {
+    width: 100%;
+    gap: 22px;
+  }
+  .shift-date {
+    padding: 8px 0;
+    font-size: 11px;
+  }
+  .overview-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .overview-metric {
+    padding: 15px;
+  }
+  .overview-metric > p {
+    font-size: 10px;
+  }
+  .overview-primary-grid,
+  .overview-secondary-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .campus-map {
+    min-height: 370px;
+  }
+  .campus-svg {
+    height: 310px;
+  }
+  .attention-list {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .attention-card {
+    padding: 10px;
+  }
+  .attention-card .mono {
+    display: none;
+  }
+  .attention-card h3 {
+    font-size: 12px;
+  }
+  .attention-card p {
+    font-size: 10px;
+  }
+  .attention-action {
+    font-size: 10px;
+  }
+  .teams-panel .team-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 22px;
+  }
+  .shift-strip {
+    flex-wrap: wrap;
+    padding: 15px;
+  }
+  .shift-strip > div {
+    flex-basis: 75%;
+  }
+  .shift-strip .quiet-button {
+    margin-left: 49px;
+  }
+  .workspace-footer {
+    margin: 0 16px;
+    gap: 10px;
+    font-size: 10px;
+    flex-wrap: wrap;
+  }
+  .camera-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 14px;
+    gap: 10px;
+  }
+  .activity-chart {
+    gap: 7px;
+    padding: 22px 14px;
+  }
+  .activity-chart span {
+    font-size: 9px;
+  }
+  .activity-list time {
+    font-size: 10px;
+    max-width: 95px;
+    text-align: right;
+  }
+  .incident-table:not(.compact) {
+    min-width: 740px;
+  }
+}
+@media (max-width: 460px) {
+  .attention-list {
+    grid-template-columns: 1fr;
+  }
+  .attention-card .mono {
+    display: block;
+  }
+  .attention-card {
+    padding: 13px;
+  }
+  .attention-card h3 {
+    font-size: 13px;
+  }
+  .attention-card p,
+  .attention-action {
+    font-size: 12px;
+  }
+  .overview-tabs > div:first-child {
+    gap: 17px;
+  }
+  .overview-tabs [role='tab'] {
+    font-size: 12px;
+  }
+  .page-actions {
+    width: 100%;
+  }
+  .page-actions > * {
+    flex: 1;
+    justify-content: center;
+  }
+  .metric-top {
+    font-size: 12px;
+  }
+  .metric-middle {
+    min-height: 60px;
+  }
+  .metric-middle > strong {
+    font-size: 29px;
+  }
+  .metric-sparkline {
+    width: 53px;
+  }
+  .overview-metric > p > span:last-child {
+    font-size: 9px;
+  }
+  .critical-bars {
+    gap: 3px;
+  }
+  .critical-bars i {
+    width: 4px;
+  }
+  .metric-avatars > span {
+    width: 24px;
+    height: 24px;
+  }
+  .mini-donut {
+    width: 34px;
+    height: 34px;
+  }
+  .camera-grid {
+    grid-template-columns: 1fr;
+  }
+  .map-legend {
+    gap: 10px;
+  }
+  .map-legend > span {
+    font-size: 9px;
+  }
+  .campus-map {
+    min-height: 330px;
+  }
+  .campus-svg {
+    height: 275px;
+  }
+  .map-selection {
+    bottom: 53px;
+  }
+  .map-selection div > span {
+    font-size: 9px;
+  }
+  .map-topline {
+    font-size: 9px;
+  }
+  .teams-panel .team-list {
+    grid-template-columns: 1fr;
+  }
+  .incident-table.compact {
+    min-width: 500px;
+  }
+  .workspace-dialog {
+    top: 8vh;
+    max-height: 85vh;
+  }
+  .workspace-drawer {
+    top: 0;
+    max-height: 100dvh;
+  }
+  .handover-summary {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (min-width: 1024px) {
+  .overview-heading {
+    margin-bottom: 18px;
+  }
+  .nova-main {
+    padding-top: 26px;
+  }
+  .overview-metric {
+    padding: 17px 18px;
+  }
+  .metric-middle {
+    min-height: 62px;
+  }
+  .panel-header {
+    padding: 16px 20px;
+  }
+  .campus-map {
+    min-height: 355px;
+  }
+  .campus-svg {
+    height: 303px;
+  }
+  .attention-list {
+    min-height: 302px;
+  }
+  .attention-card {
+    padding: 10px 13px;
+  }
+  .attention-card h3 {
+    margin-top: 7px;
+  }
+  .attention-action {
+    margin-top: 7px;
+    padding-top: 7px;
+  }
+}
+@media (max-width: 1023px) {
+  .nova-sidebar {
+    visibility: hidden;
+  }
+  .nova-sidebar.is-open {
+    visibility: visible;
+  }
+  .nova-nav-link {
+    min-height: 44px;
+  }
+  .icon-button {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+@media (max-width: 460px) {
+  .overview-metric > p > span:last-child {
+    display: none;
+  }
+  .overview-tabs [role='tab'] {
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .shift-date {
+    white-space: normal;
+  }
+  .map-legend > span {
+    font-size: 11px;
+  }
+  .global-search {
+    min-width: 36px;
+  }
+  .queue-toolbar select {
+    max-width: 100%;
+  }
+  .evidence-date-filters label {
+    flex-wrap: wrap;
+  }
+  .filter-tabs {
+    max-width: 100%;
+  }
+}
+.incident-table th {
+  position: relative;
+}
+.table-scroll {
+  position: relative;
+  max-width: 100%;
+}
+.nova-main > * {
+  min-width: 0;
+}
