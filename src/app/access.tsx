@@ -132,6 +132,13 @@ export const navigationGroups: NavigationGroup[] = [
         icon: BriefcaseBusiness,
       },
       {
+        id: 'search',
+        to: routePaths.search,
+        label: 'Evidence search',
+        description: 'Find snapshots by description, camera, and date',
+        icon: BadgeCheck,
+      },
+      {
         id: 'reports',
         to: routePaths.reports,
         label: 'Reports',

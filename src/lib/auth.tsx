@@ -1,18 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import {
-  getDefaultRoute,
-  roleShifts,
-  type UserRole,
-} from '@/app/access'
+import { getDefaultRoute, roleShifts, type UserRole } from '@/app/access'
 
 const SESSION_STORAGE_KEY = 'nova.session'
 
@@ -43,16 +32,16 @@ function readStoredSession() {
     return null
   }
 
-  const raw = window.localStorage.getItem(SESSION_STORAGE_KEY)
-
-  if (!raw) {
-    return null
-  }
-
   try {
-    return JSON.parse(raw) as SessionUser
+    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY)
+    if (!raw) return null
+    const saved = JSON.parse(raw) as SessionUser
+    return saved &&
+      ['guard', 'analyst', 'supervisor', 'admin'].includes(saved.role) &&
+      ['token', 'name', 'email', 'shift'].every((key) => typeof saved[key as keyof SessionUser] === 'string')
+      ? saved
+      : null
   } catch {
-    window.localStorage.removeItem(SESSION_STORAGE_KEY)
     return null
   }
 }
@@ -173,13 +162,7 @@ export function RequireAuth() {
   return <Outlet />
 }
 
-export function RequireRole({
-  allowed,
-  children,
-}: {
-  allowed: UserRole[]
-  children: ReactNode
-}) {
+export function RequireRole({ allowed, children }: { allowed: UserRole[]; children: ReactNode }) {
   const { session } = useAuth()
 
   if (!session) {

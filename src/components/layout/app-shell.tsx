@@ -1,348 +1,437 @@
-import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
+  Bell,
+  Building2,
   ChevronDown,
-  FolderOpenDot,
+  ChevronRight,
+  CircleHelp,
+  Command,
   LogOut,
   Menu,
   Search,
   Settings2,
-  ShieldBan,
-  UserRound,
+  ShieldCheck,
   X,
 } from 'lucide-react'
-import {
-  canAccessRoute,
-  getAllowedNavigation,
-  roleLabels,
-  routePaths,
-} from '@/app/access'
-import { api } from '@/api'
-import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button-variants'
-import { Button } from '@/components/ui/button'
-import { NovaLogo } from '@/components/shared/nova-logo'
+import { canAccessRoute, getAllowedNavigation, getDefaultRoute, roleLabels } from '@/app/access'
+import { AlertDetail } from '@/components/ops/alert-detail'
+import { WorkspaceDialog } from '@/components/shared/workspace-dialog'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
-import { useAsyncData } from '@/hooks/use-async-data'
+import { useOperations } from '@/hooks/use-operations'
 import { useAuth } from '@/lib/auth'
+import { isActiveAlert, sortAlerts } from '@/lib/operations'
 import { cn } from '@/lib/utils'
+import type { Alert } from '@/types/domain'
 
-const complianceChips = ['Biometrics disabled', 'Snapshots', 'Metadata only'] as const
-
-function countByStatus(values: string[], status: string) {
-  return values.filter((value) => value === status).length
+const navigationLabels: Record<string, string> = {
+  ops: 'Overview',
+  queue: 'Live queue',
+  alerts: 'Alerts',
+  cases: 'Case management',
+  search: 'Evidence search',
+  reports: 'Incident reports',
+  vehicles: 'Vehicle search',
+  traffic: 'Parking & traffic',
+  zones: 'Zones & cameras',
+  events: 'Campus events',
+  exports: 'Evidence exports',
+  audit: 'Audit log',
+  users: 'Team & access',
 }
 
 export function AppShell() {
-  const [isNavOpen, setIsNavOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const { session, logout } = useAuth()
-  const role = session?.role ?? 'guard'
-  const navGroups = getAllowedNavigation(role)
-  const navData = useAsyncData(
-    async () => {
-      const [searchResults, auditResults] = await Promise.all([
-        api.search(''),
-        api.listAudit({ page: 1, pageSize: 25 }),
-      ])
-
-      return { searchResults, auditResults }
-    },
-    [],
+  const location = useLocation()
+  const { data } = useOperations()
+  const [navOpen, setNavOpen] = useState(false)
+  const [userOpen, setUserOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
+  const navigationRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!navOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const navigation = navigationRef.current
+    const menuButton = menuButtonRef.current
+    navigation?.querySelector<HTMLButtonElement>('.mobile-nav-close')?.focus()
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !navigation) return
+      const elements = [...navigation.querySelectorAll<HTMLElement>('a[href],button:not([disabled])')].filter(
+        (element) => element.getClientRects().length > 0,
+      )
+      const first = elements[0],
+        last = elements.at(-1)
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last?.focus()
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first?.focus()
+      }
+    }
+    window.addEventListener('keydown', trapFocus)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', trapFocus)
+      menuButton?.focus()
+    }
+  }, [navOpen])
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setSearchOpen((value) => !value)
+      }
+      if (event.key === 'Escape') {
+        setNavOpen(false)
+        setUserOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+  if (!session) return null
+  const groups = getAllowedNavigation(session.role)
+  const navigation = groups.flatMap((group) => group.items)
+  const activeAlerts = data?.alerts.filter(isActiveAlert) ?? []
+  const newAlerts = sortAlerts(activeAlerts.filter((alert) => alert.status === 'new'))
+  const current = navigation.find((item) => location.pathname.startsWith(item.to))
+  const searchTerm = query.trim().toLowerCase()
+  const matchingRoutes = navigation.filter((item) =>
+    `${navigationLabels[item.id]} ${item.description}`.toLowerCase().includes(searchTerm),
   )
-
-  const openAlerts =
-    navData.data?.searchResults.alerts.filter((alert) => alert.status !== 'closed') ?? []
-  const openCases =
-    navData.data?.searchResults.cases.filter((caseItem) => caseItem.status !== 'closed') ?? []
-  const navBadges: Record<string, string | undefined> = {
-    queue: openAlerts.length ? String(openAlerts.length) : undefined,
-    alerts: countByStatus(
-      openAlerts.map((alert) => alert.severity),
-      'critical',
-    )
-      ? `${countByStatus(openAlerts.map((alert) => alert.severity), 'critical')} hot`
-      : undefined,
-    cases: openCases.length ? String(openCases.length) : undefined,
-    vehicles: navData.data?.searchResults.evidence.filter((item) =>
-      item.metadata.classes.includes('vehicle'),
-    ).length
-      ? String(
-          navData.data.searchResults.evidence.filter((item) =>
-            item.metadata.classes.includes('vehicle'),
-          ).length,
-        )
-      : undefined,
-    exports: openCases.filter((item) => item.humanValidationRequired).length
-      ? `${openCases.filter((item) => item.humanValidationRequired).length} pending`
-      : undefined,
-    audit: navData.data?.auditResults.total
-      ? String(navData.data.auditResults.total)
-      : undefined,
-    users: role === 'admin' ? 'RBAC' : undefined,
+  const matchingAlerts = sortAlerts(
+    data?.alerts.filter((alert) =>
+      `${alert.title} ${alert.zone} ${alert.id}`.toLowerCase().includes(searchTerm),
+    ) ?? [],
+  ).slice(0, 5)
+  const initials = session.name
+    .split(' ')
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+  function closeNavigation() {
+    setNavOpen(false)
+    setUserOpen(false)
+    setSearchOpen(false)
   }
-
-  if (!session) {
-    return null
-  }
-
   return (
-    <div className="min-h-screen bg-surface text-ink">
-      <div
-        className={cn(
-          'fixed inset-0 z-40 bg-brandBlack/45 transition-opacity lg:hidden',
-          isNavOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
-        )}
-        onClick={() => setIsNavOpen(false)}
-      />
-      <div
-        className={cn(
-          'fixed inset-0 z-20 transition-opacity',
-          isUserMenuOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
-        )}
-        onClick={() => setIsUserMenuOpen(false)}
-      />
-
+    <div className="nova-workspace">
+      <a className="skip-link" href="#workspace-main">
+        Skip to workspace
+      </a>
+      {navOpen && (
+        <button className="mobile-scrim" aria-label="Close navigation" onClick={() => setNavOpen(false)} />
+      )}
       <aside
-        className={cn(
-          'sidebar-shell fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-surfaceMuted/20 transition-transform lg:translate-x-0',
-          isNavOpen ? 'translate-x-0' : '-translate-x-full',
-        )}
+        ref={navigationRef}
+        id="workspace-navigation"
+        className={cn('nova-sidebar', navOpen && 'is-open')}
+        aria-label="Main navigation"
       >
-        <div className="border-b border-surfaceMuted/20 px-5 py-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-3">
-              <div className="eyebrow text-[10px] text-surfaceMuted">Security operations workspace</div>
-              <Link
-                className="logo-lockup-panel logo-lockup-contrast block max-w-[11.5rem] transition-transform hover:-translate-y-0.5"
-                to={routePaths.ops}
-              >
-                <NovaLogo className="max-h-16" />
-              </Link>
-              <p className="sidebar-copy max-w-xs text-sm leading-relaxed">
-                NOVA coordinates triage queue, guard dispatch, incident desk review,
-                traffic response, and evidence exports for Strathmore teams.
-              </p>
-            </div>
-
-            <Button
-              className="lg:hidden"
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsNavOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
+        <Link to={getDefaultRoute(session.role)} className="nova-wordmark" onClick={closeNavigation}>
+          <span className="nova-symbol">
+            n<span />
+          </span>
+          <span>
+            NOVA<span className="wordmark-dot">.</span>
+          </span>
+          <small>OPERATIONS</small>
+        </Link>
+        <button
+          className="icon-button mobile-nav-close"
+          aria-label="Close navigation"
+          onClick={() => setNavOpen(false)}
+        >
+          <X size={18} />
+        </button>
+        <div className="workspace-switcher">
+          <span className="workspace-icon">
+            <Building2 size={18} />
+          </span>
+          <div>
+            <strong>Strathmore University</strong>
+            <span>Campus workspace</span>
           </div>
+          <ShieldCheck size={15} />
         </div>
-
-        <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
-          {navGroups.map((group) => (
-            <section key={group.label} className="space-y-2.5">
-              <div className="sidebar-section-heading border-b pb-2">
-                <p className="eyebrow">{group.label}</p>
-              </div>
-              <nav className="space-y-1.5">
-                {group.items.map((item) => {
-                  const Icon = item.icon
-
-                  return (
-                    <NavLink
-                      key={item.to}
-                      className={({ isActive }) =>
-                        cn(
-                          'sidebar-link group relative flex items-start gap-3 rounded-2xl border px-4 py-3 transition-colors',
-                          isActive && 'sidebar-link-active',
-                        )
-                      }
-                      onClick={() => {
-                        setIsNavOpen(false)
-                        setIsUserMenuOpen(false)
-                      }}
-                      to={item.to}
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <span
-                            className={cn(
-                              'sidebar-link-indicator absolute bottom-0 left-0 top-0 w-1 transition-opacity',
-                              isActive ? 'opacity-100' : 'opacity-0',
-                            )}
-                          />
-                          <Icon className="sidebar-link-icon mt-0.5 h-5 w-5 shrink-0" />
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="font-display text-sm font-bold uppercase tracking-[0.16em]">
-                                {item.label}
-                              </div>
-                              {navBadges[item.id] ? (
-                                <span className="sidebar-link-badge rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]">
-                                  {navBadges[item.id]}
-                                </span>
-                              ) : null}
-                            </div>
-                            <div className="sidebar-link-copy text-sm leading-relaxed">
-                              {item.description}
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </NavLink>
-                  )
-                })}
+        <div className="sidebar-navigation">
+          {groups.map((group) => (
+            <section key={group.label}>
+              <p className="nav-group-label">
+                {group.label === 'Incidents' ? 'Incident management' : group.label}
+              </p>
+              <nav aria-label={group.label}>
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.id}
+                    to={item.to}
+                    onClick={closeNavigation}
+                    className={({ isActive }) => cn('nova-nav-link', isActive && 'active')}
+                  >
+                    <item.icon className="nav-icon" />
+                    <span>{navigationLabels[item.id] ?? item.label}</span>
+                    {item.id === 'queue' && !!activeAlerts.length && (
+                      <span className="nav-count">{activeAlerts.length}</span>
+                    )}
+                    {item.id === 'alerts' && !!newAlerts.length && (
+                      <span className="nav-count alert-count">{newAlerts.length}</span>
+                    )}
+                  </NavLink>
+                ))}
               </nav>
             </section>
           ))}
-
-          <div className="sidebar-panel space-y-3 rounded-[1.5rem] border p-4">
-            <p className="eyebrow text-surfaceMuted">Compliance Guardrails</p>
-            <div className="flex flex-wrap gap-2">
-              {complianceChips.map((label) => (
-                <Badge key={label} className="chip-compliance-inverse">
-                  {label}
-                </Badge>
-              ))}
-            </div>
-            <div className="space-y-3 text-sm text-sidebarInk/88">
-              <div className="flex items-start gap-3">
-                <ShieldBan className="sidebar-panel-icon mt-0.5 h-4 w-4" />
-                <span>No facial recognition or identity inference.</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <FolderOpenDot className="sidebar-panel-icon mt-0.5 h-4 w-4" />
-                <span>Human validation is required before action.</span>
-              </div>
-            </div>
-            <ThemeToggle className="sidebar-theme-toggle w-full justify-center" />
-          </div>
         </div>
-
-        <div className="sidebar-footer border-t px-5 py-4">
-          <div className="sidebar-footer-copy text-xs uppercase tracking-[0.2em]">
-            {session.name} / {roleLabels[session.role]}
-          </div>
-          <div className="sidebar-footer-meta mt-2 text-[10px] uppercase tracking-[0.22em]">
-            DAMA LTD
-          </div>
-          <Button
-            className="sidebar-footer-action mt-4 w-full"
-            size="sm"
-            variant="outline"
-            onClick={logout}
+        <div className="sidebar-bottom">
+          {canAccessRoute(session.role, 'settings') && (
+            <NavLink to="/settings" className="nova-nav-link" onClick={closeNavigation}>
+              <Settings2 size={18} />
+              <span>Settings</span>
+            </NavLink>
+          )}
+          <button
+            className="nova-nav-link"
+            onClick={() => {
+              setNavOpen(false)
+              setHelpOpen(true)
+            }}
           >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+            <CircleHelp size={18} />
+            <span>Help & shortcuts</span>
+            <ChevronRight size={14} />
+          </button>
+          <div className="sidebar-system">
+            <span className="status-dot" />
+            <span>Demo workspace</span>
+            <span className="mono">v2.0</span>
+          </div>
+          <div className="sidebar-user">
+            <span className="avatar">{initials}</span>
+            <div>
+              <strong>{session.name}</strong>
+              <span>{roleLabels[session.role]}</span>
+            </div>
+            <button className="icon-button" onClick={logout} aria-label="Sign out">
+              <LogOut size={17} />
+            </button>
+          </div>
         </div>
       </aside>
-
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-30 border-b border-surfaceMuted/20 bg-surface/88 backdrop-blur-xl">
-          <div className="mx-auto flex min-h-[78px] max-w-[1500px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-            <div className="flex min-w-0 items-center gap-4">
-              <Button
-                className="lg:hidden"
-                variant="outline"
-                size="icon"
-                onClick={() => setIsNavOpen(true)}
+      <div className="workspace-content">
+        <header className="nova-topbar">
+          <button
+            ref={menuButtonRef}
+            className="icon-button mobile-menu-button"
+            aria-label="Open navigation"
+            aria-controls="workspace-navigation"
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen(true)}
+          >
+            <Menu size={20} />
+          </button>
+          <div className="breadcrumb">
+            <span>Workspace</span>
+            <ChevronRight size={13} />
+            <strong>
+              {location.pathname.startsWith('/settings')
+                ? 'Settings'
+                : navigationLabels[current?.id ?? 'ops']}
+            </strong>
+          </div>
+          <div className="topbar-tools">
+            <button
+              className="global-search"
+              aria-label="Search workspace"
+              onClick={() => {
+                setQuery('')
+                setSearchOpen(true)
+              }}
+            >
+              <Search size={16} />
+              <span>Search workspace</span>
+              <kbd>Ctrl K</kbd>
+            </button>
+            <span className="topbar-divider" />
+            <ThemeToggle compact className="topbar-theme" />
+            <button
+              className="icon-button notification-button"
+              aria-label={`Notifications, ${newAlerts.length} incidents need review`}
+              onClick={() => setNotificationsOpen(true)}
+            >
+              <Bell size={18} />
+              {!!newAlerts.length && <span />}
+            </button>
+            <div className="topbar-profile">
+              <button
+                className="profile-button"
+                aria-label="Account menu"
+                aria-expanded={userOpen}
+                onClick={() => setUserOpen((value) => !value)}
               >
-                <Menu className="h-5 w-5" />
-              </Button>
-
-              <div className="topbar-context min-w-0">
-                <div className="eyebrow text-[10px]">NOVA Sentinel</div>
-                <div className="truncate font-display text-lg font-bold tracking-[-0.03em] text-ink">
-                  Campus Security Operations
-                </div>
-              </div>
-            </div>
-
-            <div className="topbar-utility-cluster flex items-center justify-end gap-2.5 rounded-full border border-surfaceMuted/50 px-2 py-2">
-              <Badge className="topbar-status">
-                {roleLabels[session.role]} / {session.shift}
-              </Badge>
-              {canAccessRoute(session.role, 'settings') ? (
-                <Link
-                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                  to={routePaths.settings}
-                >
-                  <Settings2 className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Settings</span>
-                </Link>
-              ) : null}
-              {canAccessRoute(session.role, 'search') ? (
-                <Link
-                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
-                  to={routePaths.search}
-                >
-                  <Search className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Snapshot Search</span>
-                </Link>
-              ) : null}
-              <ThemeToggle compact />
-              <div className="relative">
-                <Button
-                  aria-expanded={isUserMenuOpen}
-                  aria-haspopup="menu"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsUserMenuOpen((value) => !value)}
-                >
-                  <UserRound className="h-4 w-4" />
-                  <span className="hidden sm:inline">{session.name}</span>
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </Button>
-                <div
-                  className={cn(
-                    'absolute right-0 top-[calc(100%+0.5rem)] z-30 w-56 border border-surfaceMuted/20 bg-primaryDeep p-2 shadow-lg transition-all',
-                    isUserMenuOpen
-                      ? 'translate-y-0 opacity-100'
-                      : 'pointer-events-none -translate-y-1 opacity-0',
-                  )}
-                  role="menu"
-                >
-                  <div className="border-b border-surfaceMuted/20 px-2.5 pb-2 pt-1">
-                    <div className="text-sm font-semibold text-ink">{session.name}</div>
-                    <div className="text-xs uppercase tracking-[0.18em] text-textSecondary">
-                      {roleLabels[session.role]}
-                    </div>
-                  </div>
-                  <div className="pt-2">
-                    <button
-                      className="flex w-full items-center gap-2 border border-transparent px-2.5 py-2 text-left text-sm text-ink transition-colors hover:border-surfaceMuted/20 hover:bg-primaryDark"
-                      onClick={() => {
-                        setIsUserMenuOpen(false)
-                        logout()
-                      }}
-                      role="menuitem"
-                      type="button"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Logout</span>
+                <span className="avatar avatar-small">{initials}</span>
+                <ChevronDown size={13} />
+              </button>
+              {userOpen && (
+                <>
+                  <button
+                    className="profile-scrim"
+                    aria-label="Close account menu"
+                    onClick={() => setUserOpen(false)}
+                  />
+                  <div className="profile-menu">
+                    <strong>{session.name}</strong>
+                    <small>{session.email}</small>
+                    <button onClick={logout}>
+                      <LogOut size={15} />
+                      Sign out
                     </button>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </div>
         </header>
-
-        <main className="mx-auto max-w-[1500px] px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+        <main className="nova-main" id="workspace-main">
           <Outlet />
-          <footer className="mt-8 border-t border-surfaceMuted/20 pt-4 text-sm text-textSecondary">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="footer-brand-lockup w-full max-w-[11rem] px-3 py-2">
-                <NovaLogo className="max-h-12" />
-              </div>
-              <div>
-                DAMA LTD / Powered by NOVA. Campus evidence remains limited to
-                snapshots plus metadata, and operational action requires human
-                validation.
-              </div>
-            </div>
-          </footer>
         </main>
+        <footer className="workspace-footer">
+          <span>
+            <ShieldCheck size={13} />
+            Human-reviewed operations · Snapshots & metadata
+          </span>
+          <span>
+            NOVA by DAMA<span> / </span>Sample data
+          </span>
+        </footer>
       </div>
+      <WorkspaceDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        title="Search workspace"
+        description="Find a page, incident, or campus zone."
+      >
+        <div className="command-search">
+          <Search size={20} />
+          <input
+            aria-label="Search workspace"
+            autoFocus
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search incidents, zones, pages…"
+          />
+          <kbd>ESC</kbd>
+        </div>
+        <div className="command-results">
+          <p className="section-label">Navigate</p>
+          {matchingRoutes.slice(0, searchTerm ? 8 : 4).map((item) => (
+            <Link key={item.id} to={item.to} onClick={closeNavigation}>
+              <item.icon className="h-4 w-4" />
+              <span>{navigationLabels[item.id]}</span>
+              <ChevronRight size={15} />
+            </Link>
+          ))}
+          <p className="section-label">Incidents</p>
+          {matchingAlerts.map((alert) => (
+            <button
+              key={alert.id}
+              onClick={() => {
+                setSearchOpen(false)
+                setSelectedAlert(alert)
+              }}
+            >
+              <span className={`severity-dot ${alert.severity}`} />
+              <div>
+                <strong>{alert.title}</strong>
+                <small>{alert.zone}</small>
+              </div>
+              <ChevronRight size={15} />
+            </button>
+          ))}
+          {!matchingRoutes.length && !matchingAlerts.length && (
+            <div className="empty-state">No results for “{query}”. Try a zone or incident name.</div>
+          )}
+        </div>
+        <div className="command-footer">
+          <Command size={13} />
+          Ctrl K to open · Escape to close
+        </div>
+      </WorkspaceDialog>
+      <WorkspaceDialog
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+        title="Needs your attention"
+        description={`${newAlerts.length} incidents awaiting review.`}
+        drawer
+      >
+        <div className="notification-list">
+          {newAlerts.map((alert) => (
+            <button
+              key={alert.id}
+              onClick={() => {
+                setNotificationsOpen(false)
+                setSelectedAlert(alert)
+              }}
+            >
+              <span className={`signal-badge signal-${alert.severity}`}>{alert.severity}</span>
+              <strong>{alert.title}</strong>
+              <small>{alert.zone}</small>
+              <span className="text-link">
+                Review incident <ChevronRight size={14} />
+              </span>
+            </button>
+          ))}
+          {!newAlerts.length && (
+            <div className="empty-state">
+              <ShieldCheck size={30} />
+              <strong>You’re all caught up</strong>
+              <p>No incidents are awaiting acknowledgement.</p>
+            </div>
+          )}
+        </div>
+      </WorkspaceDialog>
+      <WorkspaceDialog
+        open={helpOpen}
+        onOpenChange={setHelpOpen}
+        title="Your operations workspace"
+        description="A few useful things to know."
+      >
+        <div className="help-content">
+          <div>
+            <kbd>Ctrl K</kbd>
+            <p>Find any workspace page or incident.</p>
+          </div>
+          <div>
+            <kbd>Esc</kbd>
+            <p>Close incident review, search, or a dialog.</p>
+          </div>
+          <h3>Review → acknowledge → coordinate</h3>
+          <p>
+            Open an incident to inspect its snapshot and assigned team. Acknowledge a new incident to record
+            ownership, then use the case file for investigation context.
+          </p>
+          <h3>About this workspace</h3>
+          <p>
+            This is a local demo using sample campus records. Acknowledgements, cases, reports, and shift
+            notes are stored in this browser. The campus map is a schematic; camera status is sample data.
+            Production authentication and campus integrations are still required.
+          </p>
+        </div>
+      </WorkspaceDialog>
+      <AlertDetail
+        alert={
+          selectedAlert ? (data?.alerts.find((item) => item.id === selectedAlert.id) ?? selectedAlert) : null
+        }
+        evidence={data?.evidence}
+        onClose={() => setSelectedAlert(null)}
+      />
     </div>
   )
 }

@@ -1,12 +1,6 @@
 import { Link } from 'react-router-dom'
 import { buttonVariants } from '@/components/ui/button-variants'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function NotFoundPage() {
   return (
@@ -15,9 +9,7 @@ export function NotFoundPage() {
         <CardHeader>
           <p className="eyebrow">404</p>
           <CardTitle className="text-3xl">Requested surface is unavailable</CardTitle>
-          <CardDescription>
-            The route does not map to a NOVA workspace.
-          </CardDescription>
+          <CardDescription>The route does not map to a NOVA workspace.</CardDescription>
         </CardHeader>
         <CardContent>
           <Link className={buttonVariants({ variant: 'outline' })} to="/ops">
