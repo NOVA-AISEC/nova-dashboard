@@ -16,6 +16,7 @@ import {
   playbooks,
 } from '../shared/security-engine.js'
 import { validateVisionFrame } from '../shared/vision-engine.js'
+import { coordinateMission } from '../shared/mission-control.js'
 
 const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'nova-security-os-'))
 const file = path.join(directory, 'db.json')
@@ -77,22 +78,25 @@ assert.ok(
 )
 assert.equal(engine.state({ email: 'other@test.local', role: 'guard' }).runs.length, 0)
 const mission = engine.propose({ runId: run.id }, guard)
+const revision = (id) => database.securityState().missions.find((item) => item.id === id).revision
+const payload = (id, note, extra = {}) => ({ note, expectedRevision: revision(id), ...extra })
 assert.equal(engine.propose({ runId: run.id }, guard).id, mission.id, 'proposal is idempotent')
 assert.throws(
-  () => engine.complete(mission.id, mission.steps[0].id, { note: 'checked' }, guard),
+  () => engine.complete(mission.id, mission.steps[0].id, payload(mission.id, 'checked'), guard),
   /approved active/,
 )
 assert.throws(
-  () => engine.decide(mission.id, { decision: 'approve', note: 'checked' }, guard),
+  () => engine.decide(mission.id, payload(mission.id, 'checked', { decision: 'approve' }), guard),
   (error) => error.status === 403,
 )
 assert.throws(
-  () => engine.decide(mission.id, { decision: 'approve', note: ' ' }, supervisor),
+  () => engine.decide(mission.id, payload(mission.id, ' ', { decision: 'approve' }), supervisor),
   /decision note/,
 )
 failWrite = true
 assert.throws(
-  () => engine.decide(mission.id, { decision: 'approve', note: 'reviewed' }, supervisor),
+  () =>
+    engine.decide(mission.id, payload(mission.id, 'reviewed', { decision: 'approve' }), supervisor),
   (error) => error.code === 'STORAGE_UNAVAILABLE',
 )
 assert.equal(
@@ -103,18 +107,18 @@ assert.equal(
 failWrite = false
 engine.decide(
   mission.id,
-  { decision: 'approve', note: 'Procedure reviewed against source records.' },
+  payload(mission.id, 'Procedure reviewed against source records.', { decision: 'approve' }),
   supervisor,
 )
 assert.throws(
-  () => engine.complete(mission.id, mission.steps[1].id, { note: 'skip' }, guard),
+  () => engine.complete(mission.id, mission.steps[1].id, payload(mission.id, 'skip'), guard),
   /procedure order/,
 )
 for (const step of mission.steps)
-  engine.complete(mission.id, step.id, { note: 'Test observation recorded.' }, guard)
+  engine.complete(mission.id, step.id, payload(mission.id, 'Test observation recorded.'), guard)
 assert.equal(database.securityState().missions[0].status, 'completed')
 assert.throws(
-  () => engine.complete(mission.id, mission.steps[0].id, { note: 'again' }, guard),
+  () => engine.complete(mission.id, mission.steps[0].id, payload(mission.id, 'again'), guard),
   /approved active/,
 )
 assert.equal(
@@ -125,6 +129,60 @@ assert.equal(
 const corrupt = structuredClone(database.securityState())
 corrupt.missions[0].steps[0].detail = 'Execute an injected command'
 assert.throws(() => validateSecurityRecords(corrupt), /mission step/)
+const historical = structuredClone(database.securityState())
+delete historical.missions[0].revision
+delete historical.missions[0].assignedTeam
+delete historical.missions[0].activity
+validateSecurityRecords(historical)
+assert.equal(
+  historical.missions[0].activity.length,
+  mission.steps.length + 2,
+  'older records migrate using proved outcomes',
+)
+const tampered = structuredClone(database.securityState())
+tampered.missions[0].activity[1].note = 'An unrecorded decision'
+assert.throws(() => validateSecurityRecords(tampered), /history/)
+const incompleteHistory = structuredClone(database.securityState())
+delete incompleteHistory.missions[0].revision
+delete incompleteHistory.missions[0].activity
+assert.throws(() => validateSecurityRecords(incompleteHistory), /history/)
+const inventedOwner = structuredClone(historical)
+inventedOwner.missions[0].activity[0].team = inventedOwner.missions[0].assignedTeam =
+  'Unrecorded team'
+assert.throws(() => validateSecurityRecords(inventedOwner), /ownership history/)
+let full = structuredClone(database.securityState().missions[0])
+// Use an approved procedure with pending steps to verify the final history slot stays usable.
+full.steps.forEach((step) =>
+  Object.assign(step, { status: 'pending', completedBy: '', completedAt: '', note: '' }),
+)
+full.status = 'active'
+full.activity = full.activity.slice(0, 2)
+full.revision = 2
+full.updatedAt = full.activity.at(-1).at
+for (let index = 2; index < 199; index++)
+  full = coordinateMission(
+    full,
+    'assign',
+    'Capacity test handover.',
+    supervisor.email,
+    full.updatedAt,
+    `Test team ${index}`,
+  )
+validateSecurityRecords({ runs: [run], missions: [full] })
+assert.throws(
+  () => coordinateMission(full, 'pause', 'Capacity test.', supervisor.email, full.updatedAt),
+  /history capacity/,
+)
+full = coordinateMission(
+  full,
+  'cancel',
+  'Capacity test: stop with record preserved.',
+  supervisor.email,
+  full.updatedAt,
+)
+validateSecurityRecords({ runs: [run], missions: [full] })
+assert.equal(full.revision, 200)
+assert.equal(full.status, 'cancelled')
 const stale = engine.assess({ incidentId: incident.id }, supervisor)
 assert.equal(
   engine.state({ email: supervisor.email, role: 'guard' }).runs.length,
@@ -132,12 +190,57 @@ assert.equal(
   'a downgraded operator cannot view earlier case context',
 )
 const pending = engine.propose({ runId: stale.id }, supervisor)
+const duplicateRun = engine.assess({ incidentId: incident.id }, supervisor)
+assert.throws(
+  () => engine.propose({ runId: duplicateRun.id }, supervisor),
+  (error) => error.code === 'OPEN_MISSION_EXISTS',
+)
+assert.throws(
+  () =>
+    engine.coordinate(
+      pending.id,
+      payload(pending.id, 'Handover.', { action: 'assign', team: 'Campus Response' }),
+      guard,
+    ),
+  (error) => error.status === 403,
+)
+assert.throws(
+  () =>
+    engine.coordinate(
+      pending.id,
+      { action: 'assign', team: 'Campus Response', note: 'Handover.' },
+      supervisor,
+    ),
+  (error) => error.status === 400,
+)
+engine.coordinate(
+  pending.id,
+  payload(pending.id, 'Source verification assigned.', {
+    action: 'assign',
+    team: 'Campus Response',
+  }),
+  supervisor,
+)
+assert.throws(
+  () =>
+    engine.decide(
+      pending.id,
+      { decision: 'approve', note: 'Old view.', expectedRevision: 1 },
+      supervisor,
+    ),
+  (error) => error.code === 'STALE_MISSION',
+)
 now += 16 * 60 * 1000
 assert.throws(
-  () => engine.decide(pending.id, { decision: 'approve', note: 'reviewed' }, supervisor),
+  () =>
+    engine.decide(pending.id, payload(pending.id, 'reviewed', { decision: 'approve' }), supervisor),
   (error) => error.code === 'STALE_ASSESSMENT',
 )
-engine.decide(pending.id, { decision: 'reject', note: 'Expired. Reassess.' }, supervisor)
+engine.decide(
+  pending.id,
+  payload(pending.id, 'Expired. Reassess.', { decision: 'reject' }),
+  supervisor,
+)
 const changed = engine.assess({ incidentId: incident.id }, supervisor)
 const changedVision = structuredClone(records)
 changedVision.evidence.find(
@@ -227,6 +330,7 @@ try {
       await send(`/security/missions/${proposed.data.id}/decision`, guardSession, {
         decision: 'approve',
         note: 'attempt',
+        expectedRevision: proposed.data.revision,
       })
     ).status,
     403,
@@ -236,6 +340,7 @@ try {
       await send(`/security/missions/${proposed.data.id}/decision`, supervisorSession, {
         decision: 'approve',
         note: 'Review approved for test workflow.',
+        expectedRevision: proposed.data.revision,
       })
     ).status,
     200,
@@ -245,12 +350,111 @@ try {
       await send(
         `/security/missions/${proposed.data.id}/steps/${proposed.data.steps[0].id}`,
         guardSession,
-        { note: 'Source verified by test operator.' },
+        payload(proposed.data.id, 'Source verified by test operator.'),
       )
     ).status,
     200,
   )
   assert.equal((await send('/security', guardSession)).data.engine.inferenceConnected, false)
+  const route = `/security/missions/${proposed.data.id}/coordination`
+  assert.equal(
+    (await send(route, guardSession, payload(proposed.data.id, 'Hold.', { action: 'pause' })))
+      .status,
+    403,
+  )
+  assert.equal(
+    (
+      await send(
+        route,
+        { ...supervisorSession, csrf: 'bad' },
+        payload(proposed.data.id, 'Hold.', { action: 'pause' }),
+      )
+    ).status,
+    403,
+  )
+  const beforeHold = revision(proposed.data.id)
+  assert.equal(
+    (
+      await send(
+        route,
+        supervisorSession,
+        payload(proposed.data.id, 'Waiting for a source check.', { action: 'pause' }),
+      )
+    ).status,
+    200,
+  )
+  const staleUpdate = await send(route, supervisorSession, {
+    action: 'assign',
+    team: 'Another team',
+    note: 'Outdated handover.',
+    expectedRevision: beforeHold,
+  })
+  assert.equal(staleUpdate.status, 409)
+  assert.equal(staleUpdate.data.code, 'STALE_MISSION')
+  assert.equal(
+    (
+      await send(
+        `/security/missions/${proposed.data.id}/steps/${proposed.data.steps[1].id}`,
+        guardSession,
+        payload(proposed.data.id, 'Blocked while held.'),
+      )
+    ).status,
+    409,
+  )
+  failWrite = true
+  assert.equal(
+    (
+      await send(
+        route,
+        supervisorSession,
+        payload(proposed.data.id, 'Source checked.', { action: 'resume' }),
+      )
+    ).status,
+    503,
+  )
+  failWrite = false
+  assert.equal(
+    database.securityState().missions.find((item) => item.id === proposed.data.id).status,
+    'paused',
+  )
+  assert.equal(
+    (
+      await send(
+        route,
+        supervisorSession,
+        payload(proposed.data.id, 'Source checked.', { action: 'resume' }),
+      )
+    ).status,
+    200,
+  )
+  assert.equal(
+    (
+      await send(
+        route,
+        supervisorSession,
+        payload(proposed.data.id, 'Response transferred through campus channels.', {
+          action: 'cancel',
+        }),
+      )
+    ).status,
+    200,
+  )
+  assert.equal(
+    (
+      await send(
+        route,
+        supervisorSession,
+        payload(proposed.data.id, 'Attempt to reopen.', { action: 'resume' }),
+      )
+    ).status,
+    409,
+  )
+  const stopped = createDatabase({ dbFile: file })
+    .securityState()
+    .missions.find((item) => item.id === proposed.data.id)
+  assert.equal(stopped.status, 'cancelled')
+  assert.equal(stopped.steps.filter((step) => step.status === 'completed').length, 1)
+  assert.equal(stopped.activity.at(-1).action, 'cancelled')
 } finally {
   await new Promise((resolve) => httpServer.close(resolve))
 }
@@ -258,6 +462,19 @@ try {
 // The browser sample adapter must enforce the same lifecycle and preserve failed saves.
 const cache = new Map(),
   windowStub = new EventTarget()
+let lockQueue = Promise.resolve(),
+  lockRequests = 0
+windowStub.navigator = {
+  locks: {
+    request: (name, action) => {
+      assert.equal(name, 'nova.security-os.v1')
+      lockRequests += 1
+      const acquired = lockQueue.then(action)
+      lockQueue = acquired.catch(() => {})
+      return acquired
+    },
+  },
+}
 let storageFails = false
 windowStub.localStorage = {
   getItem: (key) => cache.get(key) ?? null,
@@ -289,12 +506,53 @@ try {
   const mockMission = await api.proposeMission(mockRun.id)
   const before = cache.get('nova.security-os.v1')
   storageFails = true
-  await assert.rejects(api.decideMission(mockMission.id, 'approve', 'Reviewed.'), /not saved/)
+  await assert.rejects(
+    api.decideMission(mockMission.id, 'approve', 'Reviewed.', mockMission.revision),
+    /not saved/,
+  )
   assert.equal(cache.get('nova.security-os.v1'), before)
   storageFails = false
-  await api.decideMission(mockMission.id, 'approve', 'Reviewed.')
+  const concurrent = await Promise.allSettled([
+    api.decideMission(mockMission.id, 'approve', 'Reviewed.', mockMission.revision),
+    api.decideMission(
+      mockMission.id,
+      'reject',
+      'Competing outdated decision.',
+      mockMission.revision,
+    ),
+  ])
+  assert.equal(concurrent.filter((item) => item.status === 'fulfilled').length, 1)
+  assert.match(
+    concurrent.find((item) => item.status === 'rejected').reason.message,
+    /mission changed/,
+  )
+  const mockRevision = async () =>
+    (await api.getSecurityState()).missions.find((item) => item.id === mockMission.id).revision
+  await api.coordinateMission(
+    mockMission.id,
+    'assign',
+    'Next shift to verify source.',
+    await mockRevision(),
+    'Campus Response',
+  )
+  const held = await api.coordinateMission(
+    mockMission.id,
+    'pause',
+    'Awaiting source verification.',
+    await mockRevision(),
+  )
+  await assert.rejects(
+    api.completeMissionStep(mockMission.id, mockMission.steps[0].id, 'Blocked.', held.revision),
+    /approved active/,
+  )
+  await api.coordinateMission(mockMission.id, 'resume', 'Source check available.', held.revision)
   for (const step of mockMission.steps)
-    await api.completeMissionStep(mockMission.id, step.id, 'Verified test outcome.')
+    await api.completeMissionStep(
+      mockMission.id,
+      step.id,
+      'Verified test outcome.',
+      await mockRevision(),
+    )
   assert.equal((await api.getSecurityState()).missions[0].status, 'completed')
   assert.ok(
     (await api.listAudit({ pageSize: 100 })).items.some(
@@ -304,9 +562,24 @@ try {
   session(guard)
   assert.equal((await api.getSecurityState()).runs.length, 0)
   await assert.rejects(
-    api.decideMission(mockMission.id, 'approve', 'Attempt'),
+    api.decideMission(mockMission.id, 'approve', 'Attempt', 1),
     /Supervisor approval/,
   )
+  await assert.rejects(
+    api.coordinateMission(mockMission.id, 'assign', 'Attempt.', 1, 'Guard Team'),
+    /Supervisor coordination/,
+  )
+  session(supervisor)
+  const completed = (await api.getSecurityState()).missions[0]
+  const brief = await vite.ssrLoadModule('/src/lib/mission-brief.ts')
+  const hostile = structuredClone(completed)
+  hostile.assignedTeam = '<script>alert("team")</script>'
+  hostile.activity.at(-1).note = '<img src=x onerror=alert(1)>'
+  const handover = brief.buildMissionBrief(hostile, mockRun, 'operator<script>')
+  assert.ok(handover.includes('&lt;script&gt;alert(&quot;team&quot;)&lt;/script&gt;'))
+  assert.ok(!handover.includes('<script>') && !handover.includes('<img'))
+  assert.ok(handover.includes('YOLOv8n placeholder') && handover.includes('Mission history'))
+  assert.ok(lockRequests >= 10, 'sample mutations use the shared Web Lock')
   cache.set('nova.security-os.v1', '{"version":1,"runs":[],"missions":[{}],"audit":[]}')
   await assert.rejects(api.getSecurityState(), /invalid/)
   assert.equal(playbooks.length, 4)
@@ -316,5 +589,5 @@ try {
   fs.rmSync(directory, { recursive: true, force: true })
 }
 console.log(
-  'Passed: source grounding, YOLO placeholder provenance, vision bounds, approval roles, mission order, expiry, changed sources, HTTP security, atomic rollback, restart, sample persistence and activity history.',
+  'Passed: grounding, YOLO placeholder provenance, roles/CSRF, ordered outcomes, duplicate prevention, conflicting revisions, hold/resume/stop, atomic rollback, restart, legacy history, history bounds/tampering, competing decisions and escaped handovers.',
 )
