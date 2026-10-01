@@ -131,10 +131,19 @@ export async function ackAlert(id: string) {
 }
 
 export async function search(query: string, filters: Omit<SearchParams, 'q'> = {}) {
-  return searchDataset({
+  const results = searchDataset({
     q: query,
     ...filters,
   })
+  const unfiltered =
+    !query.trim() && Object.values(filters).every((value) => !value || value === 'all')
+  const relatedIds = new Set(
+    [...results.alerts, ...results.cases, ...results.evidence].map((item) => item.id),
+  )
+  results.audit = [...securityAudit(), ...auditEvents]
+    .filter((event) => unfiltered || relatedIds.has(event.entityId))
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+  return results
 }
 
 export async function listAudit(

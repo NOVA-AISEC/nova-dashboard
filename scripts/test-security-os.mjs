@@ -559,6 +559,30 @@ try {
       (event) => event.action === 'MISSION_STEP_RECORDED',
     ),
   )
+  const auditSearch = await api.search('')
+  const authoritativeAudit = (await api.listAudit({ pageSize: 100 })).items
+  assert.deepEqual(
+    auditSearch.audit.map((event) => event.id),
+    authoritativeAudit.map((event) => event.id),
+    'Audit page and download receive every saved action in order',
+  )
+  for (const action of [
+    'ENGINE_ASSESSED',
+    'MISSION_PROPOSED',
+    'MISSION_APPROVED',
+    'MISSION_ASSIGNED',
+    'MISSION_PAUSED',
+    'MISSION_RESUMED',
+    'MISSION_STEP_RECORDED',
+  ])
+    assert.ok(
+      auditSearch.audit.some((event) => event.action === action),
+      `${action} appears in workspace audit`,
+    )
+  const focusedAudit = (await api.search('', { cameraId: mockIncident.cameraId })).audit
+  assert.ok(focusedAudit.some((event) => event.action === 'MISSION_STEP_RECORDED'))
+  const unrelated = (await api.search('', { cameraId: 'unknown-camera' })).audit
+  assert.equal(unrelated.length, 0, 'Record filters do not leak unrelated audit events')
   session(guard)
   assert.equal((await api.getSecurityState()).runs.length, 0)
   await assert.rejects(
