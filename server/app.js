@@ -2,6 +2,7 @@ import express from 'express'
 import { randomUUID } from 'node:crypto'
 import { createAuth } from './auth.js'
 import { ApiError, identifier, validateQuery } from './validation.js'
+import { createSecurityOS } from './security-os.js'
 
 export function createApp({
   database,
@@ -15,6 +16,7 @@ export function createApp({
   if (!database) throw new Error('A database is required.')
   const app = express()
   const auth = createAuth({ users, secureCookies, sessionMs, now })
+  const security = createSecurityOS({ database, now })
   const allowedOrigins = new Set(origins)
   const requests = new Map()
   app.disable('x-powered-by')
@@ -109,6 +111,39 @@ export function createApp({
   })
   app.get('/api/audit', investigators, (request, response) =>
     response.json(database.listAuditEvents(validateQuery(request.query, 'audit'))),
+  )
+  app.get('/api/security', (request, response) =>
+    response.json(security.state(request.session.user)),
+  )
+  app.post('/api/security/assessments', auth.requireCsrf, requireJson, json, (request, response) =>
+    response.status(201).json(security.assess(request.body, request.session.user)),
+  )
+  app.post('/api/security/missions', auth.requireCsrf, requireJson, json, (request, response) =>
+    response.json(security.propose(request.body, request.session.user)),
+  )
+  app.post(
+    '/api/security/missions/:id/decision',
+    auth.allow(['supervisor', 'admin']),
+    auth.requireCsrf,
+    requireJson,
+    json,
+    (request, response) =>
+      response.json(security.decide(request.params.id, request.body, request.session.user)),
+  )
+  app.post(
+    '/api/security/missions/:id/steps/:stepId',
+    auth.requireCsrf,
+    requireJson,
+    json,
+    (request, response) =>
+      response.json(
+        security.complete(
+          request.params.id,
+          request.params.stepId,
+          request.body,
+          request.session.user,
+        ),
+      ),
   )
   app.use('/api', (_request, _response) => {
     throw new ApiError(404, 'API route not found.', 'NOT_FOUND')

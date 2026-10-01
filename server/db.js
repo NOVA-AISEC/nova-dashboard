@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { ApiError, validateCase } from './validation.js'
+import { validateSecurityRecords } from '../shared/security-engine.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -56,6 +57,17 @@ function validateState(value) {
       throw new Error('Invalid database alert.')
   }
   for (const record of value.cases) {
+    if (
+      !['alertIds', 'evidenceIds'].every(
+        (key) =>
+          Array.isArray(record[key]) &&
+          record[key].length <= 100000 &&
+          record[key].every(
+            (id) => typeof id === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,99}$/.test(id),
+          ),
+      )
+    )
+      throw new Error('Invalid database case links.')
     validateCase(
       Object.fromEntries(
         [
@@ -68,7 +80,7 @@ function validateState(value) {
           'leadAnalyst',
           'alertIds',
           'evidenceIds',
-        ].map((key) => [key, record[key]]),
+        ].map((key) => [key, ['alertIds', 'evidenceIds'].includes(key) ? [] : record[key]]),
       ),
     )
     if (
@@ -97,6 +109,8 @@ function validateState(value) {
     )
       throw new Error('Invalid database audit event.')
   }
+  value.security ??= { runs: [], missions: [] }
+  validateSecurityRecords(value.security)
   return value
 }
 
@@ -500,12 +514,65 @@ export function createDatabase({
       }
     }
   }
+  function securityState() {
+    return clone(getState().security)
+  }
+  function saveSecurityRun(run, actor) {
+    const records = getState().security
+    if (records.runs.length >= 500)
+      throw new ApiError(
+        503,
+        'Assessment capacity reached. Archive records before creating more.',
+        'CAPACITY_REACHED',
+      )
+    records.runs.unshift(clone(run))
+    appendAudit('alert', run.context.incident.id, 'ENGINE_ASSESSED', actor, run.createdAt, {
+      runId: run.id,
+      provider: run.provider,
+      model: run.model,
+    })
+    persist()
+    return clone(run)
+  }
+  function saveMission(mission, action, actor) {
+    const records = getState().security
+    const index = records.missions.findIndex((item) => item.id === mission.id)
+    const recordedStep =
+      index === -1
+        ? undefined
+        : mission.steps.find(
+            (step) =>
+              step.status === 'completed' &&
+              records.missions[index].steps.find((previous) => previous.id === step.id)?.status ===
+                'pending',
+          )
+    if (index === -1) {
+      if (records.missions.length >= 500)
+        throw new ApiError(
+          503,
+          'Mission capacity reached. Archive records before creating more.',
+          'CAPACITY_REACHED',
+        )
+      records.missions.unshift(clone(mission))
+    } else records.missions[index] = clone(mission)
+    appendAudit('alert', mission.incidentId, action, actor, mission.updatedAt, {
+      missionId: mission.id,
+      runId: mission.runId,
+      status: mission.status,
+      ...(recordedStep ? { stepId: recordedStep.id } : {}),
+    })
+    persist()
+    return clone(mission)
+  }
   return {
     initDb,
     listAlerts,
     getCaseById,
     searchRecords,
     listAuditEvents,
+    securityState,
+    saveSecurityRun: transaction(saveSecurityRun),
+    saveMission: transaction(saveMission),
     ackAlert: transaction(ackAlert),
     createCase: transaction(createCase),
     ingestSimulatedAlert: transaction(ingestSimulatedAlert),
