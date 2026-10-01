@@ -1,5 +1,7 @@
 # Architecture
 
+The current operating layer adds shared vision/playbook/lifecycle contracts in `shared/`, authenticated orchestration in `server/security-os.js`, and a matching persistent browser sample adapter in `src/api/mock-security.ts`. Command, Missions, Playbooks and Systems load on demand. See [Security OS architecture and adapter boundary](09-security-os.md) for the complete workflow.
+
 ## Stack identification
 
 - Framework: Vite + React 19 + TypeScript

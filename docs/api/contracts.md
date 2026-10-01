@@ -49,6 +49,8 @@ Date filters accept ISO dates or timestamps with timezone; invalid dates and rev
 
 ## Errors and limits
 
+Security OS adds authenticated assessments, mission proposals, supervisor decisions, and sequential outcome recording. See the [Security OS API contract](../09-security-os.md#api-contract) for request bodies, lifecycle, provenance and capacity limits.
+
 Error envelope: `{ message, code, requestId }`. Responses disable caching and include `X-Request-ID` and security headers. Internal paths, stack traces, password hashes and raw proxy HTML are not returned.
 
 - 400: invalid JSON, query, body, enum or reference

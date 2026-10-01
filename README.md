@@ -1,12 +1,15 @@
-# NOVA Dashboard
+# NOVA Security OS
 
-NOVA is an operator workspace for DAMA LTD's Strathmore-facing campus security workflow. It connects campus conditions, priority incident review, cases, evidence search, reports, and shift handover through a responsive interface.
+NOVA is a campus security operating workspace for DAMA LTD's Strathmore-facing workflow. Command assembles incident records and annotated vision evidence, matches a response playbook, and prepares a mission for supervisor approval. Missions track human-led steps and recorded outcomes alongside cases, evidence search, reports, and shift handover.
+
+The vision foundation is **YOLOv8n**, currently a **placeholder**. It reads labeled sample metadata; there is no model inference, model download, cloud model, or live camera ingestion. See [Security OS workflows and adapter contract](docs/09-security-os.md).
 
 The product is demo-safe by design. It uses still snapshots plus metadata only, keeps biometrics disabled, and does not connect to real CCTV, PII, or identity-resolution services.
 
 ## Current status
 
 - Redesigned operator workspace with local login and role-gated routes
+- Command, Missions, Playbooks, and Systems with source-linked assessments and durable approval/outcome records
 - Working local incident acknowledgement, case creation, reports, filters, and downloads; sample operational data
 - Default build mode uses in-browser mock data
 - Optional Express API with account-backed sessions, server permissions, CSRF protection and atomic local storage
@@ -74,6 +77,7 @@ Workflow regression checks:
 npm run test:operations
 npm run test:api
 npm run test:resilience
+npm run test:security-os
 ```
 
 ## Environment variables
@@ -97,6 +101,10 @@ Public:
 
 Authenticated shell:
 
+- `/command` — default landing; sample vision evidence and assessment
+- `/missions` — supervisor decisions and ordered outcome recording
+- `/playbooks` — four built-in starter procedures
+- `/systems` — supervisor/admin pipeline readiness
 - `/ops`
 - `/queue`
 - `/alerts`
@@ -113,7 +121,7 @@ Authenticated shell:
 - `/settings`
 - `/search`
 
-Role access is enforced in the router. Guards, analysts, supervisors, and admins land on different allowed surfaces after login.
+Role access is enforced in the router. All roles land on Command; navigation and actions respect their permissions. API mode enforces those permissions on the server.
 
 ## Deployment preview
 
@@ -144,7 +152,7 @@ If you want API-backed previews, you need a separate Node deployment for `server
 - No facial recognition
 - No biometric identification
 - No real CCTV or campus integrations
-- No production session backend
+- Account-backed local API sessions; campus SSO and managed production storage remain integration work
 - Demo-safe placeholder imagery only under `public/evidence/`
 
 ## Repo map
