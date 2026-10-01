@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { routeAccess } from '@/app/access'
 import { AppShell } from '@/components/layout/app-shell'
+import { RouteError } from '@/components/shared/route-error'
 import { AlertsPage } from '@/pages/alerts-page'
 import { AuditPage } from '@/pages/audit-page'
 import { CaseDetailPage } from '@/pages/case-detail-page'
@@ -23,6 +24,7 @@ import { PublicOnlyRoute, RequireAuth, RequireRole } from '@/lib/auth'
 export const router = createBrowserRouter([
   {
     element: <PublicOnlyRoute />,
+    errorElement: <RouteError />,
     children: [
       {
         path: '/login',
@@ -32,6 +34,7 @@ export const router = createBrowserRouter([
   },
   {
     element: <RequireAuth />,
+    errorElement: <RouteError />,
     children: [
       {
         path: '/',

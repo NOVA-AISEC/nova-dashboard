@@ -25,7 +25,7 @@ function readJson<T>(key: string, fallback: T): T {
 
   try {
     const raw = window.localStorage.getItem(key)
-    if (!raw) return fallback
+    if (!raw || raw.length > 5_000_000) return fallback
     return JSON.parse(raw) as T
   } catch {
     return fallback
@@ -42,7 +42,7 @@ function writeJson<T>(key: string, value: T) {
 
 export function readShiftNotes() {
   const notes = readJson<unknown>(shiftNotesKey, '')
-  return typeof notes === 'string' ? notes : ''
+  return typeof notes === 'string' && notes.length <= 20000 ? notes : ''
 }
 
 export function writeShiftNotes(value: string) {
@@ -51,13 +51,18 @@ export function writeShiftNotes(value: string) {
 
 export function readIncidentReports() {
   const records = readJson<unknown>(incidentReportsKey, [])
-  return Array.isArray(records)
+  return Array.isArray(records) && records.length <= 1000
     ? records.filter(
         (record): record is IncidentReportRecord =>
           record &&
           ['id', 'reporter', 'category', 'zone', 'priority', 'summary', 'createdAt'].every(
             (key) => typeof record[key] === 'string',
-          ),
+          ) &&
+          Number.isFinite(Date.parse(record.createdAt)) &&
+          ['low', 'medium', 'high', 'critical'].includes(record.priority) &&
+          campusAlertCategories.some((category) => category === record.category) &&
+          campusZones.some((zone) => zone.name === record.zone) &&
+          record.summary.length <= 4000,
       )
     : []
 }
@@ -74,8 +79,11 @@ export function readOperatorPreferences() {
   }
   const saved = readJson<Partial<OperatorPreferences> | null>(preferencesKey, null)
   return {
-    defaultZone: typeof saved?.defaultZone === 'string' ? saved.defaultZone : defaults.defaultZone,
-    compactTables: typeof saved?.compactTables === 'boolean' ? saved.compactTables : defaults.compactTables,
+    defaultZone: campusZones.some((zone) => zone.name === saved?.defaultZone)
+      ? saved!.defaultZone!
+      : defaults.defaultZone,
+    compactTables:
+      typeof saved?.compactTables === 'boolean' ? saved.compactTables : defaults.compactTables,
     autoPrintShiftBrief: false,
   }
 }
@@ -83,3 +91,4 @@ export function readOperatorPreferences() {
 export function writeOperatorPreferences(value: OperatorPreferences) {
   writeJson(preferencesKey, value)
 }
+import { campusAlertCategories, campusZones } from '@/data/campus-reference-data'

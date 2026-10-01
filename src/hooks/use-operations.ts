@@ -10,6 +10,6 @@ export function useOperations() {
     window.addEventListener(OPERATIONS_CHANGED, refresh)
     return () => window.removeEventListener(OPERATIONS_CHANGED, refresh)
   }, [])
-  const state = useAsyncData(() => api.search(''), [revision])
+  const state = useAsyncData(() => api.search(''), [revision], { keepPreviousData: true })
   return { ...state, refresh: () => setRevision((value) => value + 1) }
 }

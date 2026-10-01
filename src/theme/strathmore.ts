@@ -201,8 +201,12 @@ export function getStoredThemeMode(): ThemeMode {
     return 'light'
   }
 
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-  return stored === 'dark' ? 'dark' : 'light'
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
+    return stored === 'dark' ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
 }
 
 export function setStoredThemeMode(mode: ThemeMode) {
@@ -210,7 +214,11 @@ export function setStoredThemeMode(mode: ThemeMode) {
     return
   }
 
-  window.localStorage.setItem(THEME_STORAGE_KEY, mode)
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, mode)
+  } catch {
+    // Theme remains usable for this tab when storage is unavailable.
+  }
   window.dispatchEvent(new CustomEvent<ThemeMode>(THEME_CHANGE_EVENT, { detail: mode }))
 }
 

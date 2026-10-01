@@ -34,7 +34,12 @@ export function ErrorPanel({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="text-sm text-textSecondary">{message}</CardContent>
+      <CardContent className="text-sm text-textSecondary" role="alert">
+        <p>{message}</p>
+        <button className="quiet-button mt-3" onClick={() => window.location.reload()}>
+          Retry loading
+        </button>
+      </CardContent>
     </Card>
   )
 }

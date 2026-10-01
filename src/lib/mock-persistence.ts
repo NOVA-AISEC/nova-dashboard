@@ -18,23 +18,35 @@ function validCase(value: unknown): value is Case {
   if (!value || typeof value !== 'object') return false
   const item = value as Case
   return (
-    ['id', 'title', 'location', 'openedAt', 'updatedAt', 'leadAnalyst', 'summary', 'protocol'].every(
-      (key) => typeof item[key as keyof Case] === 'string',
-    ) &&
+    [
+      'id',
+      'title',
+      'location',
+      'openedAt',
+      'updatedAt',
+      'leadAnalyst',
+      'summary',
+      'protocol',
+    ].every((key) => typeof item[key as keyof Case] === 'string') &&
     ['priority-1', 'priority-2', 'priority-3'].includes(item.priority) &&
     ['active', 'monitoring', 'escalated', 'closed'].includes(item.status) &&
     [item.openedAt, item.updatedAt].every((date) => Number.isFinite(Date.parse(date))) &&
+    item.humanValidationRequired === true &&
     Array.isArray(item.alertIds) &&
+    item.alertIds.length <= 100 &&
     item.alertIds.every((id) => typeof id === 'string') &&
     Array.isArray(item.evidenceIds) &&
+    item.evidenceIds.length <= 100 &&
     item.evidenceIds.every((id) => typeof id === 'string') &&
     Array.isArray(item.timeline) &&
+    item.timeline.length <= 1000 &&
     item.timeline.every(
       (event) =>
         event &&
         ['id', 'title', 'detail', 'operator'].every(
           (key) => typeof event[key as keyof typeof event] === 'string',
         ) &&
+        ['alert', 'triage', 'evidence', 'note', 'handoff', 'closure'].includes(event.kind) &&
         Number.isFinite(Date.parse(event.timestamp)),
     )
   )
@@ -44,13 +56,17 @@ export function restoreMockOperations() {
   if (typeof window === 'undefined') return
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
+    if (raw && raw.length > 5_000_000) return
     const saved = raw ? (JSON.parse(raw) as SavedOperations) : null
     if (
       saved &&
       (saved.version !== 2 ||
         !Array.isArray(saved.alerts) ||
         !Array.isArray(saved.cases) ||
-        !Array.isArray(saved.audit))
+        !Array.isArray(saved.audit) ||
+        saved.alerts.length > 10000 ||
+        saved.cases.length > 1000 ||
+        saved.audit.length > 10000)
     )
       return
     for (const alert of alerts) {
@@ -69,8 +85,14 @@ export function restoreMockOperations() {
         alert.updatedAt = state.updatedAt
       }
     }
-    const customCases = saved?.cases.filter((item) => validCase(item) && !seedCaseIds.has(item.id)) ?? []
-    cases.splice(0, cases.length, ...customCases, ...cases.filter((item) => seedCaseIds.has(item.id)))
+    const customCases =
+      saved?.cases.filter((item) => validCase(item) && !seedCaseIds.has(item.id)) ?? []
+    cases.splice(
+      0,
+      cases.length,
+      ...customCases,
+      ...cases.filter((item) => seedCaseIds.has(item.id)),
+    )
     const savedAudit =
       saved?.audit.filter(
         (item) =>
@@ -96,7 +118,11 @@ export function persistMockOperations() {
   if (typeof window === 'undefined') return
   const saved: SavedOperations = {
     version: 2,
-    alerts: alerts.map(({ id, status, updatedAt }) => ({ id, status, updatedAt })),
+    alerts: alerts.map(({ id, status, updatedAt }) => ({
+      id,
+      status,
+      updatedAt,
+    })),
     cases: cases.filter((item) => !seedCaseIds.has(item.id)),
     audit: auditEvents,
   }
@@ -112,7 +138,7 @@ export function persistMockOperations() {
 restoreMockOperations()
 if (typeof window !== 'undefined') {
   const syncOperations = (event: StorageEvent) => {
-    if (event.key === STORAGE_KEY) {
+    if (event.key === STORAGE_KEY || event.key === null) {
       restoreMockOperations()
       window.dispatchEvent(new Event(OPERATIONS_CHANGED))
     }
