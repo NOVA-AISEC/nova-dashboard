@@ -16,6 +16,7 @@
     "test:api": "node scripts/test-api.mjs",
     "test:resilience": "node scripts/test-resilience.mjs",
     "test:security-os": "node scripts/test-security-os.mjs",
+    "test:account-boundary": "node scripts/test-account-boundary.mjs",
     "auth:add-user": "node scripts/add-api-user.mjs"
   },
   "dependencies": {
@@ -41,6 +42,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "jsdom": "^27.4.0",
     "postcss": "^8.5.6",
     "shadcn": "^3.8.5",
     "tailwindcss": "^4.2.1",

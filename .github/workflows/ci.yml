@@ -36,6 +36,9 @@ jobs:
       - name: Test security OS workflows
         run: npm run test:security-os
 
+      - name: Test account boundaries
+        run: npm run test:account-boundary
+
       - name: Audit dependencies
         run: npm audit --audit-level=moderate
 

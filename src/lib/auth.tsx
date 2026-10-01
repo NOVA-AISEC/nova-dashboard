@@ -210,7 +210,8 @@ export function RequireAuth() {
       </div>
     )
   if (!session) return <Navigate replace to="/login" state={{ from: location.pathname }} />
-  return <Outlet />
+  // A new login/account/role must not inherit cached records, dialogs or action drafts.
+  return <Outlet key={JSON.stringify([session.email, session.role, session.expiresAt])} />
 }
 export function RequireRole({ allowed, children }: { allowed: UserRole[]; children: ReactNode }) {
   const { session } = useAuth()
