@@ -1,4 +1,5 @@
-// Public references describe places. NOVA's zones, geometry and devices are design assumptions.
+import { campusGeography } from './campus-geography.js'
+// Geographic features retain OSM coordinates; operational assignments remain explicit assumptions.
 export const campusSources = [
   {
     id: 'su-contact',
@@ -35,6 +36,23 @@ export const campusSources = [
     checkedAt: '2026-10-02',
     fact: 'Strathmore states that it does not have accommodation facilities within the university and recommends external hostels.',
   },
+
+  {
+    id: 'osm-campus',
+    title: 'OpenStreetMap · Strathmore geographic extract',
+    url: 'https://www.openstreetmap.org/way/105267819',
+    checkedAt: '2026-10-02',
+    fact: 'Community-mapped campus boundary, 11 building footprints, 6 parking areas and 3 gate points. Coordinates are retained from OpenStreetMap, with individual feature dates; this is not a campus survey.',
+  },
+  ...campusGeography.features
+    .filter((feature) => !['boundary', 'road'].includes(feature.properties.kind))
+    .map((feature) => ({
+      id: `osm-${feature.properties.osmType}-${feature.properties.osmId}`,
+      title: `OpenStreetMap · ${feature.properties.name || `${feature.properties.kind} ${feature.properties.osmId}`}`,
+      url: feature.properties.sourceUrl,
+      checkedAt: '2026-10-02',
+      fact: `${feature.properties.kind} geometry from OSM ${feature.id}, version ${feature.properties.sourceVersion}, last edited ${feature.properties.sourceUpdatedAt}. ${feature.properties.name ? `Mapped name: ${feature.properties.name}.` : 'No name is supplied by this source.'} No camera, room, capacity or access policy is established by this map.`,
+    })),
 ]
 
 export const campusPlaces = [
@@ -46,12 +64,11 @@ export const campusPlaces = [
     provenance: 'modeled-zone',
     sourceIds: ['su-contact'],
     description:
-      'Proposed arrival and visitor-screening zone at the Madaraka campus. Exact gate position and access policy need campus validation.',
-    x: 170,
-    y: 385,
-    width: 125,
-    depth: 64,
-    height: 16,
+      'Public gate points are shown separately. No verified gate assignment for the legacy Main Gate operational zone.',
+    geometryFeatureIds: [],
+    geometryStatus: 'unlocated',
+    geometryNote:
+      'Public gate points are shown separately. No verified gate assignment for the legacy Main Gate operational zone.',
     aliases: ['Main Gate  Lane 1', 'Main Gate / Side Gate', 'Main Gate', 'Side Gate'],
     responsibility: 'Gate desk',
     baseline: 38,
@@ -62,14 +79,13 @@ export const campusPlaces = [
     shortName: 'Library',
     kind: 'learning',
     provenance: 'public-reference',
-    sourceIds: ['su-library'],
+    sourceIds: ['su-library', 'osm-way-105267066'],
     description:
-      'Publicly documented university library. Entrance geometry, capacity and camera coverage are proposed for the twin.',
-    x: 390,
-    y: 190,
-    width: 132,
-    depth: 85,
-    height: 58,
+      'Mapped Library building; Library Entrance records resolve to the building, not an exact indoor entrance.',
+    geometryFeatureIds: ['way/105267066'],
+    geometryStatus: 'mapped',
+    geometryNote:
+      'Mapped Library building; Library Entrance records resolve to the building, not an exact indoor entrance.',
     aliases: [
       'Library',
       'Library Entrance',
@@ -81,18 +97,17 @@ export const campusPlaces = [
   },
   {
     id: 'main-auditorium',
-    name: 'Main Auditorium',
-    shortName: 'Main Auditorium',
+    name: 'University Auditorium',
+    shortName: 'Auditorium',
     kind: 'venue',
     provenance: 'public-reference',
-    sourceIds: ['su-venues'],
+    sourceIds: ['su-venues', 'osm-way-105267044'],
     description:
-      'Named campus venue in Strathmore’s summit report. Event attendance and ingress readings below are exercise data.',
-    x: 605,
-    y: 280,
-    width: 133,
-    depth: 86,
-    height: 39,
+      'OSM names this footprint Strathmore University Auditorium. The Main Auditorium room alias needs campus confirmation.',
+    geometryFeatureIds: ['way/105267044'],
+    geometryStatus: 'mapped',
+    geometryNote:
+      'OSM names this footprint Strathmore University Auditorium. The Main Auditorium room alias needs campus confirmation.',
     aliases: ['Main Auditorium'],
     responsibility: 'Event liaison',
     baseline: 24,
@@ -105,12 +120,11 @@ export const campusPlaces = [
     provenance: 'public-reference',
     sourceIds: ['su-venues'],
     description:
-      'Named campus venue in Strathmore’s summit report. Its position relative to other buildings is schematic.',
-    x: 595,
-    y: 115,
-    width: 117,
-    depth: 65,
-    height: 32,
+      'Documented venue; building and room position unverified. No map pin is fabricated.',
+    geometryFeatureIds: [],
+    geometryStatus: 'unlocated',
+    geometryNote:
+      'Documented venue; building and room position unverified. No map pin is fabricated.',
     aliases: ['Microsoft Auditorium'],
     responsibility: 'Event liaison',
     baseline: 20,
@@ -122,13 +136,10 @@ export const campusPlaces = [
     kind: 'learning',
     provenance: 'public-reference',
     sourceIds: ['su-msb'],
-    description:
-      'A teaching venue documented by Strathmore. This conceptual block represents the venue, rather than a verified building footprint.',
-    x: 190,
-    y: 155,
-    width: 118,
-    depth: 81,
-    height: 64,
+    description: 'Documented teaching room; no verified room-to-footprint mapping.',
+    geometryFeatureIds: [],
+    geometryStatus: 'unlocated',
+    geometryNote: 'Documented teaching room; no verified room-to-footprint mapping.',
     aliases: ['MSB9'],
     responsibility: 'Campus patrol',
     baseline: 32,
@@ -141,12 +152,11 @@ export const campusPlaces = [
     provenance: 'modeled-zone',
     sourceIds: ['su-contact'],
     description:
-      'Proposed mobility zone for vehicle queues and pedestrian conflict review. Parking A and its east exit remain legacy demo labels.',
-    x: 430,
-    y: 375,
-    width: 129,
-    depth: 72,
-    height: 8,
+      'Actual parking polygons have separate entries. Legacy Parking A is not assigned to one arbitrarily.',
+    geometryFeatureIds: [],
+    geometryStatus: 'unlocated',
+    geometryNote:
+      'Actual parking polygons have separate entries. Legacy Parking A is not assigned to one arbitrarily.',
     aliases: ['Parking A  East', 'Parking A', 'Parking'],
     responsibility: 'Mobility desk',
     baseline: 41,
@@ -158,13 +168,10 @@ export const campusPlaces = [
     kind: 'access-zone',
     provenance: 'modeled-zone',
     sourceIds: ['su-contact'],
-    description:
-      'Proposed delivery-access and escort-review zone. Service entrance, escort rules and device placement need an approved campus survey.',
-    x: 760,
-    y: 200,
-    width: 92,
-    depth: 59,
-    height: 21,
+    description: 'Service entrance assignment unverified; no event is pinned to a guessed gate.',
+    geometryFeatureIds: [],
+    geometryStatus: 'unlocated',
+    geometryNote: 'Service entrance assignment unverified; no event is pinned to a guessed gate.',
     aliases: ['Service Bay', 'Service Bay / Loading Area'],
     responsibility: 'Campus patrol',
     baseline: 12,
@@ -175,18 +182,45 @@ export const campusPlaces = [
     shortName: 'Boundary',
     kind: 'boundary-zone',
     provenance: 'modeled-zone',
-    sourceIds: ['su-contact'],
+    sourceIds: ['su-contact', 'osm-campus'],
     description:
-      'Proposed perimeter-review zone. This diagram does not represent the surveyed boundary, compass orientation or patrol route.',
-    x: 760,
-    y: 385,
-    width: 96,
-    depth: 53,
-    height: 12,
+      'Community-mapped campus outline. Perimeter records apply to campus context, not an exact North Fence location.',
+    geometryFeatureIds: ['way/105267819'],
+    geometryStatus: 'mapped',
+    geometryNote:
+      'Community-mapped campus outline. Perimeter records apply to campus context, not an exact North Fence location.',
     aliases: ['Perimeter  North Fence', 'Perimeter', 'Perimeter / North Fence'],
     responsibility: 'Campus patrol',
     baseline: 8,
   },
+
+  ...campusGeography.features
+    .filter(
+      (feature) =>
+        !['road', 'boundary'].includes(feature.properties.kind) &&
+        ![105267066, 105267044].includes(feature.properties.osmId),
+    )
+    .map((feature) => ({
+      id: `osm-${feature.properties.osmType}-${feature.properties.osmId}`,
+      name:
+        feature.properties.name.replace('Unviersity', 'University') ||
+        `Unnamed ${feature.properties.kind} · ${feature.properties.osmId}`,
+      shortName: feature.properties.name
+        ? feature.properties.name.replace('Strathmore University ', '').replace('Strathmore ', '')
+        : `Unnamed ${feature.properties.kind}`,
+      kind: feature.properties.kind,
+      provenance: 'public-reference',
+      sourceIds: [`osm-${feature.properties.osmType}-${feature.properties.osmId}`],
+      description: feature.properties.name
+        ? `Publicly mapped ${feature.properties.kind}: ${feature.properties.name}. Source geometry is retained without invented dimensions or elevations.`
+        : `Real mapped ${feature.properties.kind}. Its name is not supplied by the source; campus naming needs verification.`,
+      geometryFeatureIds: [feature.id],
+      geometryStatus: 'mapped',
+      geometryNote: `OSM ${feature.id} · version ${feature.properties.sourceVersion} · last edited ${feature.properties.sourceUpdatedAt.slice(0, 10)}. Community mapping, not a current campus survey.`,
+      aliases: [],
+      responsibility: 'Campus operations',
+      baseline: feature.properties.kind === 'building' ? 20 : 8,
+    })),
 ]
 
 const normalize = (value) =>

@@ -13,11 +13,9 @@ export interface CampusPlace {
   provenance: 'public-reference' | 'modeled-zone'
   sourceIds: string[]
   description: string
-  x: number
-  y: number
-  width: number
-  depth: number
-  height: number
+  geometryFeatureIds: string[]
+  geometryStatus: 'mapped' | 'unlocated'
+  geometryNote: string
   aliases: string[]
   responsibility: string
   baseline: number

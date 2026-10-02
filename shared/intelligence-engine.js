@@ -117,7 +117,9 @@ export function buildIntelligence(records, security, user) {
         place.provenance === 'public-reference'
           ? 'Publicly documented place'
           : 'Proposed operational zone',
-      geometry: 'Conceptual layout; no surveyed coordinates',
+      geometry: place.geometryNote,
+      geometryStatus: place.geometryStatus,
+      geographicFeatures: place.geometryFeatureIds.join(', ') || 'Unlocated',
       responsibility: `${place.responsibility} (proposed)`,
     })
     nodes.get(id).provenance = place.provenance
@@ -126,9 +128,11 @@ export function buildIntelligence(records, security, user) {
         id,
         key('campus-source', source),
         'references',
-        place.provenance === 'public-reference'
-          ? 'Public reference supports place name; geometry and operational attributes are modeled'
-          : 'Public reference supports campus context only; this operational zone is proposed',
+        source.startsWith('osm-')
+          ? 'OpenStreetMap source supplies geographic geometry; operational assignments and indoor locations remain unverified'
+          : place.provenance === 'public-reference'
+            ? 'Public reference supports place identity; operational assignments remain assumptions'
+            : 'Public reference supports campus context only; this operational zone is proposed',
         [id, key('campus-source', source)],
       )
   }

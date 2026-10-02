@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { buildIntelligence, queryIntelligence } from '../shared/intelligence-engine.js'
 import { buildCampusTwin, campusScenarios, validateTwinRequest } from '../shared/campus-twin.js'
 import { campusPlaces, campusSources, resolveCampusPlace } from '../shared/campus-reference.js'
+import { campusGeography } from '../shared/campus-geography.js'
 
 const alert = (id, zone) => ({
   id,
@@ -48,7 +49,11 @@ const responseGraph = buildIntelligence(
         intent: 'assess',
         createdAt: '2026-10-02T10:00:00Z',
         assessment: { summary: 'Saved review' },
-        context: { incident: records.alerts[0], sources: [], caseContextIncluded: false },
+        context: {
+          incident: records.alerts[0],
+          sources: [],
+          caseContextIncluded: false,
+        },
       },
     ],
     missions: [
@@ -75,8 +80,51 @@ assert.ok(responsePlace.recordIds.includes('mission:mission-twin'))
 assert.equal(resolveCampusPlace(' Library  Entrance ')?.id, 'library')
 assert.equal(resolveCampusPlace('Library Annex'), null)
 assert.equal(resolveCampusPlace('Residence Block B  Lobby'), null)
-assert.equal(campusPlaces.length, 8)
-assert.equal(campusPlaces.filter((place) => place.provenance === 'public-reference').length, 4)
+assert.equal(campusPlaces.length, 26)
+assert.equal(campusPlaces.filter((place) => place.geometryStatus === 'mapped').length, 21)
+const geographicIds = new Set(campusGeography.features.map((feature) => feature.id))
+assert.equal(campusGeography.metadata.crs, 'EPSG:4326')
+assert.equal(campusGeography.metadata.license, 'ODbL 1.0')
+assert.equal(
+  campusGeography.features.filter((feature) => feature.properties.kind === 'building').length,
+  11,
+)
+assert.equal(
+  campusGeography.features.filter((feature) => feature.properties.kind === 'parking').length,
+  6,
+)
+assert.equal(
+  campusGeography.features.filter((feature) => feature.properties.kind === 'gate').length,
+  3,
+)
+for (const feature of campusGeography.features) {
+  assert.ok(feature.properties.sourceUrl.startsWith('https://www.openstreetmap.org/'))
+  assert.ok(Number.isFinite(Date.parse(feature.properties.sourceUpdatedAt)))
+  if (feature.geometry.type === 'Polygon') {
+    const ring = feature.geometry.coordinates[0]
+    assert.deepEqual(ring[0], ring.at(-1), 'Real footprints must remain closed')
+    assert.ok(
+      ring.every(([lon, lat]) => lon > 36.81 && lon < 36.82 && lat > -1.312 && lat < -1.308),
+    )
+  }
+}
+assert.deepEqual(
+  campusGeography.features.find((feature) => feature.id === 'way/105267066').geometry
+    .coordinates[0][0],
+  [36.8138277, -1.3097105],
+  'Library retains actual source coordinate order, longitude then latitude',
+)
+assert.ok(
+  campusPlaces.every((place) => place.geometryFeatureIds.every((id) => geographicIds.has(id))),
+)
+assert.ok(
+  campusPlaces
+    .filter((place) => place.geometryStatus === 'unlocated')
+    .every((place) => place.geometryFeatureIds.length === 0),
+)
+assert.equal(campusPlaces.find((place) => place.id === 'msb9').geometryStatus, 'unlocated')
+assert.equal(campusPlaces.find((place) => place.id === 'arrival').geometryStatus, 'unlocated')
+assert.ok(campusPlaces.some((place) => place.name === 'Strathmore Business School'))
 assert.ok(campusSources.every((source) => new URL(source.url).protocol === 'https:'))
 assert.ok(campusSources.some((source) => source.fact.includes('does not have accommodation')))
 const available = new Set(graph.nodes.map((node) => node.id))
@@ -104,7 +152,8 @@ for (const scenario of campusScenarios) {
     )
     assert.equal(twin.engine.connected, false)
     assert.equal(twin.campus.geometryVerified, false)
-    assert.equal(twin.places.length, 8)
+    assert.equal(twin.campus.geometry, 'openstreetmap')
+    assert.equal(twin.places.length, 26)
     assert.ok(
       twin.places.every((place) =>
         place.sourceIds.every((id) => campusSources.some((source) => source.id === id)),
@@ -135,9 +184,10 @@ for (const scenario of campusScenarios) {
   }
 }
 assert.equal(JSON.stringify(graph), original, 'Replay must not mutate records or source times')
-const stale = buildCampusTwin(graph, { scenario: 'service', minute: 30 }).places.find(
-  (place) => place.id === 'service',
-)
+const stale = buildCampusTwin(graph, {
+  scenario: 'service',
+  minute: 30,
+}).places.find((place) => place.id === 'service')
 assert.equal(stale.status, 'stale')
 assert.equal(stale.readings.find((reading) => reading.label === 'Access exceptions').value, null)
 assert.equal(stale.readings.find((reading) => reading.label === 'Device heartbeat').value, null)
@@ -151,9 +201,10 @@ assert.equal(
   ).status,
   'attention',
 )
-const overflow = buildCampusTwin(graph, { scenario: 'event', minute: 15 }).places.find(
-  (place) => place.id === 'microsoft-auditorium',
-)
+const overflow = buildCampusTwin(graph, {
+  scenario: 'event',
+  minute: 15,
+}).places.find((place) => place.id === 'microsoft-auditorium')
 assert.equal(overflow.status, 'attention')
 assert.equal(
   buildCampusTwin(graph, { scenario: 'library', minute: 12 })

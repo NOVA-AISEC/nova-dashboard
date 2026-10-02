@@ -1,5 +1,6 @@
 import type { IntelligenceGraph } from './intelligence-engine'
 import type { CampusPlace, CampusSource } from './campus-reference'
+import type { campusGeography } from './campus-geography'
 export interface TwinRequest {
   scenario?: string
   minute?: number
@@ -36,8 +37,10 @@ export interface CampusTwin {
     locality: string
     address: string
     timezone: string
-    geometry: 'conceptual'
+    geometry: 'openstreetmap'
     geometryVerified: false
+    geographicSource: string
+    geographicSnapshot: string
   }
   generatedAt: string
   replay: {
@@ -48,6 +51,7 @@ export interface CampusTwin {
   }
   scenarios: CampusScenario[]
   places: TwinPlace[]
+  geography: typeof campusGeography
   sources: CampusSource[]
   events: {
     minute: number

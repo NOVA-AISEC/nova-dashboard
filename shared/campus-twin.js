@@ -1,4 +1,5 @@
 import { campusPlaces, campusSources } from './campus-reference.js'
+import { campusGeography } from './campus-geography.js'
 
 export const campusScenarios = [
   {
@@ -260,13 +261,16 @@ export function buildCampusTwin(graph, payload = {}) {
       locality: 'Madaraka · Nairobi, Kenya',
       address: 'Ole Sangale Road',
       timezone: 'Africa/Nairobi',
-      geometry: 'conceptual',
+      geometry: 'openstreetmap',
       geometryVerified: false,
+      geographicSource: 'https://www.openstreetmap.org/way/105267819',
+      geographicSnapshot: '2026-10-02',
     },
     generatedAt: graph.generatedAt,
     replay: { scenario, minute, at, exercise },
     scenarios: campusScenarios,
     places,
+    geography: campusGeography,
     sources: campusSources,
     events,
     recommendations,
@@ -278,9 +282,10 @@ export function buildCampusTwin(graph, payload = {}) {
       mode: 'exercise',
     },
     notice:
-      'Public place references + conceptual geometry + simulated telemetry. No live campus connection.',
+      'OpenStreetMap geographic footprints + public place references + simulated telemetry. No live campus connection.',
     limitations: [
-      'No surveyed building footprints, gate positions or patrol routes.',
+      'Community-mapped footprints retain their source dates. No current campus survey or indoor room plan is supplied.',
+      'Unverified operational zones have no map position. Legacy incident aliases do not establish an exact entrance or sensor location.',
       'No real access policy, capacity, device coverage or campus incident is asserted.',
       'Legacy residence records remain unmapped: Strathmore documents off-campus accommodation.',
     ],
