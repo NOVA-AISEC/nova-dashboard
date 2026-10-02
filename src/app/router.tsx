@@ -2,6 +2,7 @@ import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { routeAccess } from '@/app/access'
 import { AppShell } from '@/components/layout/app-shell'
 import { RouteError } from '@/components/shared/route-error'
+import { LoadingPanel } from '@/components/shared/async-state'
 import { AlertsPage } from '@/pages/alerts-page'
 import { AuditPage } from '@/pages/audit-page'
 import { CaseDetailPage } from '@/pages/case-detail-page'
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
   },
   {
     element: <RequireAuth />,
+    hydrateFallbackElement: <LoadingPanel />,
     errorElement: <RouteError />,
     children: [
       {
@@ -41,6 +43,13 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { index: true, element: <Navigate replace to="/intelligence" /> },
+          {
+            path: 'campus',
+            lazy: async () => {
+              const { CampusTwinPage } = await import('@/pages/campus-twin-page')
+              return { Component: CampusTwinPage }
+            },
+          },
           {
             path: 'intelligence',
             lazy: async () => {

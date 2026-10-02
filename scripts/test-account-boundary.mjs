@@ -47,7 +47,7 @@ for (const name of globals)
               : dom.window[name],
   })
 const vite = await createServer({
-  server: { middlewareMode: true, hmr: false },
+  server: { middlewareMode: true, hmr: false, ws: false },
   appType: 'custom',
   optimizeDeps: { noDiscovery: true, include: [] },
   define: { 'import.meta.env.VITE_USE_MOCK': JSON.stringify('true') },
@@ -108,6 +108,7 @@ try {
   const { CommandPage } = await vite.ssrLoadModule('/src/pages/command-page.tsx')
   const { MissionsPage } = await vite.ssrLoadModule('/src/pages/missions-page.tsx')
   const { IntelligencePage } = await vite.ssrLoadModule('/src/pages/intelligence-page.tsx')
+  const { CampusTwinPage } = await vite.ssrLoadModule('/src/pages/campus-twin-page.tsx')
   const api = await vite.ssrLoadModule('/src/api/mock-client.ts')
   const run = await api.runAssessment({
     incidentId: 'alt-705',
@@ -159,6 +160,7 @@ try {
           { path: '/command', element: React.createElement(CommandPage) },
           { path: '/missions', element: React.createElement(MissionsPage) },
           { path: '/intelligence', element: React.createElement(IntelligencePage) },
+          { path: '/campus', element: React.createElement(CampusTwinPage) },
         ],
       },
     ],
@@ -378,8 +380,82 @@ try {
   assert.equal(caseType.textContent, 'Cases · 0')
   assert.ok(!document.body.textContent.includes('case-residence-access'))
   assert.ok(!document.querySelector('.intel-answer'))
+  await act(async () => {
+    await router.navigate('/campus?place=library&scenario=library')
+  })
+  await waitFor(() => document.querySelector('.twin-page'), 'Campus twin loads for guard')
+  assert.ok(
+    document.querySelector('.twin-inspector-heading').textContent.includes('University Library'),
+  )
+  assert.ok(document.querySelector('.twin-records a[href="/command?incident=alt-702"]'))
+  assert.ok(
+    document
+      .querySelector('.twin-place-sources a')
+      .href.startsWith('https://library.strathmore.edu'),
+  )
+  assert.equal(document.querySelector('.twin-replay-slider b').textContent, 'Minute 12 / 30')
+  await act(async () => {
+    const scene = document.querySelector('[aria-label="Select Main Auditorium"]')
+    scene.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+  })
+  assert.ok(router.state.location.search.includes('place=main-auditorium'))
+  assert.ok(
+    document.querySelector('.twin-inspector-heading').textContent.includes('Main Auditorium'),
+  )
+  await act(async () => {
+    const exercise = document.querySelector('[aria-label="Campus exercise"]')
+    exercise.value = 'service'
+    exercise.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  assert.ok(document.querySelector('.twin-state').textContent.includes('stale'))
+  assert.ok(document.querySelector('.twin-reading.stale').textContent.includes('stale'))
+  assert.ok(router.state.location.search.includes('scenario=service'))
+  URL.createObjectURL = (blob) => {
+    exportedBlob = blob
+    return 'blob:fixture-campus'
+  }
+  URL.revokeObjectURL = () => {}
+  window.HTMLAnchorElement.prototype.click = function () {
+    exportedFilename = this.download
+  }
+  try {
+    await act(async () => {
+      ;[...document.querySelectorAll('button')]
+        .find((button) => button.textContent.includes('Export exercise'))
+        .click()
+    })
+    const briefing = JSON.parse(await exportedBlob.text())
+    assert.equal(exportedFilename, 'nova-strathmore-campus-exercise.json')
+    assert.equal(briefing.sampleData, true)
+    assert.equal(briefing.twin.replay.scenario, 'service')
+    assert.equal(briefing.selectedPlace, 'service')
+    assert.ok(briefing.citedSources.some((source) => source.id === 'campus-place:service'))
+    assert.ok(briefing.citedSources.some((source) => source.id === 'campus-source:su-contact'))
+    assert.ok(
+      briefing.twin.places.every((place) => !place.recordIds.some((id) => id.startsWith('case:'))),
+    )
+  } finally {
+    URL.createObjectURL = originalCreate
+    URL.revokeObjectURL = originalRevoke
+    window.HTMLAnchorElement.prototype.click = originalAnchorClick
+  }
+  await act(async () => {
+    const slider = document.querySelector('[aria-label="Campus replay minute"]')
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(
+      slider,
+      '30',
+    )
+    slider.dispatchEvent(new Event('change', { bubbles: true }))
+    slider.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  assert.equal(document.querySelector('.twin-replay-slider b').textContent, 'Minute 30 / 30')
+  await act(async () => {
+    switchSession(supervisor)
+  })
+  await waitFor(() => document.querySelector('.twin-page'), 'Campus twin remounts for new account')
+  assert.equal(document.querySelector('.twin-replay-slider b').textContent, 'Minute 12 / 30')
   console.log(
-    'Passed: real React account boundaries clear cached records, Command source dialogs, mission drafts and Intelligence queries; citations navigate to evidence without retaining old answers.',
+    'Passed: real React account isolation, source dialogs, mission drafts, Intelligence citations, campus place keyboard navigation, stale replay, export provenance and account remount.',
   )
 } finally {
   await act(async () => {

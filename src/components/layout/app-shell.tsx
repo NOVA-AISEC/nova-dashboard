@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils'
 import type { Alert } from '@/types/domain'
 
 const navigationLabels: Record<string, string> = {
+  campus: 'Campus twin',
   intelligence: 'Intelligence',
   command: 'Command',
   missions: 'Missions',

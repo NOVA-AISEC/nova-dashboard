@@ -39,6 +39,7 @@ import {
   type EngineSource,
 } from '../../shared/security-engine.js'
 import { placeholderVision } from '../../shared/vision-engine.js'
+import { resolveCampusPlace } from '../../shared/campus-reference'
 
 const intents = [
   { id: 'assess', title: 'Assess incident', detail: 'Sources & unknowns' },
@@ -67,6 +68,7 @@ export function CommandPage() {
     sortAlerts(data.alerts)[0]
   const pending =
     security.data?.missions.filter((item) => item.status === 'pending-approval').length ?? 0
+  const campusPlace = incident ? resolveCampusPlace(incident.zone) : null
   const run =
     localRun?.context.incident.id === incident?.id
       ? localRun
@@ -117,6 +119,11 @@ export function CommandPage() {
           <p>Your incident context, vision evidence, and next move—in one place.</p>
         </div>
         <div className="flex flex-wrap gap-4">
+          {campusPlace && (
+            <Link to={`/campus?place=${campusPlace.id}`} className="os-quiet-link">
+              <MapPin size={16} /> Campus context <ArrowUpRight size={14} />
+            </Link>
+          )}
           <Link
             to={`/intelligence${incident ? `?entity=${encodeURIComponent(`incident:${incident.id}`)}` : ''}`}
             className="os-quiet-link"

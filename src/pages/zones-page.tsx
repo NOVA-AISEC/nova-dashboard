@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { resolveCampusPlace } from '../../shared/campus-reference'
 import { Camera, Search } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
 import { campusZones } from '@/data/mock-data'
@@ -12,7 +14,9 @@ export function ZonesPage() {
   const zones = campusZones.filter(
     (zone) =>
       (status === 'all' ||
-        (status === 'maintenance' ? zone.status === 'maintenance' : zone.status !== 'maintenance')) &&
+        (status === 'maintenance'
+          ? zone.status === 'maintenance'
+          : zone.status !== 'maintenance')) &&
       `${zone.name} ${zone.cameraId}`.toLowerCase().includes(query.trim().toLowerCase()),
   )
   return (
@@ -20,7 +24,7 @@ export function ZonesPage() {
       <PageHeader
         eyebrow="Campus coverage"
         title="Zones & cameras"
-        subtitle="Camera inventory and incident coverage across your campus. Availability reflects sample camera records."
+        subtitle="Legacy demo camera inventory. Device identifiers, placement and availability have not been verified with Strathmore."
       />
       <div className="queue-toolbar">
         <label className="workspace-search-input">
@@ -54,20 +58,36 @@ export function ZonesPage() {
             <div key={zone.id} className="camera-card">
               <div>
                 <Camera size={21} />
-                <span className={`signal-badge signal-${zone.status === 'maintenance' ? 'high' : 'low'}`}>
+                <span
+                  className={`signal-badge signal-${zone.status === 'maintenance' ? 'high' : 'low'}`}
+                >
                   {zone.status === 'maintenance' ? 'Maintenance' : 'Available'}
                 </span>
               </div>
               <h3>{zone.name}</h3>
               <span className="mono muted">{zone.cameraId}</span>
               <p>{zone.coverage}</p>
+              {resolveCampusPlace(zone.name) ? (
+                <Link
+                  to={`/campus?place=${resolveCampusPlace(zone.name)!.id}`}
+                  className="twin-camera-link"
+                >
+                  Inspect proposed campus mapping
+                </Link>
+              ) : (
+                <p className="camera-last-checked">
+                  Unverified location · excluded from campus twin
+                </p>
+              )}
               <small>
-                {data?.alerts.filter((alert) => alert.cameraId === zone.cameraId && isActiveAlert(alert))
-                  .length ?? '—'}{' '}
+                {data?.alerts.filter(
+                  (alert) => alert.cameraId === zone.cameraId && isActiveAlert(alert),
+                ).length ?? '—'}{' '}
                 active incidents
               </small>
               <p className="camera-last-checked">
-                Last checked {formatShiftDate(zone.lastCheckedAt)} · {formatTime(zone.lastCheckedAt)} EAT
+                Last checked {formatShiftDate(zone.lastCheckedAt)} ·{' '}
+                {formatTime(zone.lastCheckedAt)} EAT
               </p>
             </div>
           ))}
