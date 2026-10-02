@@ -10,11 +10,14 @@ const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></
 })
 const { window } = dom
 const { document } = window
+// jsdom lacks SVG layout detection; expose the browser SVG capability used by Leaflet.
+window.SVGSVGElement.prototype.createSVGRect = () => ({})
 const globals = [
   'window',
   'document',
   'navigator',
   'HTMLElement',
+  'Element',
   'HTMLInputElement',
   'HTMLTextAreaElement',
   'Node',
@@ -159,7 +162,10 @@ try {
           { path: '/probe', element: React.createElement(Probe) },
           { path: '/command', element: React.createElement(CommandPage) },
           { path: '/missions', element: React.createElement(MissionsPage) },
-          { path: '/intelligence', element: React.createElement(IntelligencePage) },
+          {
+            path: '/intelligence',
+            element: React.createElement(IntelligencePage),
+          },
           { path: '/campus', element: React.createElement(CampusTwinPage) },
         ],
       },
@@ -394,13 +400,30 @@ try {
       .href.startsWith('https://library.strathmore.edu'),
   )
   assert.equal(document.querySelector('.twin-replay-slider b').textContent, 'Minute 12 / 30')
+  await waitFor(
+    () => document.querySelector('[aria-label="Select University Auditorium"]'),
+    'Sourced map markers load',
+  )
+  for (const basemap of ['streets', 'footprints', 'satellite', 'footprints']) {
+    await act(async () => {
+      const select = document.querySelector('[aria-label="Campus basemap"]')
+      select.value = basemap
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    await act(async () => {
+      document.querySelector('[aria-label="Zoom campus in"]').click()
+      document.querySelector('[aria-label="Reset campus view"]').click()
+    })
+    assert.ok(document.querySelectorAll('.leaflet-overlay-pane path').length > 0)
+  }
+  assert.equal(document.querySelectorAll('.leaflet-tile').length, 0)
   await act(async () => {
-    const scene = document.querySelector('[aria-label="Select Main Auditorium"]')
-    scene.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    const scene = document.querySelector('[aria-label="Select University Auditorium"]')
+    scene.click()
   })
   assert.ok(router.state.location.search.includes('place=main-auditorium'))
   assert.ok(
-    document.querySelector('.twin-inspector-heading').textContent.includes('Main Auditorium'),
+    document.querySelector('.twin-inspector-heading').textContent.includes('University Auditorium'),
   )
   await act(async () => {
     const exercise = document.querySelector('[aria-label="Campus exercise"]')
@@ -427,6 +450,12 @@ try {
     const briefing = JSON.parse(await exportedBlob.text())
     assert.equal(exportedFilename, 'nova-strathmore-campus-exercise.json')
     assert.equal(briefing.sampleData, true)
+    assert.equal(briefing.twin.geography.metadata.license, 'ODbL 1.0')
+    assert.equal(
+      briefing.twin.geography.features.filter((feature) => feature.properties.kind === 'building')
+        .length,
+      11,
+    )
     assert.equal(briefing.twin.replay.scenario, 'service')
     assert.equal(briefing.selectedPlace, 'service')
     assert.ok(briefing.citedSources.some((source) => source.id === 'campus-place:service'))

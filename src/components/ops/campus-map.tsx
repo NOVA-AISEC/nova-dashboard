@@ -29,10 +29,16 @@ export function CampusMap({
     .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])[0]
   return (
     <div className="campus-map">
-      <CampusScene places={places} selected={selected} layer="security" onSelect={setSelected} sampleMode="records" />
+      <CampusScene
+        places={places}
+        selected={selected}
+        layer="security"
+        onSelect={setSelected}
+        sampleMode="records"
+      />
       <div className="campus-map-grounding">
         <ShieldCheck size={14} />
-        <span>Referenced places · conceptual layout · stored sample records</span>
+        <span>OSM campus footprints · stored sample records</span>
         <Link to={`/campus?place=${selected}`}>
           Open twin
           <ArrowUpRight size={13} />

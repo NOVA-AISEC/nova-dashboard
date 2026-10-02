@@ -21,13 +21,13 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react'
-import { CampusScene, type CampusLayer } from '@/components/campus/campus-scene'
+import { CampusScene, type CampusLayer, type CampusBasemap } from '@/components/campus/campus-scene'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
 import { useCampusTwin } from '@/hooks/use-campus-twin'
 import { formatTime, formatShiftDate } from '@/lib/operations'
 import { downloadFile } from '@/lib/shift-brief'
-import { campusPlaces } from '../../shared/campus-reference'
 import { campusScenarios } from '../../shared/campus-twin'
+import { campusGeography } from '../../shared/campus-geography'
 
 export function CampusTwinPage() {
   const [params, setParams] = useSearchParams()
@@ -36,7 +36,8 @@ export function CampusTwinPage() {
     : (campusScenarios.find((item) => item.focusPlaceId === params.get('place'))?.id ?? 'arrival')
   const [minute, setMinute] = useState(12)
   const [layer, setLayer] = useState<CampusLayer>('security')
-  const [flat, setFlat] = useState(false)
+  const [basemap, setBasemap] = useState<CampusBasemap>('satellite')
+  const [placeSearch, setPlaceSearch] = useState('')
   const [showUnmapped, setShowUnmapped] = useState(false)
   const { twin, data: graph, error, isLoading, refresh } = useCampusTwin(scenario, minute)
   if (isLoading && !twin) return <LoadingPanel lines={12} />
@@ -65,6 +66,19 @@ export function CampusTwinPage() {
     occupancy: place.readings[0].value ?? 0,
     incidentCount: place.activeIncidentIds.length,
   }))
+  const registry = [...twin.places].sort((a, b) => {
+    const rank = (place: typeof a) =>
+      place.geometryStatus === 'unlocated'
+        ? 4
+        : place.kind === 'parking'
+          ? 1
+          : place.kind === 'gate'
+            ? 2
+            : place.kind === 'boundary-zone'
+              ? 3
+              : 0
+    return rank(a) - rank(b)
+  })
   function select(id: string) {
     setParams({ place: id, scenario })
   }
@@ -133,7 +147,7 @@ export function CampusTwinPage() {
           <i />
           CAMPUS TWIN · EXERCISE MODE
         </span>
-        <p>Referenced places. Conceptual layout. Simulated readings.</p>
+        <p>Real geographic footprints. Public map sources. Simulated readings.</p>
         <span>
           <Radio size={13} />
           Live connections: 0
@@ -144,12 +158,9 @@ export function CampusTwinPage() {
           <span>Campus registry</span>
           <strong>
             {twin.places.length}
-            <small>places & proposed zones</small>
+            <small>mapped places & contexts</small>
           </strong>
-          <p>
-            {campusPlaces.filter((place) => place.provenance === 'public-reference').length}{' '}
-            publicly documented places
-          </p>
+          <p>11 building footprints · 3 mapped gates</p>
         </div>
         <div>
           <span>Linked open incidents</span>
@@ -202,33 +213,52 @@ export function CampusTwinPage() {
             <span>{twin.places.length}</span>
           </div>
           <p className="twin-registry-note">Select a place to inspect its context.</p>
-          {twin.places.map((place, index) => (
-            <button
-              key={place.id}
-              className={`twin-place ${selected.id === place.id ? 'selected' : ''}`}
-              aria-pressed={selected.id === place.id}
-              onClick={() => select(place.id)}
-            >
-              <span className={`twin-number ${place.status}`}>
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <span>
-                <strong>{place.name}</strong>
-                <small>
-                  {place.provenance === 'public-reference'
-                    ? 'Publicly documented'
-                    : 'Proposed zone'}
-                  {place.activeIncidentIds.length
-                    ? ` · ${place.activeIncidentIds.length} open`
-                    : ''}
-                </small>
-              </span>
-              <ChevronRight size={12} />
-            </button>
-          ))}
+          <input
+            className="twin-place-search"
+            aria-label="Search campus places"
+            placeholder="Find building, gate or venue…"
+            value={placeSearch}
+            onChange={(event) => setPlaceSearch(event.target.value)}
+          />
+          <div className="twin-registry-list">
+            {registry
+              .filter((place) =>
+                place.name.toLowerCase().includes(placeSearch.trim().toLowerCase()),
+              )
+              .map((place) => (
+                <button
+                  key={place.id}
+                  className={`twin-place ${selected.id === place.id ? 'selected' : ''}`}
+                  aria-pressed={selected.id === place.id}
+                  onClick={() => select(place.id)}
+                >
+                  <span className={`twin-number ${place.status}`}>
+                    {String(registry.indexOf(place) + 1).padStart(2, '0')}
+                  </span>
+                  <span>
+                    <strong>{place.name}</strong>
+                    <small>
+                      {place.geometryStatus === 'mapped'
+                        ? 'Source-mapped geometry'
+                        : 'Location unverified'}
+                      {place.activeIncidentIds.length
+                        ? ` · ${place.activeIncidentIds.length} open`
+                        : ''}
+                    </small>
+                  </span>
+                  <ChevronRight size={12} />
+                </button>
+              ))}
+            {!twin.places.some((place) =>
+              place.name.toLowerCase().includes(placeSearch.trim().toLowerCase()),
+            ) && <p className="twin-registry-note">No matching campus place.</p>}
+          </div>
           <div className="twin-registry-foot">
             <ShieldCheck size={15} />
-            <p>Place names have sources. Layout and operational mappings need campus validation.</p>
+            <p>
+              OSM geometry retains source coordinates and dates. Indoor rooms and legacy operational
+              assignments need campus validation.
+            </p>
           </div>
           <button
             className="twin-unmapped-toggle"
@@ -273,17 +303,25 @@ export function CampusTwinPage() {
                 </button>
               ))}
             </div>
-            <button aria-pressed={flat} onClick={() => setFlat(!flat)}>
+            <label className="twin-basemap-select">
               <Layers3 size={13} />
-              {flat ? 'Plan view' : 'Model view'}
-            </button>
+              <select
+                aria-label="Campus basemap"
+                value={basemap}
+                onChange={(event) => setBasemap(event.target.value as CampusBasemap)}
+              >
+                <option value="satellite">Satellite</option>
+                <option value="streets">Streets</option>
+                <option value="footprints">Footprints</option>
+              </select>
+            </label>
           </div>
           <CampusScene
             places={scenes}
             selected={selected.id}
             layer={layer}
             onSelect={select}
-            flat={flat}
+            basemap={basemap}
           />
           <div className="twin-replay">
             <div className="twin-replay-top">
@@ -338,7 +376,9 @@ export function CampusTwinPage() {
           <div className="twin-panel-title">
             <DoorOpen size={14} />
             <h2>Place context</h2>
-            <span>0{twin.places.findIndex((place) => place.id === selected.id) + 1}</span>
+            <span>
+              {String(registry.findIndex((place) => place.id === selected.id) + 1).padStart(2, '0')}
+            </span>
           </div>
           <div className="twin-inspector-heading">
             <span className={`twin-state ${selected.status}`}>
@@ -355,6 +395,28 @@ export function CampusTwinPage() {
               {selected.provenance === 'public-reference'
                 ? 'Name supported by a public reference'
                 : 'Proposed operational zone'}
+            </span>
+          </div>
+          <div className="twin-geometry-context">
+            <h3>Geographic source</h3>
+            <p>{selected.geometryNote}</p>
+            {campusGeography.features
+              .filter((feature) => selected.geometryFeatureIds.includes(String(feature.id)))
+              .map((feature) => (
+                <a
+                  key={feature.id}
+                  href={feature.properties.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  OSM {feature.id} · v{feature.properties.sourceVersion}
+                  <small>Last mapped edit {feature.properties.sourceUpdatedAt.slice(0, 10)}</small>
+                </a>
+              ))}
+            <span>
+              {selected.geometryStatus === 'mapped'
+                ? 'Source-mapped · WGS84'
+                : 'Unlocated · excluded from map pins'}
             </span>
           </div>
           <div className="twin-readings">
@@ -512,7 +574,8 @@ export function CampusTwinPage() {
             student life page
           </a>{' '}
           confirms accommodation is off campus. Legacy residence records are excluded from this
-          twin. A campus survey is needed for building footprints, entrances and response routes.
+          twin. Public footprints are mapped; indoor rooms, entrance assignments and response routes
+          need campus verification.
         </p>
       </footer>
     </div>
