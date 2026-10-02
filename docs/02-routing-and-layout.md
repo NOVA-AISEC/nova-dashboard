@@ -4,7 +4,7 @@ All authenticated pages render within `AppShell`. `RequireAuth` sends signed-out
 
 | Route | Roles | Screen |
 | --- | --- | --- |
-| `/intelligence`, `/command`, `/missions`, `/playbooks` | All | Intelligence, assessment, response, procedures |
+| `/campus`, `/intelligence`, `/command`, `/missions`, `/playbooks` | All | Campus twin, intelligence, assessment, response, procedures |
 | `/systems` | Supervisor, admin | Engine and integration readiness |
 | `/ops`, `/alerts` | All | Overview, incident inbox |
 | `/queue`, `/reports` | Guard, supervisor, admin | Queue and incident intake |

@@ -57,6 +57,8 @@ Both routes require a verified session; POST additionally requires an allowed Or
 
 ## Errors and limits
 
+`GET /campus-twin?scenario=arrival&minute=12` returns the sourced campus catalog, role-visible mapped record IDs, simulation readings, replay events, local-rule guidance and explicit geometry/connector limitations. Scenario defaults to `arrival`; minute defaults to `12`. Allowed scenarios are `arrival`, `library`, `event`, `service`; minute must be an integer from 0 through 30. Unknown, repeated or malformed fields return 400 `INVALID_CAMPUS_REPLAY`. The route requires a verified session and never mutates records or executes controls. See [campus twin](../11-strathmore-campus-twin.md).
+
 Security OS adds authenticated assessments, mission proposals, supervisor decisions, and sequential outcome recording. See the [Security OS API contract](../09-security-os.md#api-contract) for request bodies, lifecycle, provenance and capacity limits.
 
 Error envelope: `{ message, code, requestId }`. Responses disable caching and include `X-Request-ID` and security headers. Internal paths, stack traces, password hashes and raw proxy HTML are not returned.

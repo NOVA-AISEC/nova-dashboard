@@ -1,6 +1,6 @@
 # NOVA Security OS
 
-NOVA is a campus security operating workspace for DAMA LTD's Strathmore-facing workflow. Intelligence connects incidents, evidence, cameras, locations, teams, cases, assessments and missions in an explorable graph with source-cited queries. Command assembles incident records and annotated vision evidence, matches a response playbook, and prepares a mission for supervisor approval. Missions track human-led steps and recorded outcomes alongside cases, evidence search, reports, and shift handover.
+NOVA is a campus security operating workspace for DAMA LTD's Strathmore-facing workflow. Campus Twin grounds security exercises in publicly documented Strathmore places, with conceptual geometry and clearly simulated access, occupancy and device readings. Intelligence connects campus references, places, incidents, evidence, cameras, locations, teams, cases, assessments and missions in an explorable graph with source-cited queries. Command assembles incident records and annotated vision evidence, matches a response playbook, and prepares a mission for supervisor approval. Missions track human-led steps and recorded outcomes alongside cases, evidence search, reports, and shift handover.
 
 The vision foundation is **YOLOv8n**, currently a **placeholder**. It reads labeled sample metadata; there is no model inference, model download, cloud model, or live camera ingestion. See [Security OS workflows and adapter contract](docs/09-security-os.md).
 
@@ -11,6 +11,7 @@ The product is demo-safe by design. It uses still snapshots plus metadata only, 
 - Redesigned operator workspace with local login and role-gated routes
 - Command, Missions, Playbooks, and Systems with source-linked assessments and durable approval/outcome records
 - Intelligence as the default landing: entity graph, evidence/timeline exploration, verification gaps and source-cited local queries. See [intelligence engine](docs/10-intelligence-engine.md).
+- Campus Twin: sourced place registry, conceptual campus model, four replayable security/access exercises and source-linked response guidance. See [campus twin](docs/11-strathmore-campus-twin.md).
 - Working local incident acknowledgement, case creation, reports, filters, and downloads; sample operational data
 - Default build mode uses in-browser mock data
 - Optional Express API with account-backed sessions, server permissions, CSRF protection and atomic local storage
@@ -103,6 +104,7 @@ Public:
 Authenticated shell:
 
 - `/intelligence` — default landing; connected entities, evidence exploration and source-cited queries
+- `/campus` — Strathmore campus model, place context and security exercise replay
 - `/command` — sample vision evidence and decision workspace
 - `/missions` — team handovers, supervisor decisions, hold/resume/stop controls, and ordered outcomes
 - `/playbooks` — four built-in starter procedures
@@ -123,7 +125,7 @@ Authenticated shell:
 - `/settings`
 - `/search`
 
-Role access is enforced in the router. All roles land on Command; navigation and actions respect their permissions. API mode enforces those permissions on the server.
+Role access is enforced in the router. All roles land on Intelligence; navigation and actions respect their permissions. API mode enforces those permissions on the server.
 
 ## Deployment preview
 

@@ -1,6 +1,6 @@
 # NOVA intelligence workspace
 
-Intelligence is the default landing for an authenticated operator. It connects existing records into an ontology rather than adding a separate collection of simulated intelligence. The eight object types are incidents, evidence, cases, cameras, locations, teams, assessments, and missions. The Nova Sentinel brand stays intact.
+Intelligence is the default landing for an authenticated operator. Its ten object types are incidents, evidence, cases, cameras, locations, teams, assessments, missions, campus places and campus sources. Public references describe campus facts; proposed zones and configured location aliases have explicit modeling provenance. The Nova Sentinel brand stays intact. See [Strathmore campus twin](11-strathmore-campus-twin.md) for the separate, simulated security exercise layer.
 
 ## Explore and decide
 
