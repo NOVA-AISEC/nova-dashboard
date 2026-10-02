@@ -17,11 +17,15 @@ import {
   Workflow,
   BookOpen,
   Cpu,
+  Network,
+  Building2,
 } from 'lucide-react'
 
 export type UserRole = 'guard' | 'analyst' | 'supervisor' | 'admin'
 
 export type AppRouteId =
+  | 'intelligence'
+  | 'campus'
   | 'command'
   | 'missions'
   | 'playbooks'
@@ -69,6 +73,8 @@ export const roleShifts: Record<UserRole, string> = {
 }
 
 export const routePaths: Record<AppRouteId, string> = {
+  intelligence: '/intelligence',
+  campus: '/campus',
   command: '/command',
   missions: '/missions',
   playbooks: '/playbooks',
@@ -90,6 +96,8 @@ export const routePaths: Record<AppRouteId, string> = {
 }
 
 export const routeAccess: Record<AppRouteId, UserRole[]> = {
+  intelligence: ['guard', 'analyst', 'supervisor', 'admin'],
+  campus: ['guard', 'analyst', 'supervisor', 'admin'],
   command: ['guard', 'analyst', 'supervisor', 'admin'],
   missions: ['guard', 'analyst', 'supervisor', 'admin'],
   playbooks: ['guard', 'analyst', 'supervisor', 'admin'],
@@ -114,6 +122,20 @@ export const navigationGroups: NavigationGroup[] = [
   {
     label: 'Security OS',
     items: [
+      {
+        id: 'campus',
+        to: '/campus',
+        label: 'Campus Twin',
+        description: 'Strathmore places, access scenarios and security response',
+        icon: Building2,
+      },
+      {
+        id: 'intelligence',
+        to: '/intelligence',
+        label: 'Intelligence',
+        description: 'Entity graph, evidence exploration and source-cited queries',
+        icon: Network,
+      },
       {
         id: 'command',
         to: '/command',

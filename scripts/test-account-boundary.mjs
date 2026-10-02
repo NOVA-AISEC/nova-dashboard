@@ -10,11 +10,14 @@ const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></
 })
 const { window } = dom
 const { document } = window
+// jsdom lacks SVG layout detection; expose the browser SVG capability used by Leaflet.
+window.SVGSVGElement.prototype.createSVGRect = () => ({})
 const globals = [
   'window',
   'document',
   'navigator',
   'HTMLElement',
+  'Element',
   'HTMLInputElement',
   'HTMLTextAreaElement',
   'Node',
@@ -47,7 +50,7 @@ for (const name of globals)
               : dom.window[name],
   })
 const vite = await createServer({
-  server: { middlewareMode: true, hmr: false },
+  server: { middlewareMode: true, hmr: false, ws: false },
   appType: 'custom',
   optimizeDeps: { noDiscovery: true, include: [] },
   define: { 'import.meta.env.VITE_USE_MOCK': JSON.stringify('true') },
@@ -107,6 +110,8 @@ try {
   const { useOperations } = await vite.ssrLoadModule('/src/hooks/use-operations.ts')
   const { CommandPage } = await vite.ssrLoadModule('/src/pages/command-page.tsx')
   const { MissionsPage } = await vite.ssrLoadModule('/src/pages/missions-page.tsx')
+  const { IntelligencePage } = await vite.ssrLoadModule('/src/pages/intelligence-page.tsx')
+  const { CampusTwinPage } = await vite.ssrLoadModule('/src/pages/campus-twin-page.tsx')
   const api = await vite.ssrLoadModule('/src/api/mock-client.ts')
   const run = await api.runAssessment({
     incidentId: 'alt-705',
@@ -157,6 +162,11 @@ try {
           { path: '/probe', element: React.createElement(Probe) },
           { path: '/command', element: React.createElement(CommandPage) },
           { path: '/missions', element: React.createElement(MissionsPage) },
+          {
+            path: '/intelligence',
+            element: React.createElement(IntelligencePage),
+          },
+          { path: '/campus', element: React.createElement(CampusTwinPage) },
         ],
       },
     ],
@@ -305,8 +315,176 @@ try {
     null,
     'Prior mission action draft is removed',
   )
+  await act(async () => {
+    switchSession(supervisor)
+    await router.navigate('/intelligence?entity=incident%3Aalt-705')
+  })
+  await waitFor(() => document.querySelector('.intel-query-panel'), 'Intelligence loads')
+  assert.ok(document.body.textContent.includes('Cases · 5'))
+  const gapQuery = [...document.querySelectorAll('.intel-query-suggestions button')].find(
+    (button) => button.textContent.includes('Find verification gaps'),
+  )
+  await act(async () => {
+    gapQuery.click()
+  })
+  await waitFor(() => document.querySelector('.intel-answer'), 'Source-cited query completes')
+  assert.ok(document.querySelector('.intel-answer').textContent.includes('Camera mismatch'))
+  let exportedBlob, exportedFilename
+  const originalCreate = URL.createObjectURL,
+    originalRevoke = URL.revokeObjectURL
+  const originalAnchorClick = window.HTMLAnchorElement.prototype.click
+  URL.createObjectURL = (blob) => {
+    exportedBlob = blob
+    return 'blob:fixture-intelligence'
+  }
+  URL.revokeObjectURL = () => {}
+  window.HTMLAnchorElement.prototype.click = function () {
+    exportedFilename = this.download
+  }
+  try {
+    const exportButton = [...document.querySelectorAll('button')].find((button) =>
+      button.textContent.includes('Export brief'),
+    )
+    await act(async () => {
+      exportButton.click()
+    })
+    const briefing = JSON.parse(await exportedBlob.text())
+    assert.equal(exportedFilename, 'nova-intelligence-brief.json')
+    assert.equal(briefing.selected, 'incident:alt-705')
+    assert.ok(briefing.answer.claims.some((claim) => claim.text.includes('Camera mismatch')))
+    assert.ok(briefing.context.nodes.some((node) => node.id === 'evidence:ev-703'))
+    assert.ok(
+      briefing.answer.sourceIds.every((id) =>
+        briefing.citedSources.some((source) => source.id === id),
+      ),
+    )
+    assert.equal(briefing.sampleData, true)
+  } finally {
+    URL.createObjectURL = originalCreate
+    URL.revokeObjectURL = originalRevoke
+    window.HTMLAnchorElement.prototype.click = originalAnchorClick
+  }
+  const sourceCitation = [...document.querySelectorAll('.intel-answer button')].find(
+    (button) => button.getAttribute('aria-label') === 'Inspect source ev-703',
+  )
+  await act(async () => {
+    sourceCitation.click()
+  })
+  assert.ok(document.querySelector('.intel-focus').textContent.includes('ev-703'))
+  assert.equal(
+    document.querySelector('.intel-answer'),
+    null,
+    'Entity switching clears the old answer',
+  )
+  await act(async () => {
+    switchSession(guard)
+  })
+  await waitFor(() => document.querySelector('.intel-query-panel'), 'Guard intelligence loads')
+  const caseType = [...document.querySelectorAll('option')].find(
+    (option) => option.value === 'case',
+  )
+  assert.equal(caseType.textContent, 'Cases · 0')
+  assert.ok(!document.body.textContent.includes('case-residence-access'))
+  assert.ok(!document.querySelector('.intel-answer'))
+  await act(async () => {
+    await router.navigate('/campus?place=library&scenario=library')
+  })
+  await waitFor(() => document.querySelector('.twin-page'), 'Campus twin loads for guard')
+  assert.ok(
+    document.querySelector('.twin-inspector-heading').textContent.includes('University Library'),
+  )
+  assert.ok(document.querySelector('.twin-records a[href="/command?incident=alt-702"]'))
+  assert.ok(
+    document
+      .querySelector('.twin-place-sources a')
+      .href.startsWith('https://library.strathmore.edu'),
+  )
+  assert.equal(document.querySelector('.twin-replay-slider b').textContent, 'Minute 12 / 30')
+  await waitFor(
+    () => document.querySelector('[aria-label="Select University Auditorium"]'),
+    'Sourced map markers load',
+  )
+  for (const basemap of ['streets', 'footprints', 'satellite', 'footprints']) {
+    await act(async () => {
+      const select = document.querySelector('[aria-label="Campus basemap"]')
+      select.value = basemap
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    await act(async () => {
+      document.querySelector('[aria-label="Zoom campus in"]').click()
+      document.querySelector('[aria-label="Reset campus view"]').click()
+    })
+    assert.ok(document.querySelectorAll('.leaflet-overlay-pane path').length > 0)
+  }
+  assert.equal(document.querySelectorAll('.leaflet-tile').length, 0)
+  await act(async () => {
+    const scene = document.querySelector('[aria-label="Select University Auditorium"]')
+    scene.click()
+  })
+  assert.ok(router.state.location.search.includes('place=main-auditorium'))
+  assert.ok(
+    document.querySelector('.twin-inspector-heading').textContent.includes('University Auditorium'),
+  )
+  await act(async () => {
+    const exercise = document.querySelector('[aria-label="Campus exercise"]')
+    exercise.value = 'service'
+    exercise.dispatchEvent(new Event('change', { bubbles: true }))
+  })
+  assert.ok(document.querySelector('.twin-state').textContent.includes('stale'))
+  assert.ok(document.querySelector('.twin-reading.stale').textContent.includes('stale'))
+  assert.ok(router.state.location.search.includes('scenario=service'))
+  URL.createObjectURL = (blob) => {
+    exportedBlob = blob
+    return 'blob:fixture-campus'
+  }
+  URL.revokeObjectURL = () => {}
+  window.HTMLAnchorElement.prototype.click = function () {
+    exportedFilename = this.download
+  }
+  try {
+    await act(async () => {
+      ;[...document.querySelectorAll('button')]
+        .find((button) => button.textContent.includes('Export exercise'))
+        .click()
+    })
+    const briefing = JSON.parse(await exportedBlob.text())
+    assert.equal(exportedFilename, 'nova-strathmore-campus-exercise.json')
+    assert.equal(briefing.sampleData, true)
+    assert.equal(briefing.twin.geography.metadata.license, 'ODbL 1.0')
+    assert.equal(
+      briefing.twin.geography.features.filter((feature) => feature.properties.kind === 'building')
+        .length,
+      11,
+    )
+    assert.equal(briefing.twin.replay.scenario, 'service')
+    assert.equal(briefing.selectedPlace, 'service')
+    assert.ok(briefing.citedSources.some((source) => source.id === 'campus-place:service'))
+    assert.ok(briefing.citedSources.some((source) => source.id === 'campus-source:su-contact'))
+    assert.ok(
+      briefing.twin.places.every((place) => !place.recordIds.some((id) => id.startsWith('case:'))),
+    )
+  } finally {
+    URL.createObjectURL = originalCreate
+    URL.revokeObjectURL = originalRevoke
+    window.HTMLAnchorElement.prototype.click = originalAnchorClick
+  }
+  await act(async () => {
+    const slider = document.querySelector('[aria-label="Campus replay minute"]')
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(
+      slider,
+      '30',
+    )
+    slider.dispatchEvent(new Event('change', { bubbles: true }))
+    slider.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  assert.equal(document.querySelector('.twin-replay-slider b').textContent, 'Minute 30 / 30')
+  await act(async () => {
+    switchSession(supervisor)
+  })
+  await waitFor(() => document.querySelector('.twin-page'), 'Campus twin remounts for new account')
+  assert.equal(document.querySelector('.twin-replay-slider b').textContent, 'Minute 12 / 30')
   console.log(
-    'Passed: real React account/role/session boundaries clear cached assessments, same-role account data, Command local runs, source dialogs and mission drafts.',
+    'Passed: real React account isolation, source dialogs, mission drafts, Intelligence citations, campus place keyboard navigation, stale replay, export provenance and account remount.',
   )
 } finally {
   await act(async () => {

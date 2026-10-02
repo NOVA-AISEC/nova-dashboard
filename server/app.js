@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto'
 import { createAuth } from './auth.js'
 import { ApiError, identifier, validateQuery } from './validation.js'
 import { createSecurityOS } from './security-os.js'
+import { buildIntelligence, queryIntelligence } from '../shared/intelligence-engine.js'
+import { buildCampusTwin } from '../shared/campus-twin.js'
 
 export function createApp({
   database,
@@ -115,6 +117,33 @@ export function createApp({
   app.get('/api/security', (request, response) =>
     response.json(security.state(request.session.user)),
   )
+  const intelligence = (user) =>
+    buildIntelligence(database.searchRecords(), security.state(user), user)
+  app.get('/api/intelligence', (request, response) => {
+    if (Object.keys(request.query).length) throw new ApiError(400, 'Unknown graph query parameter.')
+    response.json(intelligence(request.session.user))
+  })
+  app.get('/api/campus-twin', (request, response) => {
+    const params = { ...request.query }
+    if (params.minute !== undefined) {
+      if (typeof params.minute !== 'string' || !/^(?:0|[1-9][0-9]?)$/.test(params.minute))
+        throw new ApiError(400, 'Invalid replay minute.', 'INVALID_CAMPUS_REPLAY')
+      params.minute = Number(params.minute)
+    }
+    try {
+      response.json(buildCampusTwin(intelligence(request.session.user), params))
+    } catch (error) {
+      throw new ApiError(400, error.message, 'INVALID_CAMPUS_REPLAY')
+    }
+  })
+  app.post('/api/intelligence/query', auth.requireCsrf, requireJson, json, (request, response) => {
+    const graph = intelligence(request.session.user)
+    try {
+      response.json(queryIntelligence(graph, request.body))
+    } catch (error) {
+      throw new ApiError(400, error.message, 'INVALID_INTELLIGENCE_QUERY')
+    }
+  })
   app.post('/api/security/assessments', auth.requireCsrf, requireJson, json, (request, response) =>
     response.status(201).json(security.assess(request.body, request.session.user)),
   )

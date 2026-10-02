@@ -47,7 +47,17 @@ Returns 201 and the hydrated Case. Title, location and leadAnalyst are required 
 
 Date filters accept ISO dates or timestamps with timezone; invalid dates and reversed ranges return 400. `q` is at most 300 characters; other text filters at most 100. Repeated, structured, or unknown query parameters return 400. IDs use letters, numbers, hyphens and underscores, at most 100 characters.
 
+## Intelligence
+
+`GET /intelligence` returns the operator's visible entity graph: `{ nodes, edges, gaps, timeline, omitted, generatedAt, engine }`. Query parameters are rejected. Entity IDs are namespaced, for example `incident:alt-705` or `camera:STR-ADM-01`; location/team nodes preserve the exact stored labels.
+
+`POST /intelligence/query` accepts `{ question, nodeId?, mode? }`. Questions contain 1–600 characters; entity references contain at most 500 characters. Optional modes are `connections`, `evidence`, `gaps`, `timeline`, and `response`. Responses identify the `local-rules` provider and return `{ status, summary, claims, sourceIds, anchorId, question, mode, generatedAt }`. Every claim cites visible entity IDs. Unmatched requests return `no-match`; unsupported questions return `unsupported`. Unknown fields/modes and inaccessible entity IDs return 400 `INVALID_INTELLIGENCE_QUERY`.
+
+Both routes require a verified session; POST additionally requires an allowed Origin, CSRF token and bounded JSON body. Role and identity come from the session, never the request body. Guards receive no case nodes and only their own case-free assessments and associated missions. Queries perform retrieval only and cannot execute mission actions or physical controls. See [scope and capacity](../10-intelligence-engine.md).
+
 ## Errors and limits
+
+`GET /campus-twin?scenario=arrival&minute=12` returns the sourced campus catalog, role-visible mapped record IDs, simulation readings, replay events, local-rule guidance and explicit geometry/connector limitations. Scenario defaults to `arrival`; minute defaults to `12`. Allowed scenarios are `arrival`, `library`, `event`, `service`; minute must be an integer from 0 through 30. Unknown, repeated or malformed fields return 400 `INVALID_CAMPUS_REPLAY`. The route requires a verified session and never mutates records or executes controls. See [campus twin](../11-strathmore-campus-twin.md).
 
 Security OS adds authenticated assessments, mission proposals, supervisor decisions, and sequential outcome recording. See the [Security OS API contract](../09-security-os.md#api-contract) for request bodies, lifecycle, provenance and capacity limits.
 

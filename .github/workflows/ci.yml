@@ -39,6 +39,12 @@ jobs:
       - name: Test account boundaries
         run: npm run test:account-boundary
 
+      - name: Test intelligence engine
+        run: npm run test:intelligence
+
+      - name: Test campus twin
+        run: npm run test:campus-twin
+
       - name: Audit dependencies
         run: npm audit --audit-level=moderate
 

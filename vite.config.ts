@@ -17,7 +17,14 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
-        output: { manualChunks: (id) => (id.includes('node_modules') ? 'vendor' : undefined) },
+        output: {
+          manualChunks: (id) =>
+            id.includes('node_modules/leaflet/')
+              ? 'campus-map'
+              : id.includes('node_modules')
+                ? 'vendor'
+                : undefined,
+        },
       },
     },
     server: {
