@@ -12,6 +12,8 @@ import {
   ScanLine,
   ShieldCheck,
   Workflow,
+  Network,
+  Sparkles,
 } from 'lucide-react'
 import { playbooks } from '../../shared/security-engine.js'
 import { visionEngineStatus } from '../../shared/vision-engine.js'
@@ -179,6 +181,36 @@ export function SystemsPage() {
         ))}
       </div>
       <div className="os-systems-bottom">
+        <section className="workspace-panel">
+          <div className="panel-header">
+            <div>
+              <h2>Intelligence layer</h2>
+              <p>Connected records and source-backed retrieval</p>
+            </div>
+            <Network size={20} />
+          </div>
+          <dl className="os-system-facts">
+            <div>
+              <dt>Ontology</dt>
+              <dd>Eight object types · recorded relationship bases</dd>
+            </div>
+            <div>
+              <dt>Query provider</dt>
+              <dd>Local deterministic rules · five retrieval modes</dd>
+            </div>
+            <div>
+              <dt>Source grounding</dt>
+              <dd>Visible entity citations on every returned claim</dd>
+            </div>
+            <div>
+              <dt>Generative model</dt>
+              <dd>Disconnected · placeholder boundary</dd>
+            </div>
+          </dl>
+          <Link className="os-rail-footer" to="/intelligence">
+            <Sparkles size={14} /> Explore Intelligence <ArrowRight size={14} />
+          </Link>
+        </section>
         <section className="workspace-panel">
           <div className="panel-header">
             <div>

@@ -40,7 +40,14 @@ export const router = createBrowserRouter([
         path: '/',
         element: <AppShell />,
         children: [
-          { index: true, element: <Navigate replace to="/command" /> },
+          { index: true, element: <Navigate replace to="/intelligence" /> },
+          {
+            path: 'intelligence',
+            lazy: async () => {
+              const { IntelligencePage } = await import('@/pages/intelligence-page')
+              return { Component: IntelligencePage }
+            },
+          },
           {
             path: 'command',
             lazy: async () => {

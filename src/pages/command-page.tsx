@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Sparkles,
   Workflow,
+  Network,
 } from 'lucide-react'
 import { api } from '@/api'
 import { ErrorPanel, LoadingPanel } from '@/components/shared/async-state'
@@ -115,10 +116,17 @@ export function CommandPage() {
           <h1>Understand. Decide. Respond.</h1>
           <p>Your incident context, vision evidence, and next move—in one place.</p>
         </div>
-        <Link to="/missions" className="os-quiet-link">
-          <Workflow size={16} />
-          Mission control <ArrowUpRight size={14} />
-        </Link>
+        <div className="flex flex-wrap gap-4">
+          <Link
+            to={`/intelligence${incident ? `?entity=${encodeURIComponent(`incident:${incident.id}`)}` : ''}`}
+            className="os-quiet-link"
+          >
+            <Network size={16} /> Explore connections <ArrowUpRight size={14} />
+          </Link>
+          <Link to="/missions" className="os-quiet-link">
+            <Workflow size={16} /> Mission control <ArrowUpRight size={14} />
+          </Link>
+        </div>
       </div>
       <section className="os-engine-banner" aria-label="Engine readiness">
         <div className="os-engine-mark">

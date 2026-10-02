@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils'
 import type { Alert } from '@/types/domain'
 
 const navigationLabels: Record<string, string> = {
+  intelligence: 'Intelligence',
   command: 'Command',
   missions: 'Missions',
   playbooks: 'Playbooks',
@@ -424,9 +425,10 @@ export function AppShell() {
             <kbd>Esc</kbd>
             <p>Close incident review, search, or a dialog.</p>
           </div>
-          <h3>Assess → approve → record</h3>
+          <h3>Explore → assess → approve → record</h3>
           <p>
-            Use Command to assemble source records and a response procedure. Prepare a mission for
+            Use Intelligence to trace record connections, inspect evidence, and ask source-cited
+            questions. Use Command to assemble a response procedure. Prepare a mission for
             supervisor approval, then record each human-led step in order. Use cases for
             investigation context.
           </p>

@@ -107,6 +107,7 @@ try {
   const { useOperations } = await vite.ssrLoadModule('/src/hooks/use-operations.ts')
   const { CommandPage } = await vite.ssrLoadModule('/src/pages/command-page.tsx')
   const { MissionsPage } = await vite.ssrLoadModule('/src/pages/missions-page.tsx')
+  const { IntelligencePage } = await vite.ssrLoadModule('/src/pages/intelligence-page.tsx')
   const api = await vite.ssrLoadModule('/src/api/mock-client.ts')
   const run = await api.runAssessment({
     incidentId: 'alt-705',
@@ -157,6 +158,7 @@ try {
           { path: '/probe', element: React.createElement(Probe) },
           { path: '/command', element: React.createElement(CommandPage) },
           { path: '/missions', element: React.createElement(MissionsPage) },
+          { path: '/intelligence', element: React.createElement(IntelligencePage) },
         ],
       },
     ],
@@ -305,8 +307,79 @@ try {
     null,
     'Prior mission action draft is removed',
   )
+  await act(async () => {
+    switchSession(supervisor)
+    await router.navigate('/intelligence?entity=incident%3Aalt-705')
+  })
+  await waitFor(() => document.querySelector('.intel-query-panel'), 'Intelligence loads')
+  assert.ok(document.body.textContent.includes('Cases · 5'))
+  const gapQuery = [...document.querySelectorAll('.intel-query-suggestions button')].find(
+    (button) => button.textContent.includes('Find verification gaps'),
+  )
+  await act(async () => {
+    gapQuery.click()
+  })
+  await waitFor(() => document.querySelector('.intel-answer'), 'Source-cited query completes')
+  assert.ok(document.querySelector('.intel-answer').textContent.includes('Camera mismatch'))
+  let exportedBlob, exportedFilename
+  const originalCreate = URL.createObjectURL,
+    originalRevoke = URL.revokeObjectURL
+  const originalAnchorClick = window.HTMLAnchorElement.prototype.click
+  URL.createObjectURL = (blob) => {
+    exportedBlob = blob
+    return 'blob:fixture-intelligence'
+  }
+  URL.revokeObjectURL = () => {}
+  window.HTMLAnchorElement.prototype.click = function () {
+    exportedFilename = this.download
+  }
+  try {
+    const exportButton = [...document.querySelectorAll('button')].find((button) =>
+      button.textContent.includes('Export brief'),
+    )
+    await act(async () => {
+      exportButton.click()
+    })
+    const briefing = JSON.parse(await exportedBlob.text())
+    assert.equal(exportedFilename, 'nova-intelligence-brief.json')
+    assert.equal(briefing.selected, 'incident:alt-705')
+    assert.ok(briefing.answer.claims.some((claim) => claim.text.includes('Camera mismatch')))
+    assert.ok(briefing.context.nodes.some((node) => node.id === 'evidence:ev-703'))
+    assert.ok(
+      briefing.answer.sourceIds.every((id) =>
+        briefing.citedSources.some((source) => source.id === id),
+      ),
+    )
+    assert.equal(briefing.sampleData, true)
+  } finally {
+    URL.createObjectURL = originalCreate
+    URL.revokeObjectURL = originalRevoke
+    window.HTMLAnchorElement.prototype.click = originalAnchorClick
+  }
+  const sourceCitation = [...document.querySelectorAll('.intel-answer button')].find(
+    (button) => button.getAttribute('aria-label') === 'Inspect source ev-703',
+  )
+  await act(async () => {
+    sourceCitation.click()
+  })
+  assert.ok(document.querySelector('.intel-focus').textContent.includes('ev-703'))
+  assert.equal(
+    document.querySelector('.intel-answer'),
+    null,
+    'Entity switching clears the old answer',
+  )
+  await act(async () => {
+    switchSession(guard)
+  })
+  await waitFor(() => document.querySelector('.intel-query-panel'), 'Guard intelligence loads')
+  const caseType = [...document.querySelectorAll('option')].find(
+    (option) => option.value === 'case',
+  )
+  assert.equal(caseType.textContent, 'Cases · 0')
+  assert.ok(!document.body.textContent.includes('case-residence-access'))
+  assert.ok(!document.querySelector('.intel-answer'))
   console.log(
-    'Passed: real React account/role/session boundaries clear cached assessments, same-role account data, Command local runs, source dialogs and mission drafts.',
+    'Passed: real React account boundaries clear cached records, Command source dialogs, mission drafts and Intelligence queries; citations navigate to evidence without retaining old answers.',
   )
 } finally {
   await act(async () => {

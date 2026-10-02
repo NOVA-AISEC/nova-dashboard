@@ -52,7 +52,7 @@ try {
     '/users',
     '/cases/case-1',
   ])
-    assert.equal(sessions.safeReturnRoute(path, 'guard'), '/command')
+    assert.equal(sessions.safeReturnRoute(path, 'guard'), '/intelligence')
   assert.equal(sessions.safeReturnRoute('/cases/case-1', 'analyst'), '/cases/case-1')
   let expired = 0
   windowStub.addEventListener(transport.SESSION_EXPIRED, () => expired++)

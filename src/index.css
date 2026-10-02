@@ -6,6 +6,7 @@
 @import './product-pages.css';
 @import './responsive.css';
 @import './security-os.css';
+@import './intelligence.css';
 @layer base {
   :root {
     --accent: #eb743b;
