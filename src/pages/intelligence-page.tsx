@@ -19,6 +19,8 @@ import {
   Sparkles,
   Target,
   Workflow,
+  Building2,
+  BookOpen,
 } from 'lucide-react'
 import { api } from '@/api'
 import { EntityGraph } from '@/components/intelligence/entity-graph'
@@ -43,6 +45,8 @@ const kinds: Record<EntityKind, string> = {
   team: 'Teams',
   assessment: 'Assessments',
   mission: 'Missions',
+  'campus-place': 'Campus places',
+  'campus-source': 'Campus references',
 }
 const questions: { mode: QueryMode; label: string; question: string }[] = [
   {
@@ -50,7 +54,11 @@ const questions: { mode: QueryMode; label: string; question: string }[] = [
     label: 'Trace connections',
     question: 'What records are connected to this entity?',
   },
-  { mode: 'evidence', label: 'Review evidence', question: 'What evidence supports this entity?' },
+  {
+    mode: 'evidence',
+    label: 'Review evidence',
+    question: 'What evidence supports this entity?',
+  },
   {
     mode: 'gaps',
     label: 'Find verification gaps',
@@ -61,7 +69,11 @@ const questions: { mode: QueryMode; label: string; question: string }[] = [
     label: 'Build a timeline',
     question: 'Show the recorded timeline for this entity.',
   },
-  { mode: 'response', label: 'Review response', question: 'What response work has been prepared?' },
+  {
+    mode: 'response',
+    label: 'Review response',
+    question: 'What response work has been prepared?',
+  },
 ]
 function EntityGlyph({ kind }: { kind: EntityKind }) {
   return (
@@ -72,6 +84,10 @@ function EntityGlyph({ kind }: { kind: EntityKind }) {
         <Layers3 size={14} />
       ) : kind === 'mission' ? (
         <Workflow size={14} />
+      ) : kind === 'campus-place' ? (
+        <Building2 size={14} />
+      ) : kind === 'campus-source' ? (
+        <BookOpen size={14} />
       ) : (
         <Database size={14} />
       )}
@@ -82,7 +98,10 @@ export function IntelligencePage() {
   const { data: graph, error, isLoading, refresh } = useIntelligence()
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState('')
-  const [kind, setKind] = useState<EntityKind | 'all'>('incident')
+  const [kind, setKind] = useState<EntityKind | 'all'>(() => {
+    const prefix = params.get('entity')?.split(':')[0]
+    return entityKinds.includes(prefix as EntityKind) ? (prefix as EntityKind) : 'incident'
+  })
   const [view, setView] = useState('graph')
   const [depth, setDepth] = useState(1)
   const [question, setQuestion] = useState('')
@@ -174,7 +193,10 @@ export function IntelligencePage() {
     setBusy('assessment')
     setFailure('')
     try {
-      await api.runAssessment({ incidentId: selected.recordId, intent: 'assess' })
+      await api.runAssessment({
+        incidentId: selected.recordId,
+        intent: 'assess',
+      })
       notifyOperationsChanged()
     } catch (error) {
       setFailure(error instanceof Error ? error.message : 'Assessment could not be saved.')
@@ -248,7 +270,7 @@ export function IntelligencePage() {
         <div>
           <GitBranch size={16} />
           <strong>{graph.edges.length}</strong>
-          <span>recorded relationships</span>
+          <span>sourced relationships</span>
         </div>
         <button
           onClick={() => {
@@ -335,7 +357,8 @@ export function IntelligencePage() {
           )}
           <div className="intel-entity-foot">
             <Database size={12} />
-            {matches.length} matches{matches.length > 100 ? ' · first 100 shown' : ''}
+            {matches.length} matches
+            {matches.length > 100 ? ' · first 100 shown' : ''}
             <button onClick={refresh} disabled={!!busy}>
               Refresh
             </button>
@@ -430,7 +453,7 @@ export function IntelligencePage() {
             <div>
               <ShieldCheck size={16} />
               <strong>Record provenance</strong>
-              <span>Every link has a recorded basis</span>
+              <span>Record links and campus references have explicit bases</span>
             </div>
             <div>
               <CircleAlert size={16} />
@@ -539,6 +562,9 @@ export function IntelligencePage() {
           {inspector === 'entity' && (
             <>
               <p className="intel-inspector-copy">{selected.detail}</p>
+              <p className="intel-inspector-copy">
+                Provenance: {selected.provenance.replaceAll('-', ' ')}
+              </p>
               {selected.kind === 'evidence' && (
                 <img
                   className="intel-inspector-image"
@@ -552,7 +578,15 @@ export function IntelligencePage() {
                   .map(([key, value]) => (
                     <div key={key}>
                       <dt>{key}</dt>
-                      <dd>{value}</dd>
+                      <dd>
+                        {key === 'sourceUrl' ? (
+                          <a href={value} target="_blank" rel="noreferrer">
+                            Read campus reference <ArrowUpRight size={12} />
+                          </a>
+                        ) : (
+                          value
+                        )}
+                      </dd>
                     </div>
                   ))}
                 {selected.recordedAt && (
@@ -620,6 +654,10 @@ export function IntelligencePage() {
                   <ArrowRight size={14} />
                 </Link>
               </>
+            ) : selected.kind === 'campus-place' ? (
+              <Link to={`/campus?place=${encodeURIComponent(selected.recordId)}`}>
+                Explore in campus twin <ArrowRight size={14} />
+              </Link>
             ) : selected.kind === 'mission' ? (
               <Link to={`/missions?mission=${encodeURIComponent(selected.recordId)}`}>
                 Open mission

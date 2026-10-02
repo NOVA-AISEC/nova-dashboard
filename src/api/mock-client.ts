@@ -16,6 +16,7 @@ import { persistMockOperations } from '@/lib/mock-persistence'
 import { securityAudit } from '@/api/mock-security'
 import { getSecurityState } from '@/api/mock-security'
 import { readDemoSession } from '@/lib/session'
+import { buildCampusTwin, type TwinRequest } from '../../shared/campus-twin.js'
 import {
   buildIntelligence,
   queryIntelligence,
@@ -179,6 +180,9 @@ export async function getIntelligence() {
   const user = readDemoSession()
   if (!user) throw new Error('Sign in to explore the intelligence workspace.')
   return buildIntelligence(await search(''), await getSecurityState(), user)
+}
+export async function getCampusTwin(params: TwinRequest = {}) {
+  return buildCampusTwin(await getIntelligence(), params)
 }
 export async function askIntelligence(payload: IntelligenceQuery) {
   return queryIntelligence(await getIntelligence(), payload)

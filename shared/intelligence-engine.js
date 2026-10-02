@@ -1,3 +1,4 @@
+import { campusPlaces, campusSources, resolveCampusPlace } from './campus-reference.js'
 // A shared, source-backed ontology. Relationships describe stored records, not inferred identity.
 export const entityKinds = [
   'incident',
@@ -8,6 +9,8 @@ export const entityKinds = [
   'team',
   'assessment',
   'mission',
+  'campus-place',
+  'campus-source',
 ]
 export const intelligenceModes = ['connections', 'evidence', 'gaps', 'timeline', 'response']
 const open = (status) =>
@@ -101,6 +104,34 @@ export function buildIntelligence(records, security, user) {
     0,
     security.missions.filter((mission) => runIds.has(mission.runId)).length - missions.length,
   )
+  for (const source of campusSources) {
+    const id = add('campus-source', source.id, source.title, source.fact, {
+      sourceUrl: source.url,
+      checkedAt: source.checkedAt,
+    })
+    nodes.get(id).provenance = 'public-reference'
+  }
+  for (const place of campusPlaces) {
+    const id = add('campus-place', place.id, place.name, place.description, {
+      registration:
+        place.provenance === 'public-reference'
+          ? 'Publicly documented place'
+          : 'Proposed operational zone',
+      geometry: 'Conceptual layout; no surveyed coordinates',
+      responsibility: `${place.responsibility} (proposed)`,
+    })
+    nodes.get(id).provenance = place.provenance
+    for (const source of place.sourceIds)
+      link(
+        id,
+        key('campus-source', source),
+        'references',
+        place.provenance === 'public-reference'
+          ? 'Public reference supports place name; geometry and operational attributes are modeled'
+          : 'Public reference supports campus context only; this operational zone is proposed',
+        [id, key('campus-source', source)],
+      )
+  }
   for (const alert of alerts) {
     const id = add(
       'incident',
@@ -282,6 +313,40 @@ export function buildIntelligence(records, security, user) {
         key('evidence', evidenceId),
       ])
   }
+  for (const node of [...nodes.values()]) {
+    const location = node.kind === 'location' ? node.recordId : node.properties.location
+    if (!location) continue
+    const place = resolveCampusPlace(location)
+    if (place) {
+      link(
+        node.id,
+        key('campus-place', place.id),
+        'anchored-to',
+        `Configured exact location alias: ${location}. Mapping is a design assumption, not a verified campus observation.`,
+        [node.id, key('campus-place', place.id)],
+      )
+    } else if (node.kind === 'incident') {
+      issue(
+        `unmapped:${node.recordId}`,
+        'Campus location unverified',
+        `“${location}” has no approved place mapping. Off-campus residence and generic legacy locations are excluded from the campus twin.`,
+        [node.id],
+      )
+    }
+  }
+  for (const node of nodes.values()) {
+    if (!['assessment', 'mission'].includes(node.kind)) continue
+    const incident = nodes.get(key('incident', node.properties.incident))
+    const place = incident ? resolveCampusPlace(incident.properties.location) : null
+    if (place)
+      link(
+        node.id,
+        key('campus-place', place.id),
+        'anchored-to',
+        'Explicit incident reference followed by its configured campus alias; location still needs campus validation.',
+        [node.id, incident.id, key('campus-place', place.id)],
+      )
+  }
   return {
     nodes: [...nodes.values()],
     edges: [...edges.values()],
@@ -421,7 +486,10 @@ export function queryIntelligence(graph, payload) {
   if (mode === 'gaps')
     claims = graph.gaps
       .filter((gap) => gap.sourceIds.every((id) => ids.has(id)))
-      .map((gap) => ({ text: `${gap.title}: ${gap.detail}`, sourceIds: gap.sourceIds }))
+      .map((gap) => ({
+        text: `${gap.title}: ${gap.detail}`,
+        sourceIds: gap.sourceIds,
+      }))
   else if (mode === 'timeline')
     claims = graph.timeline
       .filter((entry) => entry.sourceIds.some((id) => ids.has(id)))

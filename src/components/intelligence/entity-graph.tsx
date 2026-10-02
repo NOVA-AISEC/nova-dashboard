@@ -15,6 +15,8 @@ const colors: Record<string, string> = {
   team: '#d3b77b',
   assessment: '#89a5f4',
   mission: '#b4c37b',
+  'campus-place': '#65d3b4',
+  'campus-source': '#cfb9a3',
 }
 export function EntityGraph({
   graph,
@@ -38,6 +40,8 @@ export function EntityGraph({
     camera: 5,
     location: 6,
     team: 7,
+    'campus-place': 8,
+    'campus-source': 9,
   }
   const peripheral = context.nodes
     .filter((node) => node.id !== selected.id)
@@ -151,7 +155,7 @@ export function EntityGraph({
         </g>
       </svg>
       <div className="intel-graph-bottom">
-        <span>Exact record links · co-location does not imply causation</span>
+        <span>Explicit record links & campus mappings · co-location does not imply causation</span>
         <div>
           <button
             aria-label="Zoom out graph"

@@ -192,7 +192,7 @@ export function SystemsPage() {
           <dl className="os-system-facts">
             <div>
               <dt>Ontology</dt>
-              <dd>Eight object types · recorded relationship bases</dd>
+              <dd>Ten object types · record links and campus references</dd>
             </div>
             <div>
               <dt>Query provider</dt>

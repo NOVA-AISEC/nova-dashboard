@@ -1,7 +1,16 @@
 import type { SearchResults } from '../src/types/domain'
 import type { SecurityState } from './security-engine'
 export type EntityKind =
-  'incident' | 'evidence' | 'case' | 'camera' | 'location' | 'team' | 'assessment' | 'mission'
+  | 'incident'
+  | 'evidence'
+  | 'case'
+  | 'camera'
+  | 'location'
+  | 'team'
+  | 'assessment'
+  | 'mission'
+  | 'campus-place'
+  | 'campus-source'
 export type QueryMode = 'connections' | 'evidence' | 'gaps' | 'timeline' | 'response'
 export interface IntelligenceEntity {
   id: string
@@ -11,7 +20,7 @@ export interface IntelligenceEntity {
   detail: string
   properties: Record<string, string>
   recordedAt: string
-  provenance: 'stored-record'
+  provenance: 'stored-record' | 'public-reference' | 'modeled-zone'
 }
 export interface IntelligenceEdge {
   id: string

@@ -10,6 +10,7 @@ import type {
 } from '@/types/domain'
 
 import { request } from '@/api/transport'
+import type { CampusTwin, TwinRequest } from '../../shared/campus-twin'
 import type { EngineRun, Mission, SecurityState } from '../../shared/security-engine'
 import type {
   IntelligenceGraph,
@@ -76,6 +77,9 @@ export function getSecurityState() {
 }
 export function getIntelligence() {
   return request<IntelligenceGraph>('/api/intelligence')
+}
+export function getCampusTwin(params: TwinRequest = {}) {
+  return request<CampusTwin>(withQuery('/api/campus-twin', params))
 }
 export function askIntelligence(payload: IntelligenceQuery) {
   return request<IntelligenceAnswer>('/api/intelligence/query', {

@@ -183,6 +183,7 @@ try {
     }
   }
   assert.equal((await send('/intelligence')).status, 401)
+  assert.equal((await send('/campus-twin')).status, 401)
   for (const user of users) {
     const login = await send('/auth/login', { body: { email: user.email, password } })
     assert.equal(login.status, 200)
@@ -207,6 +208,30 @@ try {
     })
     assert.equal(result.status, 200)
     const visibleIds = new Set(view.data.nodes.map((node) => node.id))
+    const twinView = await send('/campus-twin?scenario=service&minute=15', { cookie: login.cookie })
+    assert.equal(twinView.status, 200)
+    assert.equal(twinView.data.places.find((place) => place.id === 'service').status, 'stale')
+    assert.ok(
+      twinView.data.places.every((place) => place.recordIds.every((id) => visibleIds.has(id))),
+    )
+    if (user.role === 'guard')
+      assert.ok(
+        twinView.data.places.every(
+          (place) => !place.recordIds.some((id) => id.startsWith('case:')),
+        ),
+      )
+    for (const badQuery of [
+      'role=admin',
+      'minute=31',
+      'minute=-1',
+      'minute=12.5',
+      'minute=12&minute=13',
+      'scenario=arrival&scenario=event',
+      'scenario=live',
+      'minute=',
+      'minute=1e1',
+    ])
+      assert.equal((await send(`/campus-twin?${badQuery}`, { cookie: login.cookie })).status, 400)
     assert.ok(result.data.sourceIds.every((id) => visibleIds.has(id)))
     assert.equal((await send('/intelligence?role=admin', { cookie: login.cookie })).status, 400)
     assert.equal(
@@ -245,12 +270,17 @@ try {
     JSON.stringify({ ...users[1], shift: 'Test', expiresAt: Date.now() + 60_000 }),
   )
   vite = await createServer({
-    server: { middlewareMode: true, hmr: false },
+    server: { middlewareMode: true, hmr: false, ws: false },
     appType: 'custom',
     define: { 'import.meta.env.VITE_USE_MOCK': JSON.stringify('true') },
   })
   const api = await vite.ssrLoadModule('/src/api/mock-client.ts')
   const mockGraph = await api.getIntelligence()
+  const mockTwin = await api.getCampusTwin({ scenario: 'library', minute: 15 })
+  assert.ok(
+    mockTwin.places.find((place) => place.id === 'library').recordIds.includes('incident:alt-702'),
+  )
+  assert.ok(mockTwin.unmapped.some((node) => node.id === 'incident:alt-703'))
   assert.ok(mockGraph.nodes.some((node) => node.kind === 'case'))
   const mockAnswer = await api.askIntelligence({
     question: 'What evidence supports this incident?',
@@ -264,6 +294,7 @@ try {
   assert.ok(!(await api.getIntelligence()).nodes.some((node) => node.kind === 'case'))
   cache.delete('nova.session')
   await assert.rejects(api.getIntelligence(), /Sign in/)
+  await assert.rejects(api.getCampusTwin(), /Sign in/)
   console.log(
     'Passed: entity links, provenance, cited queries, mismatch/missing evidence, bounded graph, isolated context, HTTP auth/CSRF, role filtering and browser parity.',
   )

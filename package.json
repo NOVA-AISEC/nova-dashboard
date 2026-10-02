@@ -18,6 +18,7 @@
     "test:security-os": "node scripts/test-security-os.mjs",
     "test:account-boundary": "node scripts/test-account-boundary.mjs",
     "test:intelligence": "node scripts/test-intelligence.mjs",
+    "test:campus-twin": "node scripts/test-campus-twin.mjs",
     "auth:add-user": "node scripts/add-api-user.mjs"
   },
   "dependencies": {
