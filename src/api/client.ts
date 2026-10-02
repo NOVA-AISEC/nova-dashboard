@@ -11,6 +11,11 @@ import type {
 
 import { request } from '@/api/transport'
 import type { EngineRun, Mission, SecurityState } from '../../shared/security-engine'
+import type {
+  IntelligenceGraph,
+  IntelligenceQuery,
+  IntelligenceAnswer,
+} from '../../shared/intelligence-engine'
 
 function withQuery<T extends object>(path: string, params?: T) {
   const searchParams = new URLSearchParams()
@@ -68,6 +73,15 @@ export function listAudit(
 
 export function getSecurityState() {
   return request<SecurityState>('/api/security')
+}
+export function getIntelligence() {
+  return request<IntelligenceGraph>('/api/intelligence')
+}
+export function askIntelligence(payload: IntelligenceQuery) {
+  return request<IntelligenceAnswer>('/api/intelligence/query', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
 export function runAssessment(payload: { incidentId: string; intent: string }) {
   return request<EngineRun>('/api/security/assessments', {
